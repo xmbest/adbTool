@@ -20,11 +20,11 @@ val route_left_item_spacer = 14.dp
 //背景圆角
 val route_left_item_rounded = 8.dp
 //选择选中背景色
-val route_left_item_background = Color(0xF0D0CFCF)
+val route_left_item_background = GOOGLE_BLUE
 //默认字体色
 val route_left_item_color = Color(0xEE626465)
 //选中字体色
-val route_left_item_clicked_color = Color(0xFF626465)
+val route_left_item_clicked_color = Color.White
 //右栏背景色
 val route_right_background = Color(0xFFFAFAFA)
 

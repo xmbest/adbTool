@@ -24,9 +24,10 @@ fun Route() {
         Page(0, "快捷功能", Icons.Default.Build, Color.Black) { QuickSetting() },
         Page(1, "文件管理", Icons.Default.Menu, Color.Black) { FileManage() },
         Page(2, "设置", Icons.Default.Settings, Color.Black) { Settings() },
+        Page(3, "生成命令字", Icons.Default.Settings, Color.Black) { CommandGeneral() }
     )
     var curPage by remember {
-        mutableStateOf(0)
+        mutableStateOf(3)
     }
 
     Row(modifier = Modifier.fillMaxSize()) {
