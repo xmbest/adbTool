@@ -4,11 +4,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import config.*
 
@@ -23,7 +25,7 @@ fun Item(icon: String, label: String) {
 
             }
     ) {
-        Image(painter = painterResource(icon), null, modifier = Modifier.width(item_img_width).height(item_img_height))
+        Icon(painter = painterResource(icon), null, modifier = Modifier.width(item_img_width).height(item_img_height), tint = route_left_item_color)
         Text(label, fontSize = item_text_fontSize)
     }
 }

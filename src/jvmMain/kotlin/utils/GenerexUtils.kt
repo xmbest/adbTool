@@ -12,7 +12,7 @@ class GenerexUtils {
                 .replace("）", ")")
                 .replace("【", "[")
                 .replace("】", "]")
-            println(text1)
+                .replace("\n","|")
             val generex = Generex(text1)
             val str = StringBuilder()
             val allMatchedStrings = generex.allMatchedStrings

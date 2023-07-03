@@ -9,11 +9,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import config.GOOGLE_BLUE
+import config.GOOGLE_RED
 
 @Composable
 fun General(
     title: String = "title",
-    color: Color = Color.Red,
+    color: Color = GOOGLE_BLUE,
     height: Int = 1,
     topRight: @Composable (() -> Unit)? = null,
     content: @Composable (() -> Unit)? = null
