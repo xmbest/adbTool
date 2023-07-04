@@ -26,7 +26,7 @@ fun Route() {
         Page(3, "设置", "settings.png") { Settings() }
     )
     var curPage by remember {
-        mutableStateOf(2)
+        mutableStateOf(0)
     }
 
     Row(modifier = Modifier.fillMaxSize()) {
@@ -49,7 +49,6 @@ fun Route() {
                 )
             }
         }
-
         Column(modifier = Modifier.fillMaxHeight().weight(1f).background(route_right_background)) {
             pages[curPage].comp()
         }

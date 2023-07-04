@@ -9,8 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import config.GOOGLE_BLUE
-import config.GOOGLE_RED
+import theme.GOOGLE_BLUE
 
 @Composable
 fun General(

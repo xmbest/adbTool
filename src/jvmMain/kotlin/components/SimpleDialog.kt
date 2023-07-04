@@ -17,11 +17,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import config.*
+import theme.GOOGLE_BLUE
+import theme.GOOGLE_RED
 
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun MyDialog(
+fun SimpleDialog(
     showingDialog: MutableState<Boolean>,
     title: String = "警告",
     titleColor: Color = GOOGLE_RED,

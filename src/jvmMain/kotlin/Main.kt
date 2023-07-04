@@ -8,7 +8,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import config.GOOGLE_BLUE
+import theme.GOOGLE_BLUE
 import config.window_height
 import config.window_width
 import pages.Route

@@ -19,11 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import components.MyDialog
-import config.GOOGLE_BLUE
-import config.GOOGLE_GREEN
-import config.GOOGLE_RED
-import config.GOOGLE_YELLOW
+import components.SimpleDialog
+import theme.GOOGLE_BLUE
+import theme.GOOGLE_GREEN
+import theme.GOOGLE_RED
+import theme.GOOGLE_YELLOW
 import utils.ClipboardUtil
 import utils.GenerexUtils
 
@@ -66,13 +66,15 @@ fun CommandGeneral() {
             CommandButton("清空", backgroundColor = GOOGLE_RED) {
                 text1.value = ""
                 text2.value = ""
+                dialogText.value = System.getProperty("user.dir")
+                showingDialog.value = true
             }
         }
         Row(modifier = Modifier.fillMaxWidth().weight(2f)) {
             CommandText(str = text2, hint = "结果")
         }
         if (showingDialog.value)
-            MyDialog(showingDialog, title = dialogTitle.value, titleColor = dialogTitleColor.value, text = dialogText.value)
+            SimpleDialog(showingDialog, title = dialogTitle.value, titleColor = dialogTitleColor.value, text = dialogText.value)
     }
 }
 
