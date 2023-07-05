@@ -66,8 +66,6 @@ fun CommandGeneral() {
             CommandButton("清空", backgroundColor = GOOGLE_RED) {
                 text1.value = ""
                 text2.value = ""
-                dialogText.value = System.getProperty("user.dir")
-                showingDialog.value = true
             }
         }
         Row(modifier = Modifier.fillMaxWidth().weight(2f)) {

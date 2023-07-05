@@ -12,6 +12,7 @@ import theme.GOOGLE_BLUE
 import config.window_height
 import config.window_width
 import pages.Route
+import utils.getDevices
 import java.awt.Dimension
 import java.awt.Toolkit
 
@@ -32,6 +33,7 @@ fun main() = application {
     val x: Double = screenSize.getWidth() / 2 - width / 2
     val y: Double = screenSize.getHeight() / 2 - height / 2
     val state = rememberWindowState(width = width.dp, height = height.dp, position = WindowPosition(x.dp, y.dp))
+    getDevices()
     Window(
         onCloseRequest = ::exitApplication, title = "工具箱", state = state, icon = painterResource("logo.png")
     ) {

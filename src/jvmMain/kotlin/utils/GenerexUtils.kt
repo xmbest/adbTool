@@ -5,19 +5,19 @@ import com.mifmif.common.regex.Generex
 class GenerexUtils {
     companion object {
         fun generateAll(text: String): String {
-            val text1 = text.replace("\\[(\\d*|\\d+-\\d+)]".toRegex(),"【$1】")
+            val text1 = text.replace("\\[(\\d*|\\d+-\\d+)]".toRegex(), "【$1】")
                 .replace("[", "(")
                 .replace("]", ")?")
                 .replace("（", "(")
                 .replace("）", ")")
                 .replace("【", "[")
                 .replace("】", "]")
-                .replace("\n","|")
+                .replace("\n", "|")
             val generex = Generex(text1)
             val str = StringBuilder()
             val allMatchedStrings = generex.allMatchedStrings
             for (i in 0 until allMatchedStrings.size) {
-                str.append("\"" + allMatchedStrings.get(i) + "\"")
+                str.append("\"" + NumberValueUtil.num2CNStr(allMatchedStrings.get(i)) + "\"")
                 if (i < allMatchedStrings.size - 1)
                     str.append(",")
             }

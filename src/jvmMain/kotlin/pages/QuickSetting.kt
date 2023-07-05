@@ -11,16 +11,16 @@ import components.*
 import entity.KeyMapper
 import theme.GOOGLE_RED
 import theme.GOOGLE_YELLOW
-import utils.execute
+import utils.shell
 
 @Composable
 fun QuickSetting() {
-    val keyPre = "adb shell input keyevent "
+    val keyPre = "input keyevent "
     val keyMapperList1 = listOf(
         KeyMapper("task.png", 187, "任务列表"),
-        KeyMapper("home.png", 3, "返回桌面"),
-        KeyMapper("back.png", 4, "返回"),
-        KeyMapper("power.png", 26, "电源")
+        KeyMapper("home.png", 3, "回到桌面"),
+        KeyMapper("back.png", 4, "返回上级"),
+        KeyMapper("power.png", 26, "锁定屏幕")
     )
     val keyMapperList2 = listOf(
         KeyMapper("plus.png", 24, "增加音量"),
@@ -44,29 +44,29 @@ fun QuickSetting() {
                 ContentNRow {
                     keyMapperList1.forEach {
                         Item(it.icon, it.name) {
-                            execute(keyPre + it.key)
+                            shell(keyPre + it.key)
                         }
                     }
                 }
                 ContentNRow {
                     keyMapperList2.forEach {
                         Item(it.icon, it.name) {
-                            execute(keyPre + it.key)
+                            shell(keyPre + it.key)
                         }
                     }
                 }
                 ContentNRow {
                     Item(keyMapperList3[0].icon, keyMapperList3[0].name) {
-                        execute("adb shell service call statusbar 1")
+                        shell("service call statusbar 1")
                     }
                     Item(keyMapperList3[1].icon, keyMapperList3[1].name) {
-                        execute("adb shell service call statusbar 2")
+                        shell("service call statusbar 2")
                     }
                     Item(keyMapperList3[2].icon, keyMapperList3[2].name) {
-                        execute(keyPre + keyMapperList3[2].key)
+                        shell(keyPre + keyMapperList3[2].key)
                     }
                     Item(keyMapperList3[3].icon, keyMapperList3[3].name) {
-                        execute("adb shell am start  -n com.android.settings/com.android.settings.Settings")
+                        shell("am start  -n com.android.settings/com.android.settings.Settings")
                     }
                 }
             }

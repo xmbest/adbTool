@@ -1,5 +1,7 @@
 package utils
 
+import status.currentDevice
+import status.devicesList
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -33,27 +35,43 @@ fun Process.text(): String {
 /*
 * 执行adb命令
 * */
-fun execute(cmd:String): String {
+
+
+fun execute(cmd: String): String {
     val process = cmd.execute()
     process.waitFor()
-//    println(process.text())
     return process.text()
 }
 
+fun shell(cmd: String): String {
+    if (currentDevice.value.isEmpty()) {
+        return "none"
+    }
+    return execute("adb -s ${currentDevice.value} shell $cmd")
+}
 
 /**
- * @Description： 判断是否连接设备
- * @Param： []
- * @return： boolean
+ * @Description： 获取设备列表
  */
-fun isLinkDevices(): Boolean {
-    var str: String = execute("adb devices")
-    str = str.replace("List of devices attached".toRegex(), "").replace("\n".toRegex(), "")
-    if (str.isBlank()) {
-        println("已连接设备，设备名为：$str")
-        return true
+fun getDevices() {
+    val devices: String = execute("adb devices")
+    devicesList.clear()
+    val splitList = devices.split("\n").filter { it.trim().isNotEmpty() && it != "null" }
+    if (splitList.size == 1) {
+        currentDevice.value = ""
+        return
     }
-    println("未连接设备")
-    return false
+    //只列出活跃(device)的设备
+    for (i in 1 until splitList.size) {
+        val element = splitList[i]
+        if (element.contains("device")) {
+            val device = element.replace("device", "").trim()
+            devicesList.add(device)
+        }
+    }
+    if (currentDevice.value.isEmpty() && devicesList.size > 0) {
+        currentDevice.value = devicesList[0]
+    }
+
 }
 

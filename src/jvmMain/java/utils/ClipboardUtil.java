@@ -16,7 +16,7 @@ import java.io.Reader;
 public class ClipboardUtil {
 
     /**
-     * 1. 从剪切板获得文字。
+     * 1. 从剪切板获得文字
      */
     public static String getSysClipboardText() {
         String ret = "";

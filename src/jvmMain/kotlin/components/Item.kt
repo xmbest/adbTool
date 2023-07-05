@@ -13,10 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import config.*
-import utils.isLinkDevices
 
 @Composable
-fun Item(icon: String, label: String, runnable: () -> Unit = {}) {
+fun Item(icon: String, label: String, runnable: () -> String = {
+    ""
+}) {
     val showingDialog = remember { mutableStateOf(false) }
     Column(
         verticalArrangement = Arrangement.SpaceAround,
@@ -24,10 +25,9 @@ fun Item(icon: String, label: String, runnable: () -> Unit = {}) {
         modifier = Modifier.height(item_height).width(item_width)
             .clip(RoundedCornerShape(item_clicked_rounded))
             .clickable {
-                if (isLinkDevices())
-                    runnable()
-                else
+                if (runnable() == "none"){
                     showingDialog.value = true
+                }
             }
     ) {
         Icon(
