@@ -30,7 +30,7 @@ fun SimpleDialog(
     text: String = "测试",
     content: @Composable (() -> Unit) = {
         Column(
-            modifier = Modifier.height(160.dp).width(320.dp).background(route_left_background).clip(RoundedCornerShape(5.dp))
+            modifier = Modifier.height(160.dp).width(320.dp).clip(RoundedCornerShape(5.dp))
         ) {
             Row(modifier = Modifier.fillMaxWidth().padding(5.dp).clip(RoundedCornerShape(5.dp))) {
                 Text(color = titleColor, text = title, fontSize = 14.sp, modifier = Modifier.padding(start = 4.dp))

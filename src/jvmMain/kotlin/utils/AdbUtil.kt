@@ -38,17 +38,31 @@ fun Process.text(): String {
 
 
 fun execute(cmd: String): String {
-    val process = cmd.execute()
+    if (cmd == "adb devices") {
+        val process = cmd.execute()
+        process.waitFor()
+        return process.text()
+    } else if (currentDevice.value.isEmpty()) {
+        return "none"
+    }
+    val process = ("adb -s ${currentDevice.value}" + cmd).execute()
     process.waitFor()
     return process.text()
 }
 
+
 fun shell(cmd: String): String {
-    if (currentDevice.value.isEmpty()) {
-        return "none"
-    }
-    return execute("adb -s ${currentDevice.value} shell $cmd")
+    return execute("shell $cmd")
 }
+
+fun pull(srcPath: String, destPath: String): String {
+    return execute("pull $srcPath $destPath")
+}
+
+fun saveScreen(srcPath: String, destPath: String): String {
+    return execute("screencap -p /sdcard/screen.png && adb -s ${currentDevice.value} pull $srcPath $destPath")
+}
+
 
 /**
  * @Description： 获取设备列表
@@ -69,8 +83,9 @@ fun getDevices() {
             devicesList.add(device)
         }
     }
-    if (currentDevice.value.isEmpty() && devicesList.size > 0) {
-        currentDevice.value = devicesList[0]
+    if (devicesList.size > 0) {
+        if (!devicesList.contains(currentDevice.value))
+            currentDevice.value = devicesList[0]
     }
 
 }

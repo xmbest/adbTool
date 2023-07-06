@@ -11,7 +11,11 @@ import components.*
 import entity.KeyMapper
 import theme.GOOGLE_RED
 import theme.GOOGLE_YELLOW
+import utils.pull
+import utils.saveScreen
 import utils.shell
+import javax.swing.filechooser.FileSystemView
+
 
 @Composable
 fun QuickSetting() {
@@ -33,7 +37,7 @@ fun QuickSetting() {
     val keyMapperList3 = listOf(
         KeyMapper("down.png", 1, "显示状态栏"),
         KeyMapper("up.png", 2, "隐藏状态栏"),
-        KeyMapper("mute.png", 164, "打开静音"),
+        KeyMapper("mute.png", 0, "截图"),
         KeyMapper("settings.png", 0, "进入设置")
     )
     val scroll = rememberScrollState()
@@ -63,7 +67,11 @@ fun QuickSetting() {
                         shell("service call statusbar 2")
                     }
                     Item(keyMapperList3[2].icon, keyMapperList3[2].name) {
-                        shell(keyPre + keyMapperList3[2].key)
+                        val view = FileSystemView.getFileSystemView()
+                        val desktop = view.homeDirectory.path
+                        val b = saveScreen("/sdcard/screen.png",desktop)
+                        println(b)
+                        b
                     }
                     Item(keyMapperList3[3].icon, keyMapperList3[3].name) {
                         shell("am start  -n com.android.settings/com.android.settings.Settings")
