@@ -1,9 +1,12 @@
 package utils
 
 import status.currentDevice
+import status.desktop
 import status.devicesList
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * 给String扩展 execute() 函数
@@ -45,7 +48,8 @@ fun execute(cmd: String): String {
     } else if (currentDevice.value.isEmpty()) {
         return "none"
     }
-    val process = ("adb -s ${currentDevice.value}" + cmd).execute()
+    println(cmd)
+    val process = ("adb -s ${currentDevice.value} " + cmd).execute()
     process.waitFor()
     return process.text()
 }
@@ -60,7 +64,12 @@ fun pull(srcPath: String, destPath: String): String {
 }
 
 fun saveScreen(srcPath: String, destPath: String): String {
-    return execute("screencap -p /sdcard/screen.png && adb -s ${currentDevice.value} pull $srcPath $destPath")
+    val currentDateTime = LocalDateTime.now()
+    val formatter = DateTimeFormatter.ofPattern("yyMMddHHmmss")
+    val formattedDateTime = currentDateTime.format(formatter)
+    shell("screencap -p $srcPath/screen_$formattedDateTime.png")
+    pull("$srcPath/screen_$formattedDateTime.png", destPath)
+    return shell("rm -rf $srcPath/screen_$formattedDateTime.png")
 }
 
 
