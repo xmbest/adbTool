@@ -1,12 +1,12 @@
 package utils
 
 import status.currentDevice
-import status.desktop
 import status.devicesList
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+
 
 /**
  * 给String扩展 execute() 函数
@@ -30,7 +30,8 @@ fun Process.text(): String {
     while (null != line) {
         // 逐行读取shell输出，并保存到变量output
         line = bufReader.readLine()
-        output += line + "\n"
+        if (null != line)
+            output += line + "\n"
     }
     return output
 }
@@ -43,14 +44,14 @@ fun Process.text(): String {
 fun execute(cmd: String): String {
     if (cmd == "adb devices") {
         val process = cmd.execute()
-        process.waitFor()
+//        process.waitFor()
         return process.text()
     } else if (currentDevice.value.isEmpty()) {
         return "none"
     }
     println(cmd)
     val process = ("adb -s ${currentDevice.value} " + cmd).execute()
-    process.waitFor()
+//    process.waitFor()
     return process.text()
 }
 
@@ -79,7 +80,7 @@ fun saveScreen(srcPath: String, destPath: String): String {
 fun getDevices() {
     val devices: String = execute("adb devices")
     devicesList.clear()
-    val splitList = devices.split("\n").filter { it.trim().isNotEmpty() && it != "null" }
+    val splitList = devices.trim().split("\n")
     if (splitList.size == 1) {
         currentDevice.value = ""
         return
@@ -93,8 +94,9 @@ fun getDevices() {
         }
     }
     if (devicesList.size > 0) {
-        if (!devicesList.contains(currentDevice.value))
+        if (!devicesList.contains(currentDevice.value)){
             currentDevice.value = devicesList[0]
+        }
     }
 
 }

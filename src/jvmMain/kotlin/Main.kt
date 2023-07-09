@@ -12,6 +12,7 @@ import theme.GOOGLE_BLUE
 import config.window_height
 import config.window_width
 import pages.Route
+import pages.initAppList
 import utils.ListenDeviceUtil.Companion.listenDevices
 import utils.getDevices
 import java.awt.Dimension

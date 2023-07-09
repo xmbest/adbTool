@@ -25,8 +25,9 @@ fun Route() {
     val pages = listOf(
         Page(0, "快捷功能", "pushpin.png") { QuickSetting() },
         Page(1, "文件管理", "folder.png") { FileManage() },
-        Page(2, "生成命令字", "code.png") { CommandGeneral() },
-        Page(3, "设置", "settings.png") { Settings() }
+        Page(2, "应用管理", "android.png") { AppManage() },
+        Page(3, "命令泛化", "code.png") { CommandGeneral() },
+        Page(4, "程序设置", "settings.png") { Settings() }
     )
     var curPage by remember {
         mutableStateOf(0)

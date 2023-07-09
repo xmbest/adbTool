@@ -31,12 +31,13 @@ import utils.GenerexUtils
 /**
  * 命令字生成页面
  */
+
+//全局变量，页面切换保留数据
+val text1 = mutableStateOf("")
+val text2 = mutableStateOf("")
 @Preview
 @Composable
 fun CommandGeneral() {
-
-    val text1 = remember { mutableStateOf("") }
-    val text2 = remember { mutableStateOf("") }
     val showingDialog = remember { mutableStateOf(false) }
     val dialogTitle = remember { mutableStateOf("警告") }
     val dialogTitleColor = remember { mutableStateOf(GOOGLE_RED) }
