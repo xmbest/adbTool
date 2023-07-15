@@ -24,7 +24,6 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation("com.github.mifmif:generex:1.0.2")
-                implementation("androidx.constraintlayout:constraintlayout-compose:1.1.0-beta02")
             }
         }
         val jvmTest by getting

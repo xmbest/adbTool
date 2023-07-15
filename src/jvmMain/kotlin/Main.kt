@@ -2,6 +2,8 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -11,10 +13,11 @@ import androidx.compose.ui.window.rememberWindowState
 import theme.GOOGLE_BLUE
 import config.window_height
 import config.window_width
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import pages.Route
-import pages.initAppList
+import status.appIsMinimized
 import utils.ListenDeviceUtil.Companion.listenDevices
-import utils.getDevices
 import java.awt.Dimension
 import java.awt.Toolkit
 
@@ -35,12 +38,22 @@ fun main() = application {
     val x: Double = screenSize.getWidth() / 2 - width / 2
     val y: Double = screenSize.getHeight() / 2 - height / 2
     val state = rememberWindowState(width = width.dp, height = height.dp, position = WindowPosition(x.dp, y.dp))
-    listenDevices()
     Window(
         onCloseRequest = ::exitApplication, title = "工具箱", state = state, icon = painterResource("logo.png")
     ) {
         App()
+        LaunchedEffect(state){
+            snapshotFlow { state.isMinimized }
+                .onEach(::onMinimized).launchIn(this)
+        }
     }
+}
+
+private fun onMinimized(isMinimized: Boolean) {
+    println(isMinimized)
+    appIsMinimized.value = isMinimized
+    if (!isMinimized)
+        listenDevices()
 }
 
 

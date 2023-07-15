@@ -4,20 +4,22 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import status.appIsMinimized
 import status.checkDevicesTime
 
 class ListenDeviceUtil {
-    companion object{
+    companion object {
 
         /**
          * 轮询查找当前连接设备
          */
         @OptIn(DelicateCoroutinesApi::class)
-        fun listenDevices(){
+        fun listenDevices() {
             GlobalScope.launch {
-                while (true){
+                //判断是否在前台
+                while (!appIsMinimized.value) {
                     getDevices()
-                    delay(1000*checkDevicesTime.value)
+                    delay(1000 * checkDevicesTime.value)
                 }
             }
         }

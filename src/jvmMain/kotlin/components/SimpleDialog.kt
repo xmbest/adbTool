@@ -26,6 +26,8 @@ fun SimpleDialog(
     title: String = "警告",
     titleColor: Color = GOOGLE_RED,
     text: String = "测试",
+    needRun:Boolean = false,
+    runnable: (() -> Unit )?=null,
     content: @Composable (() -> Unit) = {
         Column(
             modifier = Modifier.height(160.dp).width(320.dp).clip(RoundedCornerShape(5.dp))
@@ -44,10 +46,26 @@ fun SimpleDialog(
                 Button(
                     onClick = {
                         showingDialog.value = false
+                        if (needRun){
+                            println("needRun:$needRun")
+                            println(System.identityHashCode(runnable))
+                            runnable!!.invoke()
+                            println("needRun:$needRun")
+                        }
                     }, colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_BLUE),
                     modifier = Modifier.padding(end = 10.dp, top = 5.dp, bottom = 5.dp)
                 ) {
                     Text(text = "确定", color = Color.White)
+                }
+                if (needRun){
+                    Button(
+                        onClick = {
+                            showingDialog.value = false
+                        }, colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_RED),
+                        modifier = Modifier.padding(end = 10.dp, top = 5.dp, bottom = 5.dp)
+                    ) {
+                        Text(text = "取消", color = Color.White)
+                    }
                 }
             }
         }

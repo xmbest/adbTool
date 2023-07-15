@@ -39,20 +39,28 @@ fun Process.text(): String {
 /*
 * 执行adb命令
 * */
+//fun execute(cmd: String): String {
+//    if (cmd == "adb devices") {
+//        val process = cmd.execute()
+////        process.waitFor()
+//        return process.text()
+//    } else if (currentDevice.value.isEmpty()) {
+//        return "none"
+//    }
+//    println(cmd)
+//    val process = ("adb -s ${currentDevice.value} " + cmd).execute()
+////    process.waitFor()
+//    return process.text()
+//}
 
 
 fun execute(cmd: String): String {
     if (cmd == "adb devices") {
-        val process = cmd.execute()
-//        process.waitFor()
-        return process.text()
+        return BashUtils.execCommand(cmd)
     } else if (currentDevice.value.isEmpty()) {
         return "none"
     }
-    println(cmd)
-    val process = ("adb -s ${currentDevice.value} " + cmd).execute()
-//    process.waitFor()
-    return process.text()
+    return BashUtils.execCommand("adb -s ${currentDevice.value} " + cmd)
 }
 
 
@@ -62,6 +70,10 @@ fun shell(cmd: String): String {
 
 fun pull(srcPath: String, destPath: String): String {
     return execute("pull $srcPath $destPath")
+}
+
+fun root(): String {
+    return execute("root")
 }
 
 fun saveScreen(srcPath: String, destPath: String): String {
