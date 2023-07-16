@@ -3,7 +3,6 @@ package pages
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -51,11 +50,11 @@ fun FileManage() {
     } else {
         val scroll = rememberScrollState()
         Column(modifier = Modifier.fillMaxSize().verticalScroll(scroll).padding(10.dp, top = 0.dp)) {
-            val back = File("", defaultDir.value, "返回上级", "")
+            val back = File("", defaultDir.value, "返回上级", "",true)
             FileView(back) {
                 backParent()
             }
-            if (fileList.isEmpty()){
+            if (fileList.isEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxWidth().weight(1f),
                     verticalArrangement = Arrangement.Center,
@@ -63,7 +62,7 @@ fun FileManage() {
                 ) {
                     Text("没有找到文件", color = route_left_item_color)
                 }
-            }else{
+            } else {
                 fileList.forEach {
                     FileView(it)
                 }
@@ -109,7 +108,7 @@ fun FileView(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            painter = painterResource(if (file.isDir) "folder.png" else "file.png"),
+            painter = painterResource(getFileIcon(file.name, file.isDir)),
             "icon",
             tint = if (file.isDir) GOOGLE_BLUE else SIMPLE_GRAY,
             modifier = Modifier.size(36.dp)
@@ -237,10 +236,10 @@ fun initFile() {
 
 fun setSize(oldSize: String): String {
     var size = 0
-    try {
-        size = oldSize.toInt()
+    size = try {
+        oldSize.toInt()
     } catch (e: Exception) {
-        size = NumberValueUtil.getStrNumber(oldSize)
+        NumberValueUtil.getStrNumber(oldSize)
     }
     //获取到的size为：1705230
     val GB = 1024 * 1024 * 1024 //定义GB的计算常量
@@ -261,4 +260,28 @@ fun setSize(oldSize: String): String {
         size.toString() + "B   "
     }
     return resultSize
+}
+
+fun getFileIcon(fileName: String, isDir: Boolean): String {
+    return if (isDir) "folder.png"
+    else if (fileName.endsWith(".apk"))
+        "android.png"
+    else if (fileName.endsWith(".jar"))
+        "java.png"
+    else if (fileName.endsWith(".json"))
+        "json.png"
+    else if (fileName.endsWith(".so"))
+        "dependency.png"
+    else if (fileName.endsWith(".cfg")||fileName.endsWith(".conf"))
+        "settings.png"
+    else if (fileName.endsWith(".txt") || fileName.endsWith(".xml"))
+        "file-text.png"
+    else if (fileName.endsWith(".png") || fileName.endsWith(".jpg"))
+        "file-image.png"
+    else if (fileName.endsWith(".zip") || fileName.endsWith(".tar") || fileName.endsWith(".gz") || fileName.endsWith(".7z"))
+        "file-zip.png"
+    else if (fileName.endsWith(".mp3") || fileName.endsWith(".wav"))
+        "music.png"
+    else
+        "file.png"
 }
