@@ -1,5 +1,6 @@
 package pages
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -10,25 +11,33 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import components.SimpleDialog
 import config.route_left_item_color
+import config.route_right_background
 import entity.App
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import status.currentDevice
 import theme.GOOGLE_BLUE
+import theme.GOOGLE_GREEN
 import theme.GOOGLE_RED
+import theme.GOOGLE_YELLOW
+import utils.ClipboardUtil
 import utils.shell
 
 val appList = mutableStateListOf<String>()
+val checkedList = mutableStateListOf<Boolean>()
 val keyword = mutableStateOf("")
 val systemApp = mutableStateOf(false)
-
+val showingDialog = mutableStateOf(false)
 @Composable
 fun AppManage() {
-    if (appList.isEmpty())
-        initAppList()
     if (currentDevice.value.isEmpty()) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -38,33 +47,30 @@ fun AppManage() {
             Text("请先连接设备")
         }
     } else {
+        if (appList.isEmpty()) initAppList()
         val scroll = rememberScrollState()
-        Column(modifier = Modifier.fillMaxSize().fillMaxHeight().padding(10.dp).verticalScroll(scroll)) {
+        Column(
+            modifier = Modifier.fillMaxSize().fillMaxHeight().background(route_right_background).padding(10.dp)
+                .verticalScroll(scroll)
+        ) {
             Row(modifier = Modifier.fillMaxWidth()) {
-                TextField(
-                    keyword.value,
+                TextField(keyword.value,
                     trailingIcon = {
-                        if (keyword.value.isNotBlank())
-                            Icon(
-                                Icons.Default.Close,
-                                null,
-                                modifier = Modifier.width(20.dp).height(20.dp).clickable {
-                                    keyword.value = ""
-                                },
-                                tint = route_left_item_color
-                            )
+                        if (keyword.value.isNotBlank()) Icon(
+                            Icons.Default.Close, null, modifier = Modifier.width(20.dp).height(20.dp).clickable {
+                                keyword.value = ""
+                            }, tint = route_left_item_color
+                        )
                     },
                     placeholder = { Text("keyword") },
                     onValueChange = { keyword.value = it },
                     modifier = Modifier.weight(1f).height(48.dp).padding(end = 10.dp)
                 )
-                Text(
-                    text = "系统应用",
+                Text(text = "系统应用",
                     color = route_left_item_color,
                     modifier = Modifier.align(Alignment.CenterVertically).clickable {
                         systemApp.value = !systemApp.value
-                    }
-                )
+                    })
                 Checkbox(
                     systemApp.value,
                     onCheckedChange = { systemApp.value = it },
@@ -74,33 +80,96 @@ fun AppManage() {
                     Text(text = "刷新")
                 }
                 Button(
-                    onClick = { },
+                    onClick = {
+                        checkedList.forEach{
+                            println(it)
+                        }
+                    },
                     modifier = Modifier.fillMaxHeight().padding(start = 4.dp),
                     colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_RED)
                 ) {
                     Text(text = "卸载", color = Color.White)
                 }
             }
-            appList.forEach {
-                Text(it)
+            for (i in 0 until appList.size){
+                AppItem(appList[i],i)
             }
+            if (showingDialog.value)
+                SimpleDialog(showingDialog)
         }
 
     }
 }
 
-fun initAppList() {
-    appList.clear()
-    val cmd =
-        "\"pm list packages" + if (systemApp.value) "" else " -3" + if (keyword.value.isEmpty()) "" else " | grep ${keyword.value}" + "\""
-    val packages = shell(cmd)
-    val split = packages.trim().split("\n")
-    split.forEach {
-        appList.add(it.substring(8))
+
+@Composable
+fun AppItem(str: String,i:Int) {
+    Row(
+        modifier = Modifier.height(80.dp).fillMaxWidth().padding(8.dp).background(Color.White),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(modifier = Modifier.fillMaxWidth().weight(1f), verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(checkedList[i], onCheckedChange = { checkedList[i] = it}, colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE))
+            Icon(painter = painterResource("android.png"), null, tint = GOOGLE_GREEN, modifier = Modifier.size(40.dp))
+            val index = str.lastIndexOf("=")
+            val packageName = str.substring(index + 1)
+            val path = str.substring(0, index)
+            Column(modifier = Modifier.fillMaxHeight().weight(1f), verticalArrangement = Arrangement.Center) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("packageName:$packageName")
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Icon(painter = painterResource("copy.png"), null, modifier = Modifier.size(15.dp).clickable {
+                        ClipboardUtil.setSysClipboardText(packageName)
+                    }, tint = route_left_item_color)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("path:$path")
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Icon(painter = painterResource("copy.png"), null, modifier = Modifier.size(15.dp).clickable {
+                        ClipboardUtil.setSysClipboardText(path)
+                    }, tint = route_left_item_color)
+                }
+            }
+        }
+        Button(onClick = {}) {
+            Icon(painter = painterResource("eye.png"), "详情", tint = Color.White, modifier = Modifier.size(16.dp))
+            Text("详情", color = Color.White)
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Button(onClick = {}, colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_YELLOW)) {
+            Icon(
+                painter = painterResource("clear.png"), "清除数据", tint = Color.White, modifier = Modifier.size(16.dp)
+            )
+            Text("清除", color = Color.White)
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Button(onClick = {
+            showingDialog.value = true
+        }, colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_RED)) {
+            Icon(painter = painterResource("delete.png"), "卸载", tint = Color.White, modifier = Modifier.size(16.dp))
+            Text("卸载", color = Color.White)
+        }
     }
 }
 
-fun getPath(packageName: String): App? {
+fun initAppList() {
+    appList.clear()
+    checkedList.clear()
+    var cmd = "\"pm list packages -f"
+    cmd += if (systemApp.value) "" else " -3"
+    cmd += if (keyword.value.isEmpty()) "" else " | grep ${keyword.value}"
+    cmd += "\""
+//    val cmd = "\"pm dump * | grep -E 'Package |version|codePath'\""
+    val packages = shell(cmd)
+    println(packages)
+    val split = packages.trim().split("\n").map { it.substring(8) }
+    split.forEach {
+        appList.add(it)
+        checkedList.add(false)
+    }
+}
+
+fun getDetails(packageName: String): App? {
     val shell = shell("\"pm dump packageName | grep version\"")
     val map = extractAppInfo(shell)
     var app: App? = null
@@ -124,39 +193,3 @@ fun extractAppInfo(input: String): Map<String, String> {
     }
     return map
 }
-//
-//@Composable
-//fun AppItem() {
-//    ConstraintLayout(
-//        modifier = Modifier
-//            .height(100.dp)
-//            .fillMaxWidth()
-//            .background(Color.Yellow)
-//    ) {
-//        val (icon, primaryText, secondlyText, checkBox) = createRefs()
-//
-//        Icon(
-//            imageVector = Icons.Default.AccountBox,
-//            contentDescription = null,
-//            modifier = Modifier.constrainAs(icon) {
-//                top.linkTo(parent.top)
-//                start.linkTo(parent.start, margin = 8.dp)
-//                bottom.linkTo(parent.bottom)
-//            })
-//
-//        Text(
-//            "Primary Text",
-//            fontSize = 25.sp,
-//            fontWeight = FontWeight.Bold,
-//            modifier = Modifier.constrainAs(primaryText) {
-//                start.linkTo(icon.end, margin = 8.dp)
-//                top.linkTo(parent.top)
-//            })
-//
-//        Text("secondly text", modifier = Modifier.constrainAs(secondlyText) {
-//            start.linkTo(primaryText.start)
-//            top.linkTo(primaryText.top)
-//            bottom.linkTo(parent.bottom)
-//        })
-//    }
-//}

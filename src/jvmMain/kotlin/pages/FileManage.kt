@@ -134,7 +134,7 @@ fun FileView(
         }
         if (file.name.isNotBlank()) {
             Icon(
-                painter = painterResource("home.png"),
+                painter = painterResource("copy.png"),
                 "icon",
                 tint = GOOGLE_BLUE,
                 modifier = Modifier.size(50.dp).clickable {
@@ -147,9 +147,9 @@ fun FileView(
             )
             Spacer(modifier = Modifier.width(5.dp))
             Icon(
-                painter = painterResource("home.png"),
+                painter = painterResource("download.png"),
                 "icon",
-                tint = GOOGLE_GREEN,
+                tint = GOOGLE_BLUE,
                 modifier = Modifier.size(50.dp).clickable {
                     JFileChooser().apply {
                         fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
@@ -167,7 +167,7 @@ fun FileView(
             )
             Spacer(modifier = Modifier.width(5.dp))
             Icon(
-                painter = painterResource("home.png"),
+                painter = painterResource("delete.png"),
                 "icon",
                 tint = GOOGLE_RED,
                 modifier = Modifier.size(50.dp).clickable {
@@ -280,7 +280,7 @@ fun getFileIcon(fileName: String, isDir: Boolean): String {
         "file-image.png"
     else if (fileName.endsWith(".zip") || fileName.endsWith(".tar") || fileName.endsWith(".gz") || fileName.endsWith(".7z"))
         "file-zip.png"
-    else if (fileName.endsWith(".mp3") || fileName.endsWith(".wav"))
+    else if (fileName.endsWith(".mp3") || fileName.endsWith(".wav") || fileName.endsWith(".rf"))
         "music.png"
     else
         "file.png"

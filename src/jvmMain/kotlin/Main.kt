@@ -50,7 +50,7 @@ fun main() = application {
 }
 
 private fun onMinimized(isMinimized: Boolean) {
-    println(isMinimized)
+    println("最小化：$isMinimized")
     appIsMinimized.value = isMinimized
     if (!isMinimized)
         listenDevices()

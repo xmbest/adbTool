@@ -30,7 +30,7 @@ fun Route() {
         Page(4, "程序设置", "settings.png") { Settings() }
     )
     var curPage by remember {
-        mutableStateOf(0)
+        mutableStateOf(2)
     }
     var expanded by remember {
         mutableStateOf(false)

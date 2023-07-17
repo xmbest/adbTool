@@ -28,9 +28,11 @@ fun SimpleDialog(
     text: String = "测试",
     needRun:Boolean = false,
     runnable: (() -> Unit )?=null,
+    width:Int = 320,
+    height:Int = 160,
     content: @Composable (() -> Unit) = {
         Column(
-            modifier = Modifier.height(160.dp).width(320.dp).clip(RoundedCornerShape(5.dp))
+            modifier = Modifier.height(height.dp).width(width.dp).clip(RoundedCornerShape(5.dp))
         ) {
             Row(modifier = Modifier.fillMaxWidth().padding(5.dp).clip(RoundedCornerShape(5.dp))) {
                 Text(color = titleColor, text = title, fontSize = 14.sp, modifier = Modifier.padding(start = 4.dp))
