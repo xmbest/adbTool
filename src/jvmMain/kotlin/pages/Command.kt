@@ -20,6 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import components.SimpleDialog
+import components.Toast
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import theme.GOOGLE_BLUE
 import theme.GOOGLE_GREEN
 import theme.GOOGLE_RED
@@ -35,6 +40,8 @@ import utils.GenerexUtils
 //全局变量，页面切换保留数据
 val text1 = mutableStateOf("")
 val text2 = mutableStateOf("")
+
+@OptIn(DelicateCoroutinesApi::class)
 @Preview
 @Composable
 fun CommandGeneral() {
@@ -42,38 +49,83 @@ fun CommandGeneral() {
     val dialogTitle = remember { mutableStateOf("警告") }
     val dialogTitleColor = remember { mutableStateOf(GOOGLE_RED) }
     val dialogText = remember { mutableStateOf("") }
+    val toastText = remember { mutableStateOf("") }
+    val showToast = remember { mutableStateOf(false) }
+    val currentToastId = remember { mutableStateOf(0) }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-            CommandText(str = text1, hint = "输入正则表达式")
-        }
-        Row(modifier = Modifier.fillMaxWidth()) {
-            CommandButton("生成") {
-                try {
-                    text2.value = GenerexUtils.generateAll(text1.value)
-                } catch (_: Exception) {
-                    dialogTitle.value = "警告"
-                    dialogTitleColor.value = GOOGLE_RED
-                    dialogText.value = "请检查正则格式是否正确!!!"
-                    showingDialog.value = true
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                CommandText(str = text1, hint = "输入正则表达式")
+            }
+            Row(modifier = Modifier.fillMaxWidth()) {
+                CommandButton("生成") {
+                    try {
+                        if (text1.value.isBlank()) {
+                            if (!showToast.value) {
+                                showToast.value = true
+                                currentToastId.value = 1
+                                toastText.value = "内容不可空"
+                            } else {
+                                if (currentToastId.value == 1)
+                                    return@CommandButton
+                                GlobalScope.launch{
+                                    delay(1000)
+                                    showToast.value = true
+                                    currentToastId.value = 1
+                                    toastText.value = "内容不可空"
+                                }
+
+                            }
+                            return@CommandButton
+                        }
+                        text2.value = GenerexUtils.generateAll(text1.value)
+                    } catch (_: Exception) {
+                        dialogTitle.value = "警告"
+                        dialogTitleColor.value = GOOGLE_RED
+                        dialogText.value = "请检查正则格式是否正确!!!"
+                        showingDialog.value = true
+                    }
+                }
+                CommandButton("粘贴", backgroundColor = GOOGLE_GREEN) {
+                    text1.value = ClipboardUtil.getSysClipboardText()
+                }
+                CommandButton("复制", backgroundColor = GOOGLE_YELLOW) {
+                    if (text2.value.isBlank())
+                        return@CommandButton
+                    ClipboardUtil.setSysClipboardText(text2.value)
+                    if (!showToast.value) {
+                        showToast.value = true
+                        currentToastId.value = 2
+                        toastText.value = "结果已复制"
+                    } else {
+                        if (currentToastId.value == 2)
+                            return@CommandButton
+                        GlobalScope.launch {
+                            delay(1000)
+                            showToast.value = true
+                            currentToastId.value = 2
+                            toastText.value = "结果已复制"
+                        }
+                    }
+                }
+                CommandButton("清空", backgroundColor = GOOGLE_RED) {
+                    text1.value = ""
+                    text2.value = ""
                 }
             }
-            CommandButton("粘贴", backgroundColor = GOOGLE_GREEN) {
-                text1.value = ClipboardUtil.getSysClipboardText()
+            Row(modifier = Modifier.fillMaxWidth().weight(2f)) {
+                CommandText(str = text2, hint = "结果")
             }
-            CommandButton("复制", backgroundColor = GOOGLE_YELLOW) {
-                ClipboardUtil.setSysClipboardText(text2.value)
-            }
-            CommandButton("清空", backgroundColor = GOOGLE_RED) {
-                text1.value = ""
-                text2.value = ""
-            }
+            if (showingDialog.value)
+                SimpleDialog(
+                    showingDialog,
+                    title = dialogTitle.value,
+                    titleColor = dialogTitleColor.value,
+                    text = dialogText.value
+                )
         }
-        Row(modifier = Modifier.fillMaxWidth().weight(2f)) {
-            CommandText(str = text2, hint = "结果")
-        }
-        if (showingDialog.value)
-            SimpleDialog(showingDialog, title = dialogTitle.value, titleColor = dialogTitleColor.value, text = dialogText.value)
+        Toast(showToast, toastText)
     }
 }
 

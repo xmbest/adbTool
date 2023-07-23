@@ -58,7 +58,7 @@ fun execute(cmd: String): String {
     if (cmd == "adb devices") {
         return BashUtils.execCommand(cmd)
     } else if (currentDevice.value.isEmpty()) {
-        return "none"
+        return ""
     }
     return BashUtils.execCommand("adb -s ${currentDevice.value} " + cmd)
 }

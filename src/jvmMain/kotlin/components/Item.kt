@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import config.*
+import status.currentDevice
 
 @Composable
 fun Item(icon: String, label: String, runnable: () -> String = {
@@ -25,9 +26,10 @@ fun Item(icon: String, label: String, runnable: () -> String = {
         modifier = Modifier.height(item_height).width(item_width)
             .clip(RoundedCornerShape(item_clicked_rounded))
             .clickable {
-                if (runnable() == "none"){
+                if (currentDevice.value.isBlank()){
                     showingDialog.value = true
                 }
+                runnable()
             }
     ) {
         Icon(
