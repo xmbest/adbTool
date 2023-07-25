@@ -28,6 +28,7 @@ fun Toast(
     text: MutableState<String>,
     showTime: Long = 1000,
     background: Color = route_left_background,
+    textColor:Color = route_left_item_color,
     close:Boolean = false
 ) {
     if (showToast.value) {
@@ -38,7 +39,7 @@ fun Toast(
                         background
                     ).padding(start = 20.dp, end = 20.dp)
                 ) {
-                    Text(text = text.value, color = route_left_item_color)
+                    Text(text = text.value, color = textColor)
                     if (close){
                         Text(text = "关闭", color = GOOGLE_BLUE, modifier = Modifier.clickable {
                             showToast.value = false

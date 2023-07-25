@@ -72,6 +72,10 @@ fun pull(srcPath: String, destPath: String): String {
     return execute("pull $srcPath $destPath")
 }
 
+fun push(srcPath: String, destPath: String): String {
+    return execute("push $srcPath $destPath")
+}
+
 fun root(): String {
     return execute("root")
 }

@@ -1,10 +1,11 @@
 package pages
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -36,6 +37,9 @@ val checkedList = mutableStateListOf<Boolean>()
 val keyword = mutableStateOf("")
 val systemApp = mutableStateOf(false)
 val showingDialog = mutableStateOf(false)
+val first = mutableStateOf(true)
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AppManage() {
     if (currentDevice.value.isEmpty()) {
@@ -47,52 +51,57 @@ fun AppManage() {
             Text("请先连接设备")
         }
     } else {
-        if (appList.isEmpty()) initAppList()
-        val scroll = rememberScrollState()
+        if (appList.isEmpty() && first.value) {
+            initAppList()
+        }
         Column(
             modifier = Modifier.fillMaxSize().fillMaxHeight().background(route_right_background).padding(10.dp)
-                .verticalScroll(scroll)
         ) {
-            Row(modifier = Modifier.fillMaxWidth()) {
-                TextField(keyword.value,
-                    trailingIcon = {
-                        if (keyword.value.isNotBlank()) Icon(
-                            Icons.Default.Close, null, modifier = Modifier.width(20.dp).height(20.dp).clickable {
-                                keyword.value = ""
-                            }, tint = route_left_item_color
+            LazyColumn {
+                stickyHeader {
+                    Row(modifier = Modifier.fillMaxWidth().background(Color.White)) {
+                        TextField(
+                            keyword.value,
+                            trailingIcon = {
+                                if (keyword.value.isNotBlank()) Icon(
+                                    Icons.Default.Close, null, modifier = Modifier.width(20.dp).height(20.dp).clickable {
+                                        keyword.value = ""
+                                    }, tint = route_left_item_color
+                                )
+                            },
+                            placeholder = { Text("keyword") },
+                            onValueChange = { keyword.value = it },
+                            modifier = Modifier.weight(1f).height(48.dp).padding(end = 10.dp)
                         )
-                    },
-                    placeholder = { Text("keyword") },
-                    onValueChange = { keyword.value = it },
-                    modifier = Modifier.weight(1f).height(48.dp).padding(end = 10.dp)
-                )
-                Text(text = "系统应用",
-                    color = route_left_item_color,
-                    modifier = Modifier.align(Alignment.CenterVertically).clickable {
-                        systemApp.value = !systemApp.value
-                    })
-                Checkbox(
-                    systemApp.value,
-                    onCheckedChange = { systemApp.value = it },
-                    colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE)
-                )
-                Button(onClick = { initAppList() }, modifier = Modifier.fillMaxHeight()) {
-                    Text(text = "刷新")
-                }
-                Button(
-                    onClick = {
-                        checkedList.forEach{
-                            println(it)
+                        Text(text = "系统应用",
+                            color = route_left_item_color,
+                            modifier = Modifier.align(Alignment.CenterVertically).clickable {
+                                systemApp.value = !systemApp.value
+                            })
+                        Checkbox(
+                            systemApp.value,
+                            onCheckedChange = { systemApp.value = it },
+                            colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE)
+                        )
+                        Button(onClick = { initAppList() }, modifier = Modifier.fillMaxHeight()) {
+                            Text(text = "刷新")
                         }
-                    },
-                    modifier = Modifier.fillMaxHeight().padding(start = 4.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_RED)
-                ) {
-                    Text(text = "卸载", color = Color.White)
+                        Button(
+                            onClick = {
+                                checkedList.forEach {
+                                    println(it)
+                                }
+                            },
+                            modifier = Modifier.fillMaxHeight().padding(start = 4.dp),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_RED)
+                        ) {
+                            Text(text = "卸载", color = Color.White)
+                        }
+                    }
                 }
-            }
-            for (i in 0 until appList.size){
-                AppItem(appList[i],i)
+                itemsIndexed(appList){index, item ->
+                    AppItem(item,index)
+                }
             }
             if (showingDialog.value)
                 SimpleDialog(showingDialog)
@@ -103,13 +112,17 @@ fun AppManage() {
 
 
 @Composable
-fun AppItem(str: String,i:Int) {
+fun AppItem(str: String, i: Int) {
     Row(
         modifier = Modifier.height(80.dp).fillMaxWidth().padding(8.dp).background(Color.White),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(modifier = Modifier.fillMaxWidth().weight(1f), verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(checkedList[i], onCheckedChange = { checkedList[i] = it}, colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE))
+            Checkbox(
+                checkedList[i],
+                onCheckedChange = { checkedList[i] = it },
+                colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE)
+            )
             Icon(painter = painterResource("android.png"), null, tint = GOOGLE_GREEN, modifier = Modifier.size(40.dp))
             val index = str.lastIndexOf("=")
             val packageName = str.substring(index + 1)
@@ -153,6 +166,9 @@ fun AppItem(str: String,i:Int) {
 }
 
 fun initAppList() {
+    if (first.value) {
+        first.value = false;
+    }
     appList.clear()
     checkedList.clear()
     var cmd = "\"pm list packages -f"

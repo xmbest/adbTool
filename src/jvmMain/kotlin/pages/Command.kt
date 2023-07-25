@@ -21,6 +21,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import components.SimpleDialog
 import components.Toast
+import config.route_left_background
+import config.route_left_item_color
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -52,6 +54,8 @@ fun CommandGeneral() {
     val toastText = remember { mutableStateOf("") }
     val showToast = remember { mutableStateOf(false) }
     val currentToastId = remember { mutableStateOf(0) }
+    val toastBgColor = remember { mutableStateOf(route_left_background) }
+    val toastTextColor = remember { mutableStateOf(route_left_item_color) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
@@ -63,17 +67,17 @@ fun CommandGeneral() {
                     try {
                         if (text1.value.isBlank()) {
                             if (!showToast.value) {
-                                showToast.value = true
                                 currentToastId.value = 1
                                 toastText.value = "内容不可空"
+                                showToast.value = true
                             } else {
                                 if (currentToastId.value == 1)
                                     return@CommandButton
                                 GlobalScope.launch{
                                     delay(1000)
-                                    showToast.value = true
                                     currentToastId.value = 1
                                     toastText.value = "内容不可空"
+                                    showToast.value = true
                                 }
 
                             }
@@ -95,23 +99,39 @@ fun CommandGeneral() {
                         return@CommandButton
                     ClipboardUtil.setSysClipboardText(text2.value)
                     if (!showToast.value) {
-                        showToast.value = true
                         currentToastId.value = 2
                         toastText.value = "结果已复制"
+                        showToast.value = true
                     } else {
                         if (currentToastId.value == 2)
                             return@CommandButton
                         GlobalScope.launch {
                             delay(1000)
-                            showToast.value = true
                             currentToastId.value = 2
                             toastText.value = "结果已复制"
+                            showToast.value = true
                         }
                     }
                 }
                 CommandButton("清空", backgroundColor = GOOGLE_RED) {
+                    if (text2.value.isBlank() && text1.value.isBlank())
+                        return@CommandButton
                     text1.value = ""
                     text2.value = ""
+                    if (!showToast.value) {
+                        currentToastId.value = 3
+                        toastText.value = "内容已清空"
+                        showToast.value = true
+                    } else {
+                        if (currentToastId.value == 3)
+                            return@CommandButton
+                        GlobalScope.launch {
+                            delay(1000)
+                            currentToastId.value = 3
+                            toastText.value = "内容已清空"
+                            showToast.value = true
+                        }
+                    }
                 }
             }
             Row(modifier = Modifier.fillMaxWidth().weight(2f)) {
@@ -125,7 +145,7 @@ fun CommandGeneral() {
                     text = dialogText.value
                 )
         }
-        Toast(showToast, toastText)
+        Toast(showToast, toastText, background = toastBgColor.value, textColor = toastTextColor.value)
     }
 }
 

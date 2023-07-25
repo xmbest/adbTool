@@ -49,10 +49,7 @@ fun SimpleDialog(
                     onClick = {
                         showingDialog.value = false
                         if (needRun){
-                            println("needRun:$needRun")
-                            println(System.identityHashCode(runnable))
                             runnable!!.invoke()
-                            println("needRun:$needRun")
                         }
                     }, colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_BLUE),
                     modifier = Modifier.padding(end = 10.dp, top = 5.dp, bottom = 5.dp)

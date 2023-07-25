@@ -2,6 +2,9 @@ package pages
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -18,13 +21,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import components.SimpleDialog
+import components.Toast
+import config.route_left_background
 import config.route_left_item_color
 import entity.File
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import status.currentDevice
-import theme.GOOGLE_BLUE
-import theme.GOOGLE_GREEN
-import theme.GOOGLE_RED
-import theme.SIMPLE_GRAY
+import theme.*
 import utils.*
 import java.text.DecimalFormat
 import javax.swing.JFileChooser
@@ -32,7 +37,10 @@ import javax.swing.JFileChooser
 
 val fileList = mutableStateListOf<File>()
 val defaultDir = mutableStateOf("/sdcard/")
-
+val toastText = mutableStateOf("")
+val showToast = mutableStateOf(false)
+val currentToastId =  mutableStateOf(0)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileManage() {
     if (fileList.isEmpty() && defaultDir.value == "/sdcard/") {
@@ -48,26 +56,32 @@ fun FileManage() {
             Text("请先连接设备")
         }
     } else {
-        val scroll = rememberScrollState()
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(scroll).padding(10.dp, top = 0.dp)) {
-            val back = File("", defaultDir.value, "返回上级", "",true)
-            FileView(back) {
-                backParent()
-            }
-            if (fileList.isEmpty()) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("没有找到文件", color = route_left_item_color)
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize().padding(10.dp, top = 0.dp)) {
+                val back = File("", defaultDir.value, "返回上级", "", true)
+                LazyColumn {
+                    stickyHeader {
+                        Row(modifier = Modifier.background(Color.White)) {
+                            FileView(back) {
+                                backParent()
+                            }
+                        }
+                    }
+                    items(fileList) {
+                        FileView(it)
+                    }
                 }
-            } else {
-                fileList.forEach {
-                    FileView(it)
+                if (fileList.isEmpty()) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("没有找到文件", color = route_left_item_color)
+                    }
                 }
             }
-
+            Toast(showToast, toastText)
         }
     }
 }
@@ -134,33 +148,87 @@ fun FileView(
         }
         if (file.name.isNotBlank()) {
             Icon(
-                painter = painterResource("copy.png"),
+                painter = painterResource("link.png"),
                 "icon",
                 tint = GOOGLE_BLUE,
                 modifier = Modifier.size(50.dp).clickable {
                     ClipboardUtil.setSysClipboardText(defaultDir.value + file.name)
-                    title.value = "提示"
-                    titleColor.value = GOOGLE_GREEN
-                    dialogText.value = "路径复制成功"
-                    showingDialog.value = true
+                    if (!showToast.value) {
+                        showToast.value = true
+                        currentToastId.value = 1
+                        toastText.value = "路径复制成功"
+                    }else{
+                        if (currentToastId.value == 1)
+                            return@clickable
+                        GlobalScope.launch {
+                            delay(1000)
+                            showToast.value = true
+                            currentToastId.value = 1
+                            toastText.value = "路径复制成功"
+                        }
+                    }
+                }.padding(10.dp)
+            )
+            Spacer(modifier = Modifier.width(5.dp))
+            Icon(
+                painter = painterResource("upload.png"),
+                "icon",
+                tint = GOOGLE_GREEN,
+                modifier = Modifier.size(50.dp).clickable {
+                    JFileChooser().apply {
+                        showOpenDialog(ComposeWindow())
+                        val path = selectedFile?.absolutePath ?: ""
+                        if (path.isNotBlank()) {
+                            val path1 = path.substring(path.lastIndexOf("\\") + 1,path.length)
+                            title.value = "警告"
+                            titleColor.value = GOOGLE_RED
+                            dialogText.value = "是否把文件$path1 push到 ${file.name}"
+                            needRun.value = true
+                            run.value = {
+                                GlobalScope.launch {
+                                    push(path,defaultDir.value + file.name)
+                                    initFile()
+                                }
+                                if (!showToast.value) {
+                                    showToast.value = true
+                                    currentToastId.value = 2
+                                    toastText.value = "文件push成功"
+                                    run.value = {}
+                                }
+                            }
+                            showingDialog.value = true
+                        }
+                    }
                 }.padding(10.dp)
             )
             Spacer(modifier = Modifier.width(5.dp))
             Icon(
                 painter = painterResource("download.png"),
                 "icon",
-                tint = GOOGLE_BLUE,
+                tint = GOOGLE_YELLOW,
                 modifier = Modifier.size(50.dp).clickable {
                     JFileChooser().apply {
                         fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
                         showOpenDialog(ComposeWindow())
                         val path = selectedFile?.absolutePath ?: ""
                         if (path.isNotBlank()) {
-                            pull(defaultDir.value + file.name, "$path\\")
-                            title.value = "提示"
-                            titleColor.value = GOOGLE_GREEN
-                            dialogText.value = "文件已保存到$path"
-                            showingDialog.value = true
+                            GlobalScope.launch {
+                                pull(defaultDir.value + file.name, "$path\\${file.name}")
+                            }
+                            if (!showToast.value) {
+                                showToast.value = true
+                                currentToastId.value = 3
+                                toastText.value = "文件已保存到$path"
+                            }else{
+                                if (currentToastId.value == 3)
+                                    return@clickable
+                                GlobalScope.launch {
+                                    delay(1000)
+                                    showToast.value = true
+                                    currentToastId.value = 3
+                                    toastText.value = "文件已保存到$path"
+                                }
+                            }
                         }
                     }
                 }.padding(10.dp)
@@ -177,22 +245,49 @@ fun FileView(
                     rm.value = defaultDir.value + file.name
                     needRun.value = true
                     run.value = {
-                        shell("rm -rf ${rm.value}")
-                        title.value = "提示"
-                        titleColor.value = GOOGLE_GREEN
-                        dialogText.value = "${rm.value}已删除"
-                        run.value = {
+                        GlobalScope.launch {
+                            shell("rm -rf ${rm.value}")
                             initFile()
-                            needRun.value = false
+                        }
+                        if (!showToast.value) {
+                            showToast.value = true
+                            currentToastId.value = 3
+                            toastText.value = "${rm.value}已删除"
                             run.value = {}
                         }
-                        showingDialog.value = true
                     }
                     showingDialog.value = true
                 }.padding(10.dp)
             )
             Spacer(modifier = Modifier.width(15.dp))
         } else {
+            Icon(painter = painterResource("upload.png"), null, modifier = Modifier.size(50.dp).clickable {
+                JFileChooser().apply {
+                    showOpenDialog(ComposeWindow())
+                    val path = selectedFile?.absolutePath ?: ""
+                    if (path.isNotBlank()) {
+                        val path1 = path.substring(path.lastIndexOf("\\") + 1,path.length)
+                        title.value = "警告"
+                        titleColor.value = GOOGLE_RED
+                        dialogText.value = "是否把文件$path1 push到 ${defaultDir.value}"
+                        needRun.value = true
+                        run.value = {
+                            GlobalScope.launch {
+                                push(path,defaultDir.value + path1)
+                                initFile()
+                            }
+                            if (!showToast.value) {
+                                showToast.value = true
+                                currentToastId.value = 2
+                                toastText.value = "文件push成功"
+                                run.value = {}
+                            }
+                        }
+                        showingDialog.value = true
+                    }
+                }
+            }.padding(10.dp), tint = GOOGLE_BLUE)
+            Spacer(modifier = Modifier.width(10.dp))
             Icon(painter = painterResource("back.png"), null, modifier = Modifier.size(50.dp).clickable {
                 backParent()
             }.padding(10.dp), tint = GOOGLE_BLUE)
@@ -272,7 +367,7 @@ fun getFileIcon(fileName: String, isDir: Boolean): String {
         "json.png"
     else if (fileName.endsWith(".so"))
         "dependency.png"
-    else if (fileName.endsWith(".cfg")||fileName.endsWith(".conf"))
+    else if (fileName.endsWith(".cfg") || fileName.endsWith(".conf"))
         "settings.png"
     else if (fileName.endsWith(".txt") || fileName.endsWith(".xml"))
         "file-text.png"
