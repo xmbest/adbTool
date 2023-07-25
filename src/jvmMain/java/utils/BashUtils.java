@@ -6,7 +6,7 @@ import java.util.List;
 
 public class BashUtils {
 
-    private static final String dir = "C:\\Users";
+    public static final String dir = System.getProperty("user.home") + "/Desktop";
 
     public static String execCommand(String command) throws IOException, InterruptedException {
         return execCommand(command, dir);

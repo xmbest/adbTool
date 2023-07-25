@@ -35,7 +35,7 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb,TargetFormat.Exe)
-            packageName = "adbTool"
+            packageName = "ADBTool"
             packageVersion = "1.0.0"
             windows{
                 // a version for all Windows distributables
@@ -54,7 +54,7 @@ compose.desktop {
                 // a version only for the pkg package
                 pkgPackageVersion = "1.0.0"
                 // 显示在菜单栏、“关于”菜单项、停靠栏等中的应用程序名称
-                dockName = "NCMusicDesktop"
+                dockName = "ADBTool"
                 // a build version for all macOS distributables
                 packageBuildVersion = "1.0.0"
                 // a build version only for the dmg package

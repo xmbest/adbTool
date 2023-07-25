@@ -39,7 +39,7 @@ fun main() = application {
     val y: Double = screenSize.getHeight() / 2 - height / 2
     val state = rememberWindowState(width = width.dp, height = height.dp, position = WindowPosition(x.dp, y.dp))
     Window(
-        onCloseRequest = ::exitApplication, title = "工具箱", state = state, icon = painterResource("logo.png")
+        onCloseRequest = ::exitApplication, title = "ADBTool", state = state, icon = painterResource("logo.png")
     ) {
         App()
         LaunchedEffect(state){
