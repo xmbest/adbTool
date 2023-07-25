@@ -29,16 +29,16 @@ fun SimpleDialog(
     needRun:Boolean = false,
     runnable: (() -> Unit )?=null,
     width:Int = 320,
-    height:Int = 160,
+    height:Int = 220,
     content: @Composable (() -> Unit) = {
         Column(
             modifier = Modifier.height(height.dp).width(width.dp).clip(RoundedCornerShape(5.dp))
         ) {
             Row(modifier = Modifier.fillMaxWidth().padding(5.dp).clip(RoundedCornerShape(5.dp))) {
-                Text(color = titleColor, text = title, fontSize = 14.sp, modifier = Modifier.padding(start = 4.dp))
+                Text(color = titleColor, text = title, fontSize = 16.sp, modifier = Modifier.padding(start = 4.dp))
             }
-            Row(modifier = Modifier.fillMaxWidth().weight(1f).padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(color = Color.Gray, text = text, fontSize = 16.sp, modifier = Modifier)
+            Row(modifier = Modifier.fillMaxWidth().weight(1f).padding(5.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(color = Color.Gray, text = "    ${text}", fontSize = 16.sp, modifier = Modifier)
             }
             Row(
                 verticalAlignment = Alignment.Bottom,

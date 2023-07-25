@@ -89,6 +89,14 @@ fun saveScreen(srcPath: String, destPath: String): String {
     return shell("rm -rf $srcPath/screen_$formattedDateTime.png")
 }
 
+fun uninstall(packageName:String): String {
+    return shell("pm uninstall $packageName")
+}
+
+fun clear(packageName:String):String{
+    return shell("pm clear $packageName")
+}
+
 
 /**
  * @Description： 获取设备列表

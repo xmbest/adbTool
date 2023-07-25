@@ -147,6 +147,21 @@ fun FileView(
             }
         }
         if (file.name.isNotBlank()) {
+            TooltipArea(tooltip = {
+                Text("重命名")
+            }){
+                Icon(
+                    painter = painterResource("reload.png"),
+                    "icon",
+                    tint = GOOGLE_BLUE,
+                    modifier = Modifier.size(50.dp).clickable {
+                        //todo 重命名逻辑
+                    }.padding(10.dp)
+                )}
+            Spacer(modifier = Modifier.width(5.dp))
+            TooltipArea(tooltip = {
+                Text("复制")
+            }){
             Icon(
                 painter = painterResource("link.png"),
                 "icon",
@@ -157,7 +172,7 @@ fun FileView(
                         showToast.value = true
                         currentToastId.value = 1
                         toastText.value = "路径复制成功"
-                    }else{
+                    } else {
                         if (currentToastId.value == 1)
                             return@clickable
                         GlobalScope.launch {
@@ -168,8 +183,11 @@ fun FileView(
                         }
                     }
                 }.padding(10.dp)
-            )
+            )}
             Spacer(modifier = Modifier.width(5.dp))
+            TooltipArea(tooltip = {
+                Text("上传")
+            }){
             Icon(
                 painter = painterResource("upload.png"),
                 "icon",
@@ -179,14 +197,16 @@ fun FileView(
                         showOpenDialog(ComposeWindow())
                         val path = selectedFile?.absolutePath ?: ""
                         if (path.isNotBlank()) {
-                            val path1 = path.substring(path.lastIndexOf("\\") + 1,path.length)
+                            val start =
+                                if (path.contains("\\")) path.lastIndexOf("\\") + 1 else path.lastIndexOf("/") + 1
+                            val path1 = path.substring(start, path.length)
                             title.value = "警告"
                             titleColor.value = GOOGLE_RED
                             dialogText.value = "是否把文件$path1 push到 ${file.name}"
                             needRun.value = true
                             run.value = {
                                 GlobalScope.launch {
-                                    push(path,defaultDir.value + file.name)
+                                    push(path, defaultDir.value + file.name)
                                     initFile()
                                 }
                                 if (!showToast.value) {
@@ -201,7 +221,11 @@ fun FileView(
                     }
                 }.padding(10.dp)
             )
+        }
             Spacer(modifier = Modifier.width(5.dp))
+            TooltipArea(tooltip = {
+                Text("下载")
+            }){
             Icon(
                 painter = painterResource("download.png"),
                 "icon",
@@ -213,13 +237,14 @@ fun FileView(
                         val path = selectedFile?.absolutePath ?: ""
                         if (path.isNotBlank()) {
                             GlobalScope.launch {
-                                pull(defaultDir.value + file.name, "$path\\${file.name}")
+                                val line = if (path.contains("\\")) "\\" else "/"
+                                pull("${defaultDir.value}${file.name}", "$path$line${file.name}")
                             }
                             if (!showToast.value) {
                                 showToast.value = true
                                 currentToastId.value = 3
                                 toastText.value = "文件已保存到$path"
-                            }else{
+                            } else {
                                 if (currentToastId.value == 3)
                                     return@clickable
                                 GlobalScope.launch {
@@ -233,68 +258,87 @@ fun FileView(
                     }
                 }.padding(10.dp)
             )
+        }
             Spacer(modifier = Modifier.width(5.dp))
-            Icon(
-                painter = painterResource("delete.png"),
-                "icon",
-                tint = GOOGLE_RED,
-                modifier = Modifier.size(50.dp).clickable {
-                    title.value = "警告"
-                    titleColor.value = GOOGLE_RED
-                    dialogText.value = "是否删除${file.name}"
-                    rm.value = defaultDir.value + file.name
-                    needRun.value = true
-                    run.value = {
-                        GlobalScope.launch {
-                            shell("rm -rf ${rm.value}")
-                            initFile()
-                        }
-                        if (!showToast.value) {
-                            showToast.value = true
-                            currentToastId.value = 3
-                            toastText.value = "${rm.value}已删除"
-                            run.value = {}
-                        }
-                    }
-                    showingDialog.value = true
-                }.padding(10.dp)
-            )
-            Spacer(modifier = Modifier.width(15.dp))
-        } else {
-            Icon(painter = painterResource("upload.png"), null, modifier = Modifier.size(50.dp).clickable {
-                JFileChooser().apply {
-                    showOpenDialog(ComposeWindow())
-                    val path = selectedFile?.absolutePath ?: ""
-                    if (path.isNotBlank()) {
-                        val path1 = path.substring(path.lastIndexOf("\\") + 1,path.length)
+            TooltipArea(tooltip = {
+                Text("删除")
+            }) {
+                Icon(
+                    painter = painterResource("delete.png"),
+                    "icon",
+                    tint = GOOGLE_RED,
+                    modifier = Modifier.size(50.dp).clickable {
                         title.value = "警告"
                         titleColor.value = GOOGLE_RED
-                        dialogText.value = "是否把文件$path1 push到 ${defaultDir.value}"
+                        dialogText.value = "是否删除${file.name}"
+                        rm.value = defaultDir.value + file.name
                         needRun.value = true
                         run.value = {
                             GlobalScope.launch {
-                                push(path,defaultDir.value + path1)
+                                shell("rm -rf '${rm.value}'")
                                 initFile()
                             }
                             if (!showToast.value) {
                                 showToast.value = true
-                                currentToastId.value = 2
-                                toastText.value = "文件push成功"
+                                currentToastId.value = 3
+                                toastText.value = "${rm.value}已删除"
                                 run.value = {}
                             }
                         }
                         showingDialog.value = true
+                    }.padding(10.dp)
+                )
+                Spacer(modifier = Modifier.width(15.dp))
+            }
+        } else {
+            TooltipArea(tooltip = {
+                Text("上传")
+            }){
+                Icon(painter = painterResource("upload.png"), null, modifier = Modifier.size(50.dp).clickable {
+                    JFileChooser().apply {
+                        showOpenDialog(ComposeWindow())
+                        val path = selectedFile?.absolutePath ?: ""
+                        if (path.isNotBlank()) {
+                            val start =
+                                if (path.contains("\\")) path.lastIndexOf("\\") + 1 else path.lastIndexOf("/") + 1
+                            val path1 = path.substring(start, path.length)
+                            title.value = "警告"
+                            titleColor.value = GOOGLE_RED
+                            dialogText.value = "是否把文件$path1 push到 ${defaultDir.value}"
+                            needRun.value = true
+                            run.value = {
+                                GlobalScope.launch {
+                                    push(path,defaultDir.value + path1)
+                                    initFile()
+                                }
+                                if (!showToast.value) {
+                                    showToast.value = true
+                                    currentToastId.value = 2
+                                    toastText.value = "文件push成功"
+                                    run.value = {}
+                                }
+                            }
+                            showingDialog.value = true
+                        }
                     }
-                }
-            }.padding(10.dp), tint = GOOGLE_BLUE)
+                }.padding(10.dp), tint = GOOGLE_BLUE)
+            }
             Spacer(modifier = Modifier.width(10.dp))
-            Icon(painter = painterResource("back.png"), null, modifier = Modifier.size(50.dp).clickable {
-                backParent()
-            }.padding(10.dp), tint = GOOGLE_BLUE)
+            TooltipArea(tooltip = {
+                Text("返回")
+            }) {
+                Icon(painter = painterResource("back.png"), null, modifier = Modifier.size(50.dp).clickable {
+                    backParent()
+                }.padding(10.dp), tint = GOOGLE_BLUE)
+            }
             Spacer(modifier = Modifier.width(10.dp))
-            Icon(painter = painterResource("sync.png"), null, modifier = Modifier.size(50.dp).clickable {
-                initFile()
-            }.padding(10.dp), tint = GOOGLE_BLUE)
+            TooltipArea(tooltip = {
+                Text("刷新")
+            }) {
+                Icon(painter = painterResource("sync.png"), null, modifier = Modifier.size(50.dp).clickable {
+                    initFile()
+                }.padding(10.dp), tint = GOOGLE_BLUE)
+            }
             Spacer(modifier = Modifier.width(15.dp))
         }
         if (showingDialog.value) {

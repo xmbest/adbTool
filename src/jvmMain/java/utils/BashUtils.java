@@ -43,6 +43,7 @@ public class BashUtils {
         // 获取外部程序标准错误流
         new Thread(new OutputHandlerRunnable(exec.getErrorStream(), true)).start();
         exec.waitFor();
+        System.out.println(runnable.getText());
         return runnable.getText();
     }
 

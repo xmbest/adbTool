@@ -20,7 +20,6 @@ import status.appIsMinimized
 import utils.ListenDeviceUtil.Companion.listenDevices
 import java.awt.Dimension
 import java.awt.Toolkit
-
 @Composable
 @Preview
 fun App() {
