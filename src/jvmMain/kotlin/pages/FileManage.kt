@@ -4,7 +4,6 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -22,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import components.SimpleDialog
 import components.Toast
-import config.route_left_background
 import config.route_left_item_color
 import entity.File
 import kotlinx.coroutines.GlobalScope
@@ -148,10 +146,10 @@ fun FileView(
         }
         if (file.name.isNotBlank()) {
             TooltipArea(tooltip = {
-                Text("重命名")
+                Text("rename")
             }){
                 Icon(
-                    painter = painterResource("reload.png"),
+                    painter = painterResource("edit.png"),
                     "icon",
                     tint = GOOGLE_BLUE,
                     modifier = Modifier.size(50.dp).clickable {
@@ -160,7 +158,7 @@ fun FileView(
                 )}
             Spacer(modifier = Modifier.width(5.dp))
             TooltipArea(tooltip = {
-                Text("复制")
+                Text("copy path")
             }){
             Icon(
                 painter = painterResource("link.png"),
@@ -186,7 +184,7 @@ fun FileView(
             )}
             Spacer(modifier = Modifier.width(5.dp))
             TooltipArea(tooltip = {
-                Text("上传")
+                Text("push")
             }){
             Icon(
                 painter = painterResource("upload.png"),
@@ -224,7 +222,7 @@ fun FileView(
         }
             Spacer(modifier = Modifier.width(5.dp))
             TooltipArea(tooltip = {
-                Text("下载")
+                Text("pull")
             }){
             Icon(
                 painter = painterResource("download.png"),
@@ -261,7 +259,7 @@ fun FileView(
         }
             Spacer(modifier = Modifier.width(5.dp))
             TooltipArea(tooltip = {
-                Text("删除")
+                Text("delete")
             }) {
                 Icon(
                     painter = painterResource("delete.png"),
@@ -276,13 +274,13 @@ fun FileView(
                         run.value = {
                             GlobalScope.launch {
                                 shell("rm -rf '${rm.value}'")
+                                if (!showToast.value) {
+                                    showToast.value = true
+                                    currentToastId.value = 3
+                                    toastText.value = "${rm.value}已删除"
+                                    run.value = {}
+                                }
                                 initFile()
-                            }
-                            if (!showToast.value) {
-                                showToast.value = true
-                                currentToastId.value = 3
-                                toastText.value = "${rm.value}已删除"
-                                run.value = {}
                             }
                         }
                         showingDialog.value = true
@@ -292,7 +290,50 @@ fun FileView(
             }
         } else {
             TooltipArea(tooltip = {
-                Text("上传")
+                Text("paste file")
+            }){
+                Icon(painter = painterResource("pushpin.png"), null, modifier = Modifier.size(50.dp).clickable {
+                    val path = ClipboardUtil.getSysClipboardText()
+                    val res = shell("ls $path")
+                    if (res.trim().isBlank()){
+                        if (!showToast.value) {
+                            showToast.value = true
+                            currentToastId.value = 7
+                            toastText.value = "不是有效路径"
+                        }else{
+                            if (currentToastId.value == 7)
+                                return@clickable
+                            GlobalScope.launch{
+                                delay(1000)
+                                showToast.value = true
+                                currentToastId.value = 7
+                                toastText.value = "不是有效路径"
+                            }
+                        }
+                        return@clickable
+                    }else{
+                        title.value = "警告"
+                        titleColor.value = GOOGLE_RED
+                        dialogText.value = "是否把${path}复制到此目录下"
+                        needRun.value = true
+                        run.value = {
+                            GlobalScope.launch {
+                                shell("cp $path ${defaultDir.value}")
+                                showToast.value = true
+                                currentToastId.value = 8
+                                toastText.value = "${path}复制成功"
+                                initFile()
+                            }
+                            needRun.value = false
+                            run.value = {}
+                        }
+                        showingDialog.value = true
+                    }
+                }.padding(10.dp), tint = GOOGLE_BLUE)
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            TooltipArea(tooltip = {
+                Text("push")
             }){
                 Icon(painter = painterResource("upload.png"), null, modifier = Modifier.size(50.dp).clickable {
                     JFileChooser().apply {
@@ -325,7 +366,7 @@ fun FileView(
             }
             Spacer(modifier = Modifier.width(10.dp))
             TooltipArea(tooltip = {
-                Text("返回")
+                Text("back")
             }) {
                 Icon(painter = painterResource("back.png"), null, modifier = Modifier.size(50.dp).clickable {
                     backParent()
@@ -333,7 +374,7 @@ fun FileView(
             }
             Spacer(modifier = Modifier.width(10.dp))
             TooltipArea(tooltip = {
-                Text("刷新")
+                Text("refresh")
             }) {
                 Icon(painter = painterResource("sync.png"), null, modifier = Modifier.size(50.dp).clickable {
                     initFile()

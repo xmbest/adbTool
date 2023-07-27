@@ -67,6 +67,8 @@ public class BashUtils {
                 while ((line = bufr.readLine()) != null) {
                     if (!error) {
                         stringBuilder.append(line).append("\n");
+                    }else {
+                        System.out.println("error:"+line);
                     }
                 }
             } catch (IOException e) {

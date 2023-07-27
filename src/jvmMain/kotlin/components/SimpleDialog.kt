@@ -1,7 +1,10 @@
 package components
 
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
@@ -37,7 +40,8 @@ fun SimpleDialog(
             Row(modifier = Modifier.fillMaxWidth().padding(5.dp).clip(RoundedCornerShape(5.dp))) {
                 Text(color = titleColor, text = title, fontSize = 16.sp, modifier = Modifier.padding(start = 4.dp))
             }
-            Row(modifier = Modifier.fillMaxWidth().weight(1f).padding(5.dp), verticalAlignment = Alignment.CenterVertically) {
+            val scroll = rememberScrollState()
+            Row(modifier = Modifier.fillMaxWidth().weight(1f).padding(5.dp).verticalScroll(scroll), verticalAlignment = Alignment.CenterVertically) {
                 Text(color = Color.Gray, text = "    ${text}", fontSize = 16.sp, modifier = Modifier)
             }
             Row(
