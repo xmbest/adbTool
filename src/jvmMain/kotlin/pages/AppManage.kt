@@ -26,7 +26,6 @@ import theme.GOOGLE_GREEN
 import theme.GOOGLE_RED
 import theme.GOOGLE_YELLOW
 import utils.*
-import java.util.Arrays
 
 val appList = mutableStateListOf<String>()
 val checkedList = mutableStateListOf<Boolean>()
@@ -64,7 +63,7 @@ fun AppManage() {
             ) {
                 LazyColumn {
                     stickyHeader {
-                        Row(modifier = Modifier.fillMaxWidth().background(Color.White).padding(start = 8.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth().background(Color.White)) {
                             Checkbox(
                                 checkAll.value,
                                 onCheckedChange = {
@@ -182,7 +181,7 @@ fun AppManage() {
 @Composable
 fun AppItem(str: String, i: Int) {
     Row(
-        modifier = Modifier.height(80.dp).fillMaxWidth().padding(8.dp).background(Color.White),
+        modifier = Modifier.height(80.dp).fillMaxWidth().padding(top = 5.dp).background(Color.White),
         verticalAlignment = Alignment.CenterVertically
     ) {
         val index = str.lastIndexOf("=")
@@ -255,15 +254,42 @@ fun AppItem(str: String, i: Int) {
                 painter = painterResource("eye.png"),
                 "详情",
                 tint = GOOGLE_BLUE,
-                modifier = Modifier.size(50.dp).padding(10.dp).clickable {
-                    GlobalScope.launch {
-                        dialogText.value = getInfo(packageName)
-                        showingDialog.value = true
-                    }
+                modifier = Modifier.size(50.dp).padding(9.dp).clickable {
                     title.value = "应用信息"
                     titleColor.value = GOOGLE_GREEN
                     needRun.value = false
                     run.value = {}
+                    GlobalScope.launch {
+                        dialogText.value = dump(packageName,"version")
+                        showingDialog.value = true
+                    }
+                })
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        TooltipArea(tooltip = {
+            Text("启动")
+        }) {
+            Icon(
+                painter = painterResource("start.png"),
+                "启动",
+                tint = GOOGLE_GREEN,
+                modifier = Modifier.size(50.dp).padding(8.dp).clickable {
+                  shell("monkey -p $packageName -v 1")
+                    if (!showToast.value) {
+                        toastText.value = "命令已执行"
+                        showToast.value = true
+                        currentToastId.value = 9
+                    } else {
+                        if (currentToastId.value != 9){
+                            GlobalScope.launch {
+                                delay(1000)
+                                toastText.value = "命令已执行"
+                                showToast.value = true
+                                currentToastId.value = 9
+                            }
+                        }
+
+                    }
                 })
         }
         Spacer(modifier = Modifier.width(8.dp))
@@ -274,12 +300,14 @@ fun AppItem(str: String, i: Int) {
                 painter = painterResource("clear.png"),
                 "清除数据",
                 tint = GOOGLE_YELLOW,
-                modifier = Modifier.size(50.dp).padding(10.dp).clickable {
+                modifier = Modifier.size(50.dp).padding(9.dp).clickable {
                     title.value = "警告"
                     titleColor.value = GOOGLE_RED
                     dialogText.value = "是否清除${packageName}数据"
                     needRun.value = true
                     run.value = {
+                        run.value = {}
+                        needRun.value = false
                         GlobalScope.launch {
                             clear(packageName)
                             toastText.value = "${packageName}数据已清理"
@@ -287,8 +315,6 @@ fun AppItem(str: String, i: Int) {
                             currentToastId.value = 4
                             initAppList()
                         }
-                        run.value = {}
-                        needRun.value = false
                     }
                     showingDialog.value = true
                 }
@@ -309,6 +335,8 @@ fun AppItem(str: String, i: Int) {
                         dialogText.value = "是否卸载${packageName}"
                         needRun.value = true
                         run.value = {
+                            run.value = {}
+                            needRun.value = false
                             GlobalScope.launch {
                                 uninstall(packageName)
                                 toastText.value = "${packageName}已卸载"
@@ -316,8 +344,6 @@ fun AppItem(str: String, i: Int) {
                                 currentToastId.value = 5
                                 initAppList()
                             }
-                            run.value = {}
-                            needRun.value = false
                         }
                         showingDialog.value = true
                     })
@@ -360,8 +386,14 @@ fun initAppList() {
 }
 
 
-fun getInfo(packageName: String): String {
+fun dump(packageName: String, filter:String): String {
     if (getOsType() == "windows")
-        return shell("\"pm dump $packageName | grep version\"")
-    return shell("pm dump $packageName | grep version")
+        return shell("\"pm dump $packageName | grep $filter\"")
+    return shell("pm dump $packageName | grep $filter")
+}
+
+fun dumpsys(packageName: String, filter:String): String {
+    if (getOsType() == "windows")
+        return shell("\"dumpsys package $packageName | grep $filter\"")
+    return shell("dumpsys package $packageName | grep $filter")
 }
