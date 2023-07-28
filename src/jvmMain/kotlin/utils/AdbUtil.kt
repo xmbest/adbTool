@@ -79,6 +79,9 @@ fun push(srcPath: String, destPath: String): String {
 fun root(): String {
     return execute("root")
 }
+fun remount(): String {
+    return execute("remount")
+}
 
 fun saveScreen(srcPath: String, destPath: String): String {
     val currentDateTime = LocalDateTime.now()
@@ -93,8 +96,37 @@ fun uninstall(packageName:String): String {
     return shell("pm uninstall $packageName")
 }
 
+fun install(path:String):String{
+    return execute("install $path")
+}
+
+fun start(packageName: String):String{
+    val dumpsys = dumpsys(packageName)
+    val regex = Regex(".* (.*)/(.*?) .*")
+    val find = regex.find(dumpsys)
+    if (find != null) {
+        val mainActivity= find.groups[2]?.value?:""
+        if (mainActivity.isNotBlank())
+            return shell("am start ${packageName}/${packageName}$mainActivity")
+    }
+    //以上方式未成功尝试monkey启动应用
+    return shell("monkey -p $packageName -v 1")
+}
+
 fun clear(packageName:String):String{
     return shell("pm clear $packageName")
+}
+
+fun dump(packageName: String, filter: String): String {
+    if (getOsType() == "windows")
+        return shell("\"pm dump $packageName | grep $filter\"")
+    return shell("pm dump $packageName | grep $filter")
+}
+
+fun dumpsys(packageName: String, filter: String = ""): String {
+    if (getOsType() == "windows")
+        return shell("\"dumpsys package $packageName${if (filter.isNotBlank()) " | grep $filter\"" else "\""}")
+    return shell("dumpsys package $packageName${if (filter.isNotBlank()) " | grep $filter" else ""}")
 }
 
 

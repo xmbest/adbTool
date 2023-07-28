@@ -44,7 +44,10 @@ val currentToastId = mutableStateOf(0)
 @Composable
 fun FileManage() {
     if (fileList.isEmpty() && defaultDir.value == "/sdcard/") {
-        root()
+        GlobalScope.launch {
+            root()
+            remount()
+        }
         initFile()
     }
     if (currentDevice.value.isEmpty()) {
@@ -185,14 +188,14 @@ fun FileView(
                     modifier = Modifier.size(50.dp).clickable {
                         title.value = "提示"
                         titleColor.value = GOOGLE_GREEN
-                        dialogText.value = ""
+                        dialogText.value = file.name
                         needRun.value = true
                         hint.value = "请输入文件新名字"
                         run.value = {
                             run.value = {}
                             needRun.value = false
                             GlobalScope.launch {
-                                shell("mv ${defaultDir.value}${file.name} ${defaultDir.value}${dialogText.value}" )
+                                shell("mv ${defaultDir.value}${file.name} ${defaultDir.value}${dialogText.value}")
                                 currentToastId.value = 8
                                 toastText.value = "重命名成功"
                                 showToast.value = true
@@ -204,49 +207,53 @@ fun FileView(
                 )
             }
             Spacer(modifier = Modifier.width(5.dp))
-
-            Spacer(modifier = Modifier.width(5.dp))
-            TooltipArea(tooltip = {
-                Text("push")
-            }) {
-                Icon(
-                    painter = painterResource("push.png"),
-                    "icon",
-                    tint = GOOGLE_GREEN,
-                    modifier = Modifier.size(50.dp).clickable {
-                        JFileChooser().apply {
-                            dialogTitle = "选择文件"
-                            showOpenDialog(ComposeWindow())
-                            val path = selectedFile?.absolutePath ?: ""
-                            if (path.isNotBlank()) {
-                                val start =
-                                    if (path.contains("\\")) path.lastIndexOf("\\") + 1 else path.lastIndexOf("/") + 1
-                                val path1 = path.substring(start, path.length)
-                                title.value = "警告"
-                                titleColor.value = GOOGLE_RED
-                                dialogText.value = "是否把文件$path1 push到 ${file.name}"
-                                needRun.value = true
-                                run.value = {
-                                    run.value = {}
-                                    needRun.value = false
-                                    GlobalScope.launch {
-                                        push(path, defaultDir.value + file.name)
-                                        if (showToast.value) {
-                                            delay(1000)
-                                        }
-                                        currentToastId.value = 2
-                                        toastText.value = "文件push成功"
-                                        showToast.value = true
-                                        initFile()
-                                    }
+            if (!file.isDir){
+                TooltipArea(tooltip = {
+                    Text("push")
+                }) {
+                    Icon(
+                        painter = painterResource("push.png"),
+                        "icon",
+                        tint = GOOGLE_GREEN,
+                        modifier = Modifier.size(50.dp).clickable {
+                            JFileChooser().apply {
+                                dialogTitle = "选择文件"
+                                fileSelectionMode = JFileChooser.FILES_ONLY
+                                val state:Int = showOpenDialog(ComposeWindow())
+                                if (state == JFileChooser.CANCEL_OPTION){
+                                    return@clickable
                                 }
-                                showingDialog.value = true
+                                val path = selectedFile?.absolutePath ?: ""
+                                if (path.isNotBlank()) {
+                                    val start =
+                                        if (path.contains("\\")) path.lastIndexOf("\\") + 1 else path.lastIndexOf("/") + 1
+                                    val path1 = path.substring(start, path.length)
+                                    title.value = "警告"
+                                    titleColor.value = GOOGLE_RED
+                                    dialogText.value = "是否把文件$path1 push到 ${file.name}"
+                                    needRun.value = true
+                                    run.value = {
+                                        run.value = {}
+                                        needRun.value = false
+                                        GlobalScope.launch {
+                                            push(path, defaultDir.value + file.name)
+                                            if (showToast.value) {
+                                                delay(1000)
+                                            }
+                                            currentToastId.value = 2
+                                            toastText.value = "文件push成功"
+                                            showToast.value = true
+                                            initFile()
+                                        }
+                                    }
+                                    showingDialog.value = true
+                                }
                             }
-                        }
-                    }.padding(9.dp)
-                )
+                        }.padding(9.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(5.dp))
             }
-            Spacer(modifier = Modifier.width(5.dp))
             TooltipArea(tooltip = {
                 Text("pull")
             }) {
@@ -258,7 +265,10 @@ fun FileView(
                         JFileChooser().apply {
                             dialogTitle = "保存到"
                             fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
-                            showOpenDialog(ComposeWindow())
+                            val state:Int = showOpenDialog(ComposeWindow())
+                            if (state == JFileChooser.CANCEL_OPTION){
+                                return@clickable
+                            }
                             val path = selectedFile?.absolutePath ?: ""
                             if (path.isNotBlank()) {
                                 GlobalScope.launch {
@@ -358,7 +368,11 @@ fun FileView(
                 Icon(painter = painterResource("push.png"), null, modifier = Modifier.size(50.dp).clickable {
                     JFileChooser().apply {
                         dialogTitle = "选择文件"
-                        showOpenDialog(ComposeWindow())
+                        fileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES
+                        val state:Int = showOpenDialog(ComposeWindow())
+                        if (state == JFileChooser.CANCEL_OPTION){
+                            return@clickable
+                        }
                         val path = selectedFile?.absolutePath ?: ""
                         if (path.isNotBlank()) {
                             val start =

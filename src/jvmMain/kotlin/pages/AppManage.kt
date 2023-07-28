@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -26,6 +27,11 @@ import theme.GOOGLE_GREEN
 import theme.GOOGLE_RED
 import theme.GOOGLE_YELLOW
 import utils.*
+import javax.swing.JFileChooser
+import javax.swing.filechooser.FileNameExtensionFilter
+
+
+
 
 val appList = mutableStateListOf<String>()
 val checkedList = mutableStateListOf<Boolean>()
@@ -105,6 +111,34 @@ fun AppManage() {
                             )
                             Button(onClick = { initAppList() }, modifier = Modifier.fillMaxHeight()) {
                                 Text(text = "刷新")
+                            }
+                            Button(onClick = {
+                                JFileChooser().apply {
+                                    dialogTitle = "选择安装包"
+                                    fileSelectionMode = JFileChooser.FILES_ONLY
+                                    fileFilter = FileNameExtensionFilter(
+                                        "安装包(*.apk)", "apk"
+                                    )
+                                    val state:Int = showOpenDialog(ComposeWindow())
+                                    if (state == JFileChooser.CANCEL_OPTION){
+                                        return@Button
+                                    }
+                                    val path = selectedFile?.absolutePath ?: ""
+                                    if (path.isNotBlank()) {
+                                        GlobalScope.launch {
+                                            install(path)
+                                            if (showToast.value) {
+                                                delay(1000)
+                                            }
+                                            currentToastId.value = 10
+                                            toastText.value = "安装成功"
+                                            showToast.value = true
+                                            initAppList()
+                                        }
+                                    }
+                                }
+                            }, modifier = Modifier.fillMaxHeight().padding(start = 4.dp)) {
+                                Text(text = "安装")
                             }
                             Button(
                                 onClick = {
@@ -260,7 +294,7 @@ fun AppItem(str: String, i: Int) {
                     needRun.value = false
                     run.value = {}
                     GlobalScope.launch {
-                        dialogText.value = dump(packageName,"version")
+                        dialogText.value = dump(packageName, "version")
                         showingDialog.value = true
                     }
                 })
@@ -273,14 +307,14 @@ fun AppItem(str: String, i: Int) {
                 painter = painterResource("start.png"),
                 "启动",
                 tint = GOOGLE_GREEN,
-                modifier = Modifier.size(50.dp).padding(8.dp).clickable {
-                  shell("monkey -p $packageName -v 1")
+                modifier = Modifier.size(50.dp).padding(9.dp).clickable {
+                    start(packageName)
                     if (!showToast.value) {
                         toastText.value = "命令已执行"
                         showToast.value = true
                         currentToastId.value = 9
                     } else {
-                        if (currentToastId.value != 9){
+                        if (currentToastId.value != 9) {
                             GlobalScope.launch {
                                 delay(1000)
                                 toastText.value = "命令已执行"
@@ -383,17 +417,4 @@ fun initAppList() {
         appList.add(it)
         checkedList.add(false)
     }
-}
-
-
-fun dump(packageName: String, filter:String): String {
-    if (getOsType() == "windows")
-        return shell("\"pm dump $packageName | grep $filter\"")
-    return shell("pm dump $packageName | grep $filter")
-}
-
-fun dumpsys(packageName: String, filter:String): String {
-    if (getOsType() == "windows")
-        return shell("\"dumpsys package $packageName | grep $filter\"")
-    return shell("dumpsys package $packageName | grep $filter")
 }

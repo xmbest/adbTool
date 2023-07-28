@@ -37,7 +37,7 @@ fun QuickSetting() {
     val keyMapperList3 = listOf(
         KeyMapper("down.png", 1, "显示状态栏"),
         KeyMapper("up.png", 2, "隐藏状态栏"),
-        KeyMapper("image.png", 0, "保存截图"),
+        KeyMapper("image.png", 0, "截图到桌面"),
         KeyMapper("settings.png", 0, "进入设置")
     )
     val scroll = rememberScrollState()
