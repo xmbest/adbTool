@@ -18,8 +18,10 @@ import kotlinx.coroutines.flow.onEach
 import pages.Route
 import status.appIsMinimized
 import utils.ListenDeviceUtil.Companion.listenDevices
+import utils.getRealLocation
 import java.awt.Dimension
 import java.awt.Toolkit
+
 @Composable
 @Preview
 fun App() {
@@ -38,7 +40,7 @@ fun main() = application {
     val y: Double = screenSize.getHeight() / 2 - height / 2
     val state = rememberWindowState(width = width.dp, height = height.dp, position = WindowPosition(x.dp, y.dp))
     Window(
-        onCloseRequest = ::exitApplication, title = "ADBTool", state = state, icon = painterResource("logo.png")
+        onCloseRequest = ::exitApplication, title = "ADBTool", state = state, icon = painterResource(getRealLocation("logo"))
     ) {
         App()
         LaunchedEffect(state){

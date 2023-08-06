@@ -2,6 +2,9 @@ package utils
 
 import com.mifmif.common.regex.Generex
 
+/**
+ * 生成对应规则文本
+ */
 class GenerexUtils {
     companion object {
         fun generateAll(text: String): String {

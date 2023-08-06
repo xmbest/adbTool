@@ -6,7 +6,9 @@ import java.util.List;
 
 public class BashUtils {
 
+    public static boolean runing = false;
     public static final String dir = System.getProperty("user.home") + "/Desktop";
+    public static final String workDir = System.getProperty("user.dir");
 
     public static String execCommand(String command) throws IOException, InterruptedException {
         return execCommand(command, dir);
@@ -36,6 +38,7 @@ public class BashUtils {
             processBuilder.directory(new File(dir));
         }
         System.out.printf("开始执行命令: %s \n", command);
+        runing = true;
         Process exec = processBuilder.start();
         // 获取外部程序标准输出流
         OutputHandlerRunnable runnable = new OutputHandlerRunnable(exec.getInputStream(), false);
@@ -43,7 +46,8 @@ public class BashUtils {
         // 获取外部程序标准错误流
         new Thread(new OutputHandlerRunnable(exec.getErrorStream(), true)).start();
         exec.waitFor();
-        System.out.println(runnable.getText());
+        runing = false;
+//        System.out.println(runnable.getText());
         return runnable.getText();
     }
 
@@ -64,13 +68,17 @@ public class BashUtils {
         public void run() {
             try (BufferedReader bufr = new BufferedReader(new InputStreamReader(this.in))) {
                 String line = null;
+                FileWriter fw = new FileWriter(dir + "/error.txt");
                 while ((line = bufr.readLine()) != null) {
                     if (!error) {
                         stringBuilder.append(line).append("\n");
                     }else {
                         System.out.println("error:"+line);
                     }
+                    fw.write(line);
                 }
+                fw.flush();
+                fw.close();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

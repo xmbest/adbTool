@@ -18,16 +18,19 @@ import config.*
 import entity.Page
 import status.currentDevice
 import status.devicesList
+import status.autoSync
+import utils.getDevices
+import utils.getRealLocation
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Route() {
     val pages = listOf(
-        Page(0, "快捷功能", "pushpin.png") { QuickSetting() },
-        Page(1, "文件管理", "folder.png") { FileManage() },
-        Page(2, "应用管理", "android.png") { AppManage() },
-        Page(3, "命令泛化", "code.png") { CommandGeneral() },
-        Page(4, "程序设置", "settings.png") { Settings() }
+        Page(0, "快捷功能", getRealLocation("pushpin")) { QuickSetting() },
+        Page(1, "文件管理", getRealLocation("folder")) { FileManage() },
+        Page(2, "应用管理", getRealLocation("android")) { AppManage() },
+        Page(3, "命令泛化", getRealLocation("code")) { CommandGeneral() },
+        Page(4, "程序设置", getRealLocation("settings")) { Settings() }
     )
     var curPage by remember {
         mutableStateOf(0)
@@ -80,9 +83,14 @@ fun Route() {
                     },
                     icon = {
                         Icon(
-                            painter = painterResource("mobile.png"),
+                            painter = painterResource(getRealLocation("mobile")),
                             null,
-                            tint = route_left_item_color
+                            tint = route_left_item_color,
+                            modifier = Modifier.clickable {
+                                if (!autoSync.value){
+                                    getDevices()
+                                }
+                            }
                         )
                     },
                     modifier = Modifier.clip(RoundedCornerShape(route_left_item_rounded)).height(route_left_item_height)
@@ -115,8 +123,6 @@ fun Route() {
                         }
                     }
                 }
-
-
             }
         }
         Column(modifier = Modifier.fillMaxHeight().weight(1f).background(route_right_background)) {

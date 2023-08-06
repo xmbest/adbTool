@@ -1,5 +1,8 @@
 package utils
 
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import status.currentDevice
 import status.devicesList
 import java.io.BufferedReader
@@ -133,6 +136,7 @@ fun dumpsys(packageName: String, filter: String = ""): String {
 /**
  * @Description： 获取设备列表
  */
+@OptIn(DelicateCoroutinesApi::class)
 fun getDevices() {
     val devices: String = execute("adb devices")
     devicesList.clear()
@@ -152,6 +156,10 @@ fun getDevices() {
     if (devicesList.size > 0) {
         if (!devicesList.contains(currentDevice.value)){
             currentDevice.value = devicesList[0]
+            GlobalScope.launch {
+                root()
+                remount()
+            }
         }
     }
 

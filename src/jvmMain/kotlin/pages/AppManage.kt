@@ -14,8 +14,7 @@ import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import components.SimpleDialog
-import components.Toast
+import components.*
 import config.route_left_item_color
 import config.route_right_background
 import kotlinx.coroutines.GlobalScope
@@ -30,23 +29,12 @@ import utils.*
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 
-
-
-
 val appList = mutableStateListOf<String>()
 val checkedList = mutableStateListOf<Boolean>()
 val checkAll = mutableStateOf(false)
 val keyword = mutableStateOf("")
 val systemApp = mutableStateOf(false)
-val showingDialog = mutableStateOf(false)
 val first = mutableStateOf(true)
-
-val needRun = mutableStateOf(false)
-val title = mutableStateOf("警告")
-val titleColor = mutableStateOf(Color.Blue)
-val dialogText = mutableStateOf("测试")
-val rm = mutableStateOf("")
-val run = mutableStateOf({})
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -130,7 +118,7 @@ fun AppManage() {
                                             if (showToast.value) {
                                                 delay(1000)
                                             }
-                                            currentToastId.value = 10
+                                            currentToastTask.value = "AppManageInstall"
                                             toastText.value = "安装成功"
                                             showToast.value = true
                                             initAppList()
@@ -154,15 +142,15 @@ fun AppManage() {
                                         if (!showToast.value) {
                                             toastText.value = "至少选中一个"
                                             showToast.value = true
-                                            currentToastId.value = 6
+                                            currentToastTask.value = "AppManageLeastSelectOne"
                                         } else {
-                                            if (currentToastId.value == 6)
+                                            if (currentToastTask.value == "AppManageLeastSelectOne")
                                                 return@Button
                                             GlobalScope.launch {
                                                 delay(1000)
                                                 toastText.value = "至少选中一个"
                                                 showToast.value = true
-                                                currentToastId.value = 6
+                                                currentToastTask.value = "AppManageLeastSelectOne"
                                             }
                                         }
                                         return@Button
@@ -182,7 +170,7 @@ fun AppManage() {
                                             }
                                             toastText.value = "应用已卸载"
                                             showToast.value = true
-                                            currentToastId.value = 6
+                                            currentToastTask.value = "AppManageMoreUninstall"
                                             initAppList()
                                         }
                                         run.value = {}
@@ -227,7 +215,7 @@ fun AppItem(str: String, i: Int) {
                 onCheckedChange = { checkedList[i] = it },
                 colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE)
             )
-            Icon(painter = painterResource("android.png"), null, tint = GOOGLE_GREEN, modifier = Modifier.size(40.dp))
+            Icon(painter = painterResource(getRealLocation("android")), null, tint = GOOGLE_GREEN, modifier = Modifier.size(40.dp))
             Column(modifier = Modifier.fillMaxHeight().weight(1f), verticalArrangement = Arrangement.Center) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("包名:$packageName")
@@ -235,20 +223,20 @@ fun AppItem(str: String, i: Int) {
                     TooltipArea(tooltip = {
                         Text("复制")
                     }) {
-                        Icon(painter = painterResource("copy.png"), null, modifier = Modifier.size(15.dp).clickable {
+                        Icon(painter = painterResource(getRealLocation("copy")), null, modifier = Modifier.size(15.dp).clickable {
                             ClipboardUtil.setSysClipboardText(packageName)
                             if (!showToast.value) {
                                 toastText.value = "包名已复制"
                                 showToast.value = true
-                                currentToastId.value = 1
+                                currentToastTask.value = "AppManagePackageNameCopy"
                             } else {
-                                if (currentToastId.value == 1)
+                                if (currentToastTask.value == "AppManagePackageNameCopy")
                                     return@clickable
                                 GlobalScope.launch {
                                     delay(1000)
                                     toastText.value = "包名已复制"
                                     showToast.value = true
-                                    currentToastId.value = 1
+                                    currentToastTask.value = "AppManagePackageNameCopy"
                                 }
                             }
                         }, tint = route_left_item_color)
@@ -260,20 +248,20 @@ fun AppItem(str: String, i: Int) {
                     TooltipArea(tooltip = {
                         Text("复制")
                     }) {
-                        Icon(painter = painterResource("copy.png"), null, modifier = Modifier.size(15.dp).clickable {
+                        Icon(painter = painterResource(getRealLocation("copy")), null, modifier = Modifier.size(15.dp).clickable {
                             ClipboardUtil.setSysClipboardText(path)
                             if (!showToast.value) {
                                 toastText.value = "路径已复制"
                                 showToast.value = true
-                                currentToastId.value = 2
+                                currentToastTask.value = "AppManagePathCopy"
                             } else {
-                                if (currentToastId.value == 2)
+                                if (currentToastTask.value == "AppManagePathCopy")
                                     return@clickable
                                 GlobalScope.launch {
                                     delay(1000)
                                     toastText.value = "路径已复制"
                                     showToast.value = true
-                                    currentToastId.value = 2
+                                    currentToastTask.value = "AppManagePathCopy"
                                 }
                             }
                         }, tint = route_left_item_color)
@@ -285,7 +273,7 @@ fun AppItem(str: String, i: Int) {
             Text("详情")
         }) {
             Icon(
-                painter = painterResource("eye.png"),
+                painter = painterResource(getRealLocation("eye")),
                 "详情",
                 tint = GOOGLE_BLUE,
                 modifier = Modifier.size(50.dp).padding(9.dp).clickable {
@@ -304,25 +292,24 @@ fun AppItem(str: String, i: Int) {
             Text("启动")
         }) {
             Icon(
-                painter = painterResource("start.png"),
+                painter = painterResource(getRealLocation("start")),
                 "启动",
                 tint = GOOGLE_GREEN,
                 modifier = Modifier.size(50.dp).padding(9.dp).clickable {
                     start(packageName)
                     if (!showToast.value) {
                         toastText.value = "命令已执行"
+                        currentToastTask.value = "AppManageStartApp"
                         showToast.value = true
-                        currentToastId.value = 9
                     } else {
-                        if (currentToastId.value != 9) {
+                        if (currentToastTask.value != "AppManageStartApp") {
                             GlobalScope.launch {
                                 delay(1000)
                                 toastText.value = "命令已执行"
                                 showToast.value = true
-                                currentToastId.value = 9
+                                currentToastTask.value = "AppManageStartApp"
                             }
                         }
-
                     }
                 })
         }
@@ -331,7 +318,7 @@ fun AppItem(str: String, i: Int) {
             Text("清除")
         }) {
             Icon(
-                painter = painterResource("clear.png"),
+                painter = painterResource(getRealLocation("clear")),
                 "清除数据",
                 tint = GOOGLE_YELLOW,
                 modifier = Modifier.size(50.dp).padding(9.dp).clickable {
@@ -346,7 +333,7 @@ fun AppItem(str: String, i: Int) {
                             clear(packageName)
                             toastText.value = "${packageName}数据已清理"
                             showToast.value = true
-                            currentToastId.value = 4
+                            currentToastTask.value = "AppManageClearAppData"
                             initAppList()
                         }
                     }
@@ -360,7 +347,7 @@ fun AppItem(str: String, i: Int) {
                 Text("卸载")
             }) {
                 Icon(
-                    painter = painterResource("delete.png"),
+                    painter = painterResource(getRealLocation("delete")),
                     "卸载",
                     tint = GOOGLE_RED,
                     modifier = Modifier.size(50.dp).padding(10.dp).clickable {
@@ -375,7 +362,7 @@ fun AppItem(str: String, i: Int) {
                                 uninstall(packageName)
                                 toastText.value = "${packageName}已卸载"
                                 showToast.value = true
-                                currentToastId.value = 5
+                                currentToastTask.value = "AppManageOneUninstall"
                                 initAppList()
                             }
                         }

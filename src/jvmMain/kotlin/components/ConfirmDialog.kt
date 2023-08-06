@@ -3,7 +3,6 @@ package components
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.PopupAlertDialogProvider.AlertDialog
 import androidx.compose.runtime.Composable
@@ -18,9 +17,6 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import pages.currentToastId
-import pages.showToast
-import pages.toastText
 import theme.GOOGLE_BLUE
 import theme.GOOGLE_RED
 import theme.GOOGLE_YELLOW
@@ -83,14 +79,14 @@ fun ConfirmDialog(
                         }
                         if (isError) {
                             if (!showToast.value) {
-                                currentToastId.value = 9
+                                currentToastTask.value = "ConfirmDialogRenameError"
                                 toastText.value = errorMsg
                                 showToast.value = true
                             } else {
-                                if (currentToastId.value != 9) {
+                                if (currentToastTask.value != "ConfirmDialogRenameError") {
                                     GlobalScope.launch {
                                         delay(1000)
-                                        currentToastId.value = 9
+                                        currentToastTask.value = "ConfirmDialogRenameError"
                                         toastText.value = errorMsg
                                         showToast.value = true
                                     }

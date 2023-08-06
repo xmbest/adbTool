@@ -1,6 +1,5 @@
 package components
 
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,6 +11,8 @@ import androidx.compose.material.PopupAlertDialogProvider.AlertDialog
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,6 +23,19 @@ import theme.GOOGLE_BLUE
 import theme.GOOGLE_RED
 
 
+/**
+ * 对话框属性
+ */
+val showingDialog = mutableStateOf(false)
+val dialogTitle = mutableStateOf("警告")
+val dialogTitleColor = mutableStateOf(GOOGLE_RED)
+val dialogText = mutableStateOf("")
+val run = mutableStateOf({})
+val needRun = mutableStateOf(false)
+val title = mutableStateOf("警告")
+val titleColor = mutableStateOf(Color.Blue)
+val showingConfirmDialog = mutableStateOf(false)
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SimpleDialog(
@@ -29,10 +43,10 @@ fun SimpleDialog(
     title: String = "警告",
     titleColor: Color = GOOGLE_RED,
     text: String = "测试",
-    needRun:Boolean = false,
-    runnable: (() -> Unit )?=null,
-    width:Int = 320,
-    height:Int = 220,
+    needRun: Boolean = false,
+    runnable: (() -> Unit)? = null,
+    width: Int = 320,
+    height: Int = 220,
     content: @Composable (() -> Unit) = {
         Column(
             modifier = Modifier.height(height.dp).width(width.dp).clip(RoundedCornerShape(5.dp))
@@ -41,7 +55,10 @@ fun SimpleDialog(
                 Text(color = titleColor, text = title, fontSize = 16.sp, modifier = Modifier.padding(start = 4.dp))
             }
             val scroll = rememberScrollState()
-            Row(modifier = Modifier.fillMaxWidth().weight(1f).padding(5.dp).verticalScroll(scroll), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxWidth().weight(1f).padding(5.dp).verticalScroll(scroll),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(color = Color.Gray, text = "    ${text}", fontSize = 16.sp, modifier = Modifier)
             }
             Row(
@@ -52,7 +69,7 @@ fun SimpleDialog(
                 Button(
                     onClick = {
                         showingDialog.value = false
-                        if (needRun){
+                        if (needRun) {
                             runnable!!.invoke()
                         }
                     }, colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_BLUE),
@@ -60,7 +77,7 @@ fun SimpleDialog(
                 ) {
                     Text(text = "确定", color = Color.White)
                 }
-                if (needRun){
+                if (needRun) {
                     Button(
                         onClick = {
                             showingDialog.value = false

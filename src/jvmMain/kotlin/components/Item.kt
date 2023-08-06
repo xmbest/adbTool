@@ -6,20 +6,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import config.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import status.currentDevice
 
 @Composable
 fun Item(icon: String, label: String, runnable: () -> String = {
     ""
 }) {
-    val showingDialog = remember { mutableStateOf(false) }
     Column(
         verticalArrangement = Arrangement.SpaceAround,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -28,8 +28,23 @@ fun Item(icon: String, label: String, runnable: () -> String = {
             .clickable {
                 if (currentDevice.value.isBlank()){
                     showingDialog.value = true
+                }else{
+                    runnable()
+                    if (!showToast.value) {
+                        toastText.value = "命令执行完毕"
+                        currentToastTask.value = "Item_$label"
+                        showToast.value = true
+                    } else {
+                        if (currentToastTask.value != "Item_$label") {
+                            GlobalScope.launch {
+                                delay(1000)
+                                toastText.value = "命令执行完毕"
+                                showToast.value = true
+                                currentToastTask.value = "Item_$label"
+                            }
+                        }
+                    }
                 }
-                runnable()
             }
     ) {
         Icon(
@@ -42,7 +57,6 @@ fun Item(icon: String, label: String, runnable: () -> String = {
         if (showingDialog.value)
             SimpleDialog(showingDialog, text = "请连接ADB后重试")
     }
-
 }
 
 @Composable

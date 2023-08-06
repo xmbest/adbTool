@@ -19,10 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import components.SimpleDialog
-import components.Toast
-import config.route_left_background
-import config.route_left_item_color
+import components.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -31,6 +28,7 @@ import theme.GOOGLE_BLUE
 import theme.GOOGLE_GREEN
 import theme.GOOGLE_RED
 import theme.GOOGLE_YELLOW
+import utils.BashUtils
 import utils.ClipboardUtil
 import utils.GenerexUtils
 
@@ -47,16 +45,6 @@ val text2 = mutableStateOf("")
 @Preview
 @Composable
 fun CommandGeneral() {
-    val showingDialog = remember { mutableStateOf(false) }
-    val dialogTitle = remember { mutableStateOf("警告") }
-    val dialogTitleColor = remember { mutableStateOf(GOOGLE_RED) }
-    val dialogText = remember { mutableStateOf("") }
-    val toastText = remember { mutableStateOf("") }
-    val showToast = remember { mutableStateOf(false) }
-    val currentToastId = remember { mutableStateOf(0) }
-    val toastBgColor = remember { mutableStateOf(route_left_background) }
-    val toastTextColor = remember { mutableStateOf(route_left_item_color) }
-
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
@@ -67,15 +55,15 @@ fun CommandGeneral() {
                     try {
                         if (text1.value.isBlank()) {
                             if (!showToast.value) {
-                                currentToastId.value = 1
+                                currentToastTask.value = "CommandGnerate"
                                 toastText.value = "内容不可空"
                                 showToast.value = true
                             } else {
-                                if (currentToastId.value == 1)
+                                if (currentToastTask.value == "CommandGnerate")
                                     return@CommandButton
                                 GlobalScope.launch{
                                     delay(1000)
-                                    currentToastId.value = 1
+                                    currentToastTask.value = "CommandGnerate"
                                     toastText.value = "内容不可空"
                                     showToast.value = true
                                 }
@@ -99,15 +87,15 @@ fun CommandGeneral() {
                         return@CommandButton
                     ClipboardUtil.setSysClipboardText(text2.value)
                     if (!showToast.value) {
-                        currentToastId.value = 2
+                        currentToastTask.value = "CommandCopy"
                         toastText.value = "结果已复制"
                         showToast.value = true
                     } else {
-                        if (currentToastId.value == 2)
+                        if (currentToastTask.value == "CommandCopy")
                             return@CommandButton
                         GlobalScope.launch {
                             delay(1000)
-                            currentToastId.value = 2
+                            currentToastTask.value = "CommandCopy"
                             toastText.value = "结果已复制"
                             showToast.value = true
                         }
@@ -119,15 +107,15 @@ fun CommandGeneral() {
                     text1.value = ""
                     text2.value = ""
                     if (!showToast.value) {
-                        currentToastId.value = 3
+                        currentToastTask.value = "CommandClear"
                         toastText.value = "内容已清空"
                         showToast.value = true
                     } else {
-                        if (currentToastId.value == 3)
+                        if (currentToastTask.value == "CommandClear")
                             return@CommandButton
                         GlobalScope.launch {
                             delay(1000)
-                            currentToastId.value = 3
+                            currentToastTask.value = "CommandClear"
                             toastText.value = "内容已清空"
                             showToast.value = true
                         }

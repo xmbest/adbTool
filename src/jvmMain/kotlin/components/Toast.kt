@@ -7,6 +7,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,6 +20,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import theme.GOOGLE_BLUE
 
+/**
+ * Toast属性
+ */
+val toastText = mutableStateOf("")
+val showToast = mutableStateOf(false)
+val currentToastTask = mutableStateOf("")
+val toastBgColor = mutableStateOf(route_left_background)
+val toastTextColor = mutableStateOf(route_left_item_color)
+val hint = mutableStateOf("请输入内容")
+
 /*
 * 自定义Toast
 * */
@@ -28,8 +39,8 @@ fun Toast(
     text: MutableState<String>,
     showTime: Long = 1000,
     background: Color = route_left_background,
-    textColor:Color = route_left_item_color,
-    close:Boolean = false
+    textColor: Color = route_left_item_color,
+    close: Boolean = false
 ) {
     if (showToast.value) {
         Box(modifier = Modifier.fillMaxSize().padding(bottom = 30.dp)) {
@@ -40,13 +51,15 @@ fun Toast(
                     ).padding(start = 20.dp, end = 20.dp)
                 ) {
                     Text(text = text.value, color = textColor)
-                    if (close){
+                    if (close) {
                         Text(text = "关闭", color = GOOGLE_BLUE, modifier = Modifier.clickable {
                             showToast.value = false
                         }.align(Alignment.CenterVertically))
                     }
                 }
+                println("autoClose before")
                 autoClose(showToast, showTime)
+                println("autoClose after")
             }
         }
     }

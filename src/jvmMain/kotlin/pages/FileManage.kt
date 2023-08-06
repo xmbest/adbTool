@@ -10,7 +10,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
@@ -19,15 +18,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import components.ConfirmDialog
-import components.SimpleDialog
-import components.Toast
+import components.*
 import config.route_left_item_color
 import entity.File
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import status.currentDevice
+import status.*
 import theme.*
 import utils.*
 import java.text.DecimalFormat
@@ -36,18 +33,11 @@ import javax.swing.JFileChooser
 
 val fileList = mutableStateListOf<File>()
 val defaultDir = mutableStateOf("/sdcard/")
-val toastText = mutableStateOf("")
-val showToast = mutableStateOf(false)
-val currentToastId = mutableStateOf(0)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileManage() {
     if (fileList.isEmpty() && defaultDir.value == "/sdcard/") {
-        GlobalScope.launch {
-            root()
-            remount()
-        }
         initFile()
     }
     if (currentDevice.value.isEmpty()) {
@@ -109,17 +99,6 @@ fun FileView(
         }
     }
 ) {
-    val showingDialog = remember { mutableStateOf(false) }
-    val showingConfirmDialog = remember { mutableStateOf(false) }
-    val needRun = remember { mutableStateOf(false) }
-    val title = remember { mutableStateOf("警告") }
-    val titleColor = remember { mutableStateOf(Color.Blue) }
-    val dialogText = remember { mutableStateOf("测试") }
-    val rm = remember { mutableStateOf("") }
-    val hint = remember { mutableStateOf("请输入内容") }
-    val run = remember {
-        mutableStateOf({})
-    }
     Row(
         modifier = Modifier.fillMaxWidth().height(60.dp).padding(top = 5.dp).background(Color.White).clip(
             RoundedCornerShape(5.dp)
@@ -156,22 +135,22 @@ fun FileView(
                 Text("copy path")
             }) {
                 Icon(
-                    painter = painterResource("copy.png"),
+                    painter = painterResource(getRealLocation("copy")),
                     "icon",
                     tint = GOOGLE_BLUE,
                     modifier = Modifier.size(50.dp).clickable {
                         ClipboardUtil.setSysClipboardText(defaultDir.value + file.name)
                         if (!showToast.value) {
                             showToast.value = true
-                            currentToastId.value = 1
+                            currentToastTask.value = "FileManagePathCopy"
                             toastText.value = "路径复制成功"
                         } else {
-                            if (currentToastId.value == 1)
+                            if (currentToastTask.value == "FileManagePathCopy")
                                 return@clickable
                             GlobalScope.launch {
                                 delay(1000)
                                 showToast.value = true
-                                currentToastId.value = 1
+                                currentToastTask.value = "FileManagePathCopy"
                                 toastText.value = "路径复制成功"
                             }
                         }
@@ -182,7 +161,7 @@ fun FileView(
                 Text("rename")
             }) {
                 Icon(
-                    painter = painterResource("rename.png"),
+                    painter = painterResource(getRealLocation("rename")),
                     "icon",
                     tint = GOOGLE_BLUE,
                     modifier = Modifier.size(50.dp).clickable {
@@ -196,7 +175,7 @@ fun FileView(
                             needRun.value = false
                             GlobalScope.launch {
                                 shell("mv ${defaultDir.value}${file.name} ${defaultDir.value}${dialogText.value}")
-                                currentToastId.value = 8
+                                currentToastTask.value = "FileManageRename"
                                 toastText.value = "重命名成功"
                                 showToast.value = true
                                 initFile()
@@ -212,7 +191,7 @@ fun FileView(
                     Text("push")
                 }) {
                     Icon(
-                        painter = painterResource("push.png"),
+                        painter = painterResource(getRealLocation("push")),
                         "icon",
                         tint = GOOGLE_GREEN,
                         modifier = Modifier.size(50.dp).clickable {
@@ -240,7 +219,7 @@ fun FileView(
                                             if (showToast.value) {
                                                 delay(1000)
                                             }
-                                            currentToastId.value = 2
+                                            currentToastTask.value = "FileManagePush"
                                             toastText.value = "文件push成功"
                                             showToast.value = true
                                             initFile()
@@ -258,7 +237,7 @@ fun FileView(
                 Text("pull")
             }) {
                 Icon(
-                    painter = painterResource("save.png"),
+                    painter = painterResource(getRealLocation("save")),
                     "icon",
                     tint = GOOGLE_YELLOW,
                     modifier = Modifier.size(50.dp).clickable {
@@ -277,7 +256,7 @@ fun FileView(
                                     if (showToast.value) {
                                         delay(1000)
                                     }
-                                    currentToastId.value = 3
+                                    currentToastTask.value = "FileManageSave"
                                     toastText.value = "文件已保存到$path"
                                     showToast.value = true
                                 }
@@ -291,24 +270,23 @@ fun FileView(
                 Text("delete")
             }) {
                 Icon(
-                    painter = painterResource("delete.png"),
+                    painter = painterResource(getRealLocation("delete")),
                     "icon",
                     tint = GOOGLE_RED,
                     modifier = Modifier.size(50.dp).clickable {
                         title.value = "警告"
                         titleColor.value = GOOGLE_RED
                         dialogText.value = "是否删除${file.name}"
-                        rm.value = defaultDir.value + file.name
                         needRun.value = true
                         run.value = {
                             run.value = {}
                             GlobalScope.launch {
-                                shell("rm -rf '${rm.value}'")
+                                shell("rm -rf '${defaultDir.value} + ${file.name}'")
                                 if (showToast.value) {
                                     delay(1000)
                                 }
-                                currentToastId.value = 3
-                                toastText.value = "${rm.value}已删除"
+                                currentToastTask.value = "FileManageDelete"
+                                toastText.value = "${defaultDir.value} + ${file.name}已删除"
                                 showToast.value = true
                                 initFile()
                             }
@@ -322,21 +300,21 @@ fun FileView(
             TooltipArea(tooltip = {
                 Text("paste file")
             }) {
-                Icon(painter = painterResource("paste.png"), null, modifier = Modifier.size(50.dp).clickable {
+                Icon(painter = painterResource(getRealLocation("paste")), null, modifier = Modifier.size(50.dp).clickable {
                     val path = ClipboardUtil.getSysClipboardText()
                     val res = shell("ls $path")
                     if (path.trim().isBlank() || res.trim().isBlank()) {
                         if (!showToast.value) {
                             showToast.value = true
-                            currentToastId.value = 7
+                            currentToastTask.value = "FileManagePaste"
                             toastText.value = "不是有效路径"
                         } else {
-                            if (currentToastId.value == 7)
+                            if (currentToastTask.value == "FileManagePaste")
                                 return@clickable
                             GlobalScope.launch {
                                 delay(1000)
                                 showToast.value = true
-                                currentToastId.value = 7
+                                currentToastTask.value = "FileManagePaste"
                                 toastText.value = "不是有效路径"
                             }
                         }
@@ -351,7 +329,7 @@ fun FileView(
                             run.value = {}
                             GlobalScope.launch {
                                 shell("cp $path ${defaultDir.value}")
-                                currentToastId.value = 8
+                                currentToastTask.value = "FileManageFileCopy"
                                 toastText.value = "${path}复制成功"
                                 showToast.value = true
                                 initFile()
@@ -365,7 +343,7 @@ fun FileView(
             TooltipArea(tooltip = {
                 Text("push")
             }) {
-                Icon(painter = painterResource("push.png"), null, modifier = Modifier.size(50.dp).clickable {
+                Icon(painter = painterResource(getRealLocation("push")), null, modifier = Modifier.size(50.dp).clickable {
                     JFileChooser().apply {
                         dialogTitle = "选择文件"
                         fileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES
@@ -389,7 +367,7 @@ fun FileView(
                                     if (showToast.value) {
                                         delay(1000)
                                     }
-                                    currentToastId.value = 2
+                                    currentToastTask.value = "FileManagePush"
                                     toastText.value = "文件push成功"
                                     showToast.value = true
                                     initFile()
@@ -404,7 +382,7 @@ fun FileView(
             TooltipArea(tooltip = {
                 Text("back")
             }) {
-                Icon(painter = painterResource("back.png"), null, modifier = Modifier.size(50.dp).clickable {
+                Icon(painter = painterResource(getRealLocation("back")), null, modifier = Modifier.size(50.dp).clickable {
                     backParent()
                 }.padding(10.dp), tint = GOOGLE_BLUE)
             }
@@ -412,7 +390,7 @@ fun FileView(
             TooltipArea(tooltip = {
                 Text("refresh")
             }) {
-                Icon(painter = painterResource("sync.png"), null, modifier = Modifier.size(50.dp).clickable {
+                Icon(painter = painterResource(getRealLocation("sync")), null, modifier = Modifier.size(50.dp).clickable {
                     initFile()
                 }.padding(10.dp), tint = GOOGLE_BLUE)
             }
@@ -491,25 +469,25 @@ fun setSize(oldSize: String): String {
 }
 
 fun getFileIcon(fileName: String, isDir: Boolean): String {
-    return if (isDir) "folder.png"
+    return if (isDir) getRealLocation("folder")
     else if (fileName.endsWith(".apk"))
-        "android.png"
+        getRealLocation("android")
     else if (fileName.endsWith(".jar"))
-        "java.png"
+        getRealLocation("java")
     else if (fileName.endsWith(".json"))
-        "json.png"
+        getRealLocation("json")
     else if (fileName.endsWith(".so"))
-        "dependency.png"
+        getRealLocation("dependency")
     else if (fileName.endsWith(".cfg") || fileName.endsWith(".conf"))
-        "settings.png"
+        getRealLocation("settings")
     else if (fileName.endsWith(".txt") || fileName.endsWith(".xml"))
-        "file-text.png"
+        getRealLocation("file-text")
     else if (fileName.endsWith(".png") || fileName.endsWith(".jpg"))
-        "file-image.png"
+        getRealLocation("file-image")
     else if (fileName.endsWith(".zip") || fileName.endsWith(".tar") || fileName.endsWith(".gz") || fileName.endsWith(".7z"))
-        "file-zip.png"
+        getRealLocation("file-zip")
     else if (fileName.endsWith(".mp3") || fileName.endsWith(".wav") || fileName.endsWith(".rf"))
-        "music.png"
+        getRealLocation("music")
     else
-        "file.png"
+        getRealLocation("file")
 }
