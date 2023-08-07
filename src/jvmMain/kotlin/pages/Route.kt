@@ -78,7 +78,8 @@ fun Route() {
                     text = {
                         Text(
                             if (currentDevice.value.isBlank()) "请选择设备" else currentDevice.value,
-                            color = route_left_item_color
+                            color = route_left_item_color,
+                            maxLines = 2
                         )
                     },
                     icon = {

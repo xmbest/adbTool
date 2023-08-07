@@ -26,5 +26,27 @@ class GenerexUtils {
             }
             return str.toString()
         }
+
+        /**
+         * 英文谐音需求
+         * @param oldStr 要替换的英文
+         * @param newStr 要替换成的中文
+         * @param strings 要被处理的命令字
+         */
+        fun replace(oldStr: String?, newStr: List<String?>, strings: List<String>): String {
+            val stringBuilder = java.lang.StringBuilder()
+            var res = ""
+            for (i in newStr.indices) {
+                for (string in strings) {
+                    stringBuilder.append("\"" + string.replace(oldStr!!, newStr[i]!!) + "\",")
+                }
+                res += "\"" + newStr[i] + "\""
+                if (i != newStr.size -1){
+                    res += ","
+                }
+            }
+            stringBuilder.append("\nTXZAsrManager.getInstance().setRealFictitiousCmds(\"$oldStr\",$res);")
+            return stringBuilder.toString()
+        }
     }
 }
