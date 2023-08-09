@@ -132,6 +132,16 @@ fun dumpsys(packageName: String, filter: String = ""): String {
     return shell("dumpsys package $packageName${if (filter.isNotBlank()) " | grep $filter" else ""}")
 }
 
+fun ps(keyWord:String,isA:Boolean):String{
+    if (getOsType() == "windows")
+        return shell("\"ps ${if(isA) "-A" else ""} ${if (keyWord.isNotBlank()) " | grep $keyWord\"" else "\""}")
+    return shell("ps ${if(isA) "-A" else ""} ${if (keyWord.isNotBlank()) " | grep $keyWord" else ""}")
+}
+
+
+fun kill(pids:String){
+    shell("kill $pids")
+}
 
 /**
  * @Description： 获取设备列表
