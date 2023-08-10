@@ -68,23 +68,26 @@ public class BashUtils {
         public void run() {
             try (BufferedReader bufr = new BufferedReader(new InputStreamReader(this.in))) {
                 String line = null;
-                FileWriter fw = new FileWriter(dir + "/error.txt");
+                FileWriter fw = null;
                 while ((line = bufr.readLine()) != null) {
                     if (!error) {
                         stringBuilder.append(line).append("\n");
-                    }else {
-                        System.out.println("error:"+line);
+                    } else {
+                        fw = new FileWriter(workDir + "/error.txt");
+                        System.out.println("error:" + line);
+                        fw.write(line);
                     }
-                    fw.write(line);
                 }
-                fw.flush();
-                fw.close();
+                if (fw != null) {
+                    fw.flush();
+                    fw.close();
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        public String getText(){
+        public String getText() {
             return stringBuilder.toString();
         }
     }

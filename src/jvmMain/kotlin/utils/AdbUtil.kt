@@ -103,6 +103,10 @@ fun install(path:String):String{
     return execute("install $path")
 }
 
+fun mkdir(path: String):String{
+    return shell("mkdir -p $path")
+}
+
 fun start(packageName: String):String{
     val dumpsys = dumpsys(packageName)
     val regex = Regex(".* (.*)/(.*?) .*")

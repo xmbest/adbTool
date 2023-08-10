@@ -281,7 +281,7 @@ fun FileView(
                         run.value = {
                             run.value = {}
                             GlobalScope.launch {
-                                shell("rm -rf '${defaultDir.value} + ${file.name}'")
+                                shell("rm -rf '${defaultDir.value}${file.name}'")
                                 if (showToast.value) {
                                     delay(1000)
                                 }
@@ -297,6 +297,57 @@ fun FileView(
                 Spacer(modifier = Modifier.width(15.dp))
             }
         } else {
+            TooltipArea(tooltip = {
+                Text("go path")
+            }) {
+                Icon(painter = painterResource(getRealLocation("go")), null, modifier = Modifier.size(50.dp).clickable {
+                    var path = ClipboardUtil.getSysClipboardText()
+                    val res = shell("ls $path")
+                    if (path.trim().isBlank() || res.trim().isBlank()) {
+                        if (!showToast.value) {
+                            showToast.value = true
+                            currentToastTask.value = "FileManagePaste"
+                            toastText.value = "不是有效路径"
+                        } else {
+                            if (currentToastTask.value == "FileManagePaste")
+                                return@clickable
+                            GlobalScope.launch {
+                                delay(1000)
+                                showToast.value = true
+                                currentToastTask.value = "FileManagePaste"
+                                toastText.value = "不是有效路径"
+                            }
+                        }
+                        return@clickable
+                    } else {
+                        if (res.contains("/") || res.contains("\\")){
+                            val end =
+                                if (path.contains("\\")) path.lastIndexOf("\\") + 1 else path.lastIndexOf("/") + 1
+                            path = path.substring(0,end)
+                        }else{
+                            if (path.get(path.length -1) != '/' && path.get(path.length -1) != '\\')
+                                path += if (path.contains("\\")) "\\" else "/"
+                        }
+                        defaultDir.value  = path
+                        initFile()
+                        if (!showToast.value) {
+                            toastText.value = "已跳转"
+                            currentToastTask.value = "FileManageGoPath"
+                            showToast.value = true
+                        } else {
+                            if (currentToastTask.value != "FileManageGoPath") {
+                                GlobalScope.launch {
+                                    delay(1000)
+                                    toastText.value = "已跳转"
+                                    showToast.value = true
+                                    currentToastTask.value = "FileManageGoPath"
+                                }
+                            }
+                        }
+                    }
+                }.padding(10.dp), tint = GOOGLE_BLUE)
+            }
+            Spacer(modifier = Modifier.width(10.dp))
             TooltipArea(tooltip = {
                 Text("paste file")
             }) {
@@ -394,7 +445,38 @@ fun FileView(
                     initFile()
                 }.padding(10.dp), tint = GOOGLE_BLUE)
             }
-            Spacer(modifier = Modifier.width(15.dp))
+            Spacer(modifier = Modifier.width(10.dp))
+            TooltipArea(tooltip = {
+                Text("rm -rf *")
+            }) {
+                Icon(
+                    painter = painterResource(getRealLocation("delete")),
+                    "icon",
+                    tint = GOOGLE_RED,
+                    modifier = Modifier.size(50.dp).clickable {
+                        title.value = "警告"
+                        titleColor.value = GOOGLE_RED
+                        dialogText.value = "是否删除${file.name}下所有文件"
+                        needRun.value = true
+                        run.value = {
+                            run.value = {}
+                            GlobalScope.launch {
+                                shell("rm -rf '${defaultDir.value}'")
+                                mkdir(defaultDir.value)
+                                if (showToast.value) {
+                                    delay(1000)
+                                }
+                                currentToastTask.value = "FileManageDeleteAll"
+                                toastText.value = "删除成功"
+                                showToast.value = true
+                                initFile()
+                            }
+                        }
+                        showingDialog.value = true
+                    }.padding(10.dp)
+                )
+                Spacer(modifier = Modifier.width(15.dp))
+            }
         }
         if (showingDialog.value) {
             SimpleDialog(
