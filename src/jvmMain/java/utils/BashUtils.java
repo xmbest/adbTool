@@ -11,16 +11,13 @@ public class BashUtils {
     public static final String workDir = System.getProperty("user.dir");
 
     public static String execCommand(String command) throws IOException, InterruptedException {
-        return execCommand(command, dir);
+        return execCommand(command, workDir);
     }
 
     /**
      * 执行命令
      *
      * @param command
-     * @return
-     * @throws IOException
-     * @throws InterruptedException
      */
     public static String execCommand(String command, String dir) throws IOException, InterruptedException {
         String[] commands = command.split(" ");
