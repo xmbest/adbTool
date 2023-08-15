@@ -19,12 +19,12 @@ class ListenDeviceUtil {
             if (autoSync.value){
                 GlobalScope.launch {
                     //判断是否在前台
-                    while (!appIsMinimized.value) {
+                    while (!appIsMinimized.value && autoSync.value) {
                         if (BashUtils.runing){
                             continue
                         }
                         getDevices()
-                        delay(1000 * checkDevicesTime.value)
+                        delay(1000 * checkDevicesTime)
                     }
                 }
             }

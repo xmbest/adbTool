@@ -131,7 +131,6 @@ fun BoardManage() {
                                     modifier = Modifier.fillMaxHeight().padding(bottom = 8.dp)
                                 ) {
                                     Button(onClick = {
-
                                         shell(boardCustomer.value)
                                         if (!showToast.value) {
                                             currentToastTask.value = "BoardManageCustomerSend"
