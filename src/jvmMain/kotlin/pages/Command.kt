@@ -53,7 +53,7 @@ fun CommandGeneral() {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             if (!checked.value) {
                 Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                    CommandText(str = text1, hint = "输入正则表达式")
+                    CommandText(str = text1, hint = "TXZ语料规则\n1.去除多余序号和符号\n2.多种语料请换行\n")
                 }
             } else {
                 Row(modifier = Modifier.fillMaxWidth().weight(1f)) {

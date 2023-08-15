@@ -1,5 +1,6 @@
 package utils
 
+import entity.BroadParam
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -147,6 +148,28 @@ fun kill(pids:String){
     shell("kill $pids")
 }
 
+fun board(action:String,params:String){
+    val str = "am broadcast -a $action $params"
+    shell(str)
+}
+
+
+fun board(action:String, key:Int, list: List<BroadParam>?){
+    var str = "am broadcast -a com.txznet.adapter.recv --ei key_type $key --es action $action"
+    if (list != null) {
+        if (list.isNotEmpty()) {
+            for (broadParam in list) {
+                str += "${broadParam.paramType} ${broadParam.param} ${broadParam.value}"
+            }
+        }
+    }
+    shell(str)
+}
+
+fun board(action:String, key:Int, broadParam: BroadParam){
+    val str = "am broadcast -a com.txznet.adapter.recv --ei key_type $key --es action $action ${broadParam.paramType} ${broadParam.param} ${broadParam.value}"
+    shell(str)
+}
 /**
  * @Description： 获取设备列表
  */
