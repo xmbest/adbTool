@@ -11,7 +11,7 @@ public class BashUtils {
     public static final String workDir = System.getProperty("user.dir");
 
     public static String execCommand(String command) throws IOException, InterruptedException {
-        return execCommand(command, dir);
+        return execCommand(command, workDir);
     }
 
     /**
