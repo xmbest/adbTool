@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.onEach
 import pages.Route
 import status.appIsMinimized
 import utils.ListenDeviceUtil.Companion.listenDevices
+import utils.Log
+import utils.PropertiesUtil
 import utils.getRealLocation
 import java.awt.Dimension
 import java.awt.Toolkit
@@ -31,6 +33,7 @@ fun App() {
 }
 
 fun main() = application {
+    PropertiesUtil.init()
     val screenSize: Dimension = Toolkit.getDefaultToolkit().screenSize
     //显示大小
     val width = window_width
@@ -51,7 +54,7 @@ fun main() = application {
 }
 
 private fun onMinimized(isMinimized: Boolean) {
-    println("最小化：$isMinimized")
+    Log.d("isMinimized: $isMinimized")
     appIsMinimized.value = isMinimized
     if (!isMinimized)
         listenDevices()

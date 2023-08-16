@@ -34,7 +34,8 @@ public class BashUtils {
         if (!dir.isBlank()) {
             processBuilder.directory(new File(dir));
         }
-        System.out.printf("开始执行命令: %s \n", command);
+        if (!command.equals("adb devices"))
+            Log.Companion.d("exec: "+command);
         runing = true;
         Process exec = processBuilder.start();
         // 获取外部程序标准输出流
@@ -45,6 +46,7 @@ public class BashUtils {
         exec.waitFor();
         runing = false;
 //        System.out.println(runnable.getText());
+        Log.Companion.flushRes(runnable.getText());
         return runnable.getText();
     }
 
@@ -65,19 +67,12 @@ public class BashUtils {
         public void run() {
             try (BufferedReader bufr = new BufferedReader(new InputStreamReader(this.in))) {
                 String line = null;
-                FileWriter fw = null;
                 while ((line = bufr.readLine()) != null) {
                     if (!error) {
                         stringBuilder.append(line).append("\n");
                     } else {
-                        fw = new FileWriter(workDir + "/error.txt");
-                        System.out.println("error:" + line);
-                        fw.write(line);
+                        Log.Companion.e(line);
                     }
-                }
-                if (fw != null) {
-                    fw.flush();
-                    fw.close();
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);

@@ -13,5 +13,7 @@ var checkDevicesTime = 5L
 val autoSync = mutableStateOf(true)
 //软件开启默认页
 var index = 0
+//开启日志保存
+var saveLog = true
 val desktop: String = BashUtils.dir
 var pathSave = desktop
