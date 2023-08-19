@@ -27,7 +27,8 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew packageReleaseMsi
     - name: upload apk
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@master
+      if: always()
       with:
         name: artifact
-        path: ${{ github.workspace }}/build/compose/binaries
+        path: adbTool/build/compose/binaries/
