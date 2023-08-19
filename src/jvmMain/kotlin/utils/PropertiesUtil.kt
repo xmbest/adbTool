@@ -1,8 +1,8 @@
 package utils
 
-import status.autoSync
-import status.checkDevicesTime
-import status.index
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import status.*
 import java.io.*
 import java.util.*
 
@@ -10,25 +10,63 @@ class PropertiesUtil {
     companion object{
 
         fun init() {
-            val file = File(BashUtils.workDir, "data.properties")
-            val file2 = File(BashUtils.workDir,"res.log")
-            if (file2.exists()){
-                file2.delete()
+            Log.d("workDir: " + BashUtil.workDir)
+            val cfgParent = File(BashUtil.workDir, "cfg")
+            if (!cfgParent.exists()){
+                cfgParent.mkdir()
             }
-            Log.d("workDir: " + BashUtils.workDir)
+
+            //205，207环境
+            val file205 = File(cfgParent,"back.inline.dev.conn.cfg.txz~dat")
+            if (!file205.exists()){
+                val fileOutputStream = FileOutputStream(file205)
+                fileOutputStream.write(BashUtil.dev)
+                fileOutputStream.close()
+                Log.d("create back.inline.dev.conn.cfg.txz~dat")
+            }
+
+            val file207 = File(cfgParent,"back.inline.test.conn.cfg.txz~dat")
+            if (!file207.exists()){
+                val fileOutputStream = FileOutputStream(file207)
+                fileOutputStream.write(BashUtil.test)
+                fileOutputStream.close()
+                Log.d("back.inline.test.conn.cfg.txz~dat")
+            }
+
+            val file = File(cfgParent, "cfg.properties")
             if (!file.exists()) {
                 try {
                     file.createNewFile()
-                    setValue("checkDevicesTime", "$checkDevicesTime", "自动刷新时间")
-                    setValue("autoSync", if (autoSync.value) "1" else "0", "是否自动刷新")
-                    setValue("index", "$index", "软件打开进入页")
+                    //自动刷新时间
+                    setValue("checkDevicesTime", "${checkDevicesTime.value}", "")
+                    //是否自动刷新
+                    setValue("autoSync", if (autoSync.value) "1" else "0", "")
+                    //软件起始页
+                    setValue("index", "${index.value}", "")
+                    //保存日志
+                    setValue("saveLog",if (saveLog.value) "1" else "0","")
                 } catch (e: IOException) {
                     e.message?.let { Log.e(it) }
                 }
             }else{
-                checkDevicesTime = getValue("checkDevicesTime")?.toLong() ?: 5L
-                index = getValue("index")?.toInt() ?: 0
+                checkDevicesTime.value = getValue("checkDevicesTime")?.toInt() ?: 5
+                index.value = getValue("index")?.toInt() ?: 0
                 autoSync.value = getValue("autoSync")?.toInt() == 1
+                saveLog.value = getValue("saveLog")?.toInt() == 1
+                desktop.value = getValue("desktop")?: desktop.value
+                adb.value = getValue("adb")?: "adb"
+            }
+
+            //adb环境
+            val adb1 = File(cfgParent,"adb.exe")
+            if (!adb1.exists() && BashUtil.split == "\\"){
+                val inputStream = ClassLoader.getSystemResourceAsStream("adb.exe")
+                GlobalScope.launch {
+                    FileUtil.copyFileUsingFileStreams(inputStream,adb1)
+                    adb.value = adb1.absolutePath
+                    setValue("adb", adb.value,"")
+                    Log.d("create adb.exe")
+                }
             }
         }
 
@@ -42,7 +80,12 @@ class PropertiesUtil {
             properties!!.setProperty(key, value)
             var fileOutputStream: FileOutputStream? = null
             try {
-                fileOutputStream = FileOutputStream(File(BashUtils.workDir, "data.properties"))
+                val cfgParent = File(BashUtil.workDir, "cfg")
+                if (!cfgParent.exists()){
+                    cfgParent.mkdir()
+                }
+                val file = File(cfgParent, "cfg.properties")
+                fileOutputStream = FileOutputStream(file)
                 properties.store(fileOutputStream, comments)
             } catch (e: FileNotFoundException) {
                 e.message?.let { Log.e(it) }
@@ -52,7 +95,7 @@ class PropertiesUtil {
                 try {
                     fileOutputStream?.close()
                 } catch (e: IOException) {
-                    Log.e("data.properties文件流关闭出现异常")
+                    Log.e("cfg.properties文件流关闭出现异常")
                 }
             }
         }
@@ -75,19 +118,22 @@ class PropertiesUtil {
             val properties = Properties()
             var inputStream: InputStream? = null
             try {
-                //data.properties在resources目录下
-                val file = File(BashUtils.workDir, "data.properties")
+                val cfgParent = File(BashUtil.workDir, "cfg")
+                if (!cfgParent.exists()){
+                    cfgParent.mkdir()
+                }
+                val file = File(cfgParent, "cfg.properties")
                 inputStream = FileInputStream(file)
                 properties.load(inputStream)
             } catch (e: FileNotFoundException) {
-                Log.e("data.properties文件未找到!")
+                Log.e("cfg.properties文件未找到!")
             } catch (e: IOException) {
                 println("出现IOException")
             } finally {
                 try {
                     inputStream?.close()
                 } catch (e: IOException) {
-                    Log.e("data.properties文件流关闭出现异常")
+                    Log.e("cfg.properties文件流关闭出现异常")
                 }
             }
             return properties

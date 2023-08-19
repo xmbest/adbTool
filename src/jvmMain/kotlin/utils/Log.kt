@@ -10,11 +10,21 @@ import java.util.*
 class Log {
     companion object{
         private val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        fun init(){
+            val logParent = File(BashUtil.workDir,"log")
+            if (!logParent.exists()){
+                logParent.mkdir()
+            }
+            val file = File(logParent,"result.log")
+            if (file.exists()){
+                file.delete()
+            }
+        }
         fun d(msg:String):String{
             val date = sdf.format(Date())
             val str = String.format("%s D %s", date,msg)
             println(str)
-            if (saveLog){
+            if (saveLog.value){
                 flush(str)
             }
             return str
@@ -24,7 +34,7 @@ class Log {
             val date = sdf.format(Date())
             val str = String.format("%s E %s", date,msg)
             println(str)
-            if (saveLog){
+            if (saveLog.value){
                 flush(str)
             }
             return str
@@ -33,7 +43,7 @@ class Log {
         fun flush(msg: String){
             val sdf1 = SimpleDateFormat("yyyy_MM_dd_HH")
             val date = sdf1.format(Date())
-            val parent = File(BashUtils.workDir,"log")
+            val parent = File(BashUtil.workDir,"log")
             if (!parent.exists()){
                 parent.mkdir()
             }
@@ -48,7 +58,13 @@ class Log {
         }
 
         fun flushRes(msg: String){
-            val file = File(BashUtils.workDir,"res.log")
+            if (!saveLog.value)
+                return
+            val parent = File(BashUtil.workDir,"log")
+            if (!parent.exists()){
+                parent.mkdir()
+            }
+            val file = File(parent,"result.log")
             val output = BufferedOutputStream(FileOutputStream(file,true))
             output.write(msg.toByteArray())
             output.flush()

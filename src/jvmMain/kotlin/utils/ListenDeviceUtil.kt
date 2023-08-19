@@ -20,11 +20,12 @@ class ListenDeviceUtil {
                 GlobalScope.launch {
                     //判断是否在前台
                     while (!appIsMinimized.value && autoSync.value) {
-                        if (BashUtils.runing){
+                        if (BashUtil.runing){
                             continue
                         }
                         getDevices()
-                        delay(1000 * checkDevicesTime)
+                        Log.d("checkDevicesTime = ${checkDevicesTime.value}")
+                        delay(1000L * checkDevicesTime.value)
                     }
                 }
             }

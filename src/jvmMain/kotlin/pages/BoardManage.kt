@@ -22,8 +22,11 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import status.currentDevice
-import utils.board
-import utils.shell
+import status.desktop
+import utils.*
+import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 private val boardCommand = mutableStateOf("")
 private val boardCustomer =
@@ -61,7 +64,7 @@ fun BoardManage() {
                         },
                         placeholder = { Text("text") },
                         onValueChange = { boardCommand.value = it },
-                        modifier = Modifier.weight(1f).height(48.dp).padding(end = 5.dp)
+                        modifier = Modifier.weight(1f).fillMaxHeight().padding(end = 5.dp)
                     )
                     Button(
                         onClick = {
@@ -88,7 +91,7 @@ fun BoardManage() {
                                 )
                             }
                         },
-                        modifier = Modifier.width(86.dp).height(46.dp).padding(end = 5.dp)
+                        modifier = Modifier.width(80.dp).fillMaxHeight().padding(start = 0.dp, end = 5.dp)
                     ) {
                         Text(text = "发送")
                     }
@@ -118,6 +121,120 @@ fun BoardManage() {
                     ButtonByBoard("挂断hangup", "bluetooth.hangup", 2040)
                     ButtonByBoard("挂断reject", "bluetooth.reject", 2040)
                 }
+                Title("其他")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().height(60.dp).padding(start = 5.dp)
+                ) {
+                    ButtonClick("注入205环境") {
+                        push(
+                            "${BashUtil.workDir}${BashUtil.split}cfg${BashUtil.split}back.inline.dev.conn.cfg.txz~dat",
+                            "\"/sdcard/txz/.conn.cfg.txz~dat\""
+                        )
+                        if (!showToast.value) {
+                            currentToastTask.value = "BoardManageSend205"
+                            toastText.value = "已注入205环境"
+                            showToast.value = true
+                        } else {
+                            if (currentToastTask.value == "BoardManageSend205")
+                                return@ButtonClick
+                            GlobalScope.launch {
+                                delay(1000)
+                                currentToastTask.value = "BoardManageSend205"
+                                toastText.value = "已注入205环境"
+                                showToast.value = true
+                            }
+                        }
+                    }
+
+                    ButtonClick("注入207环境") {
+                        push(
+                            "${BashUtil.workDir}${BashUtil.split}cfg${BashUtil.split}back.inline.test.conn.cfg.txz~dat",
+                            "\"/sdcard/txz/.conn.cfg.txz~dat\""
+                        )
+                        if (!showToast.value) {
+                            currentToastTask.value = "BoardManageSend205"
+                            toastText.value = "已注入207环境"
+                            showToast.value = true
+                        } else {
+                            if (currentToastTask.value == "BoardManageSend207")
+                                return@ButtonClick
+                            GlobalScope.launch {
+                                delay(1000)
+                                currentToastTask.value = "BoardManageSend207"
+                                toastText.value = "已注入207环境"
+                                showToast.value = true
+                            }
+                        }
+                    }
+                    ButtonClick("注入外网环境") {
+                        shell("rm -rf /sdcard/txz/.conn.cfg.txz~dat")
+                        if (!showToast.value) {
+                            currentToastTask.value = "BoardManageSend205or207Clear"
+                            toastText.value = "已注入外网环境"
+                            showToast.value = true
+                        } else {
+                            if (currentToastTask.value == "BoardManageSend205or207Clear")
+                                return@ButtonClick
+                            GlobalScope.launch {
+                                delay(1000)
+                                currentToastTask.value = "BoardManageSend205or207Clear"
+                                toastText.value = "已注入外网环境"
+                                showToast.value = true
+                            }
+                        }
+                    }
+
+                    ButtonClick("保存音频") {
+                        val currentDateTime = LocalDateTime.now()
+                        val formatter = DateTimeFormatter.ofPattern("yyMMddHHmmss")
+                        val formattedDateTime = currentDateTime.format(formatter)
+                        val destPath = desktop.value + BashUtil.split + formattedDateTime + "_voice"
+                        pull("/sdcard/txz/voice", destPath)
+                        val file  = File(destPath)
+                        if (!showToast.value) {
+                            currentToastTask.value = "BoardManageSaveVoice"
+                            if (file.exists())
+                                toastText.value = "音频已保存到${formattedDateTime}_voice"
+                            else
+                                toastText.value = "/sdcard/txz/voice不存在"
+                            showToast.value = true
+                        } else {
+                            if (currentToastTask.value == "BoardManageSaveVoice")
+                                return@ButtonClick
+                            GlobalScope.launch {
+                                delay(1000)
+                                currentToastTask.value = "BoardManageSaveVoice"
+                                if (file.exists())
+                                    toastText.value = "音频已保存到${formattedDateTime}_voice"
+                                else
+                                    toastText.value = "/sdcard/txz/voice不存在"
+                                showToast.value = true
+                                showToast.value = true
+                            }
+                        }
+                    }
+
+                    ButtonClick("清空音频") {
+                        shell("rm -rf /sdcard/txz/voice")
+                        if (!showToast.value) {
+                            currentToastTask.value = "BoardManageVoiceClear"
+                            toastText.value = "已清空音频"
+                            showToast.value = true
+                        } else {
+                            if (currentToastTask.value == "BoardManageVoiceClear")
+                                return@ButtonClick
+                            GlobalScope.launch {
+                                delay(1000)
+                                currentToastTask.value = "BoardManageVoiceClear"
+                                toastText.value = "已清空音频"
+                                showToast.value = true
+                            }
+                        }
+                    }
+
+
+                }
                 Title("自定义")
                 Row(modifier = Modifier.fillMaxWidth().weight(1f).padding(5.dp)) {
                     val scroll = rememberScrollState()
@@ -128,7 +245,7 @@ fun BoardManage() {
                             if (boardCustomer.value.isNotEmpty()) {
                                 Box(
                                     contentAlignment = Alignment.BottomEnd,
-                                    modifier = Modifier.fillMaxHeight().padding(bottom = 8.dp)
+                                    modifier = Modifier.fillMaxHeight()
                                 ) {
                                     Button(onClick = {
                                         shell(boardCustomer.value)
@@ -146,7 +263,7 @@ fun BoardManage() {
                                                 showToast.value = true
                                             }
                                         }
-                                    }, modifier = Modifier.padding(5.dp)) {
+                                    }, modifier = Modifier.padding(end = 5.dp)) {
                                         Text(text = "发送")
                                     }
                                 }
@@ -179,6 +296,15 @@ fun ButtonByBoard(
 ) {
     Button(onClick = {
         board(action, key, BroadParam(paramType, param, value))
+    }, modifier = Modifier.padding(start = 5.dp)) {
+        Text(text = str)
+    }
+}
+
+@Composable
+fun ButtonClick(str: String, click: () -> Unit) {
+    Button(onClick = {
+        click()
     }, modifier = Modifier.padding(start = 5.dp)) {
         Text(text = str)
     }

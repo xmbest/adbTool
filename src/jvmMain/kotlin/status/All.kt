@@ -2,18 +2,19 @@ package status
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import utils.BashUtils
+import utils.BashUtil
 
 val appIsMinimized = mutableStateOf(false)
 val currentDevice = mutableStateOf("")
 val devicesList = mutableStateListOf<String>()
 //自动刷新时间
-var checkDevicesTime = 5L
+var checkDevicesTime = mutableStateOf(5)
 //是否自动刷新
 val autoSync = mutableStateOf(true)
 //软件开启默认页
-var index = 0
+val index = mutableStateOf(0)
 //开启日志保存
-var saveLog = true
-val desktop: String = BashUtils.dir
+var saveLog = mutableStateOf(false)
+var desktop = mutableStateOf(BashUtil.dir)
 var pathSave = desktop
+val adb = mutableStateOf("adb")

@@ -4,6 +4,7 @@ import entity.BroadParam
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import status.adb
 import status.currentDevice
 import status.devicesList
 import java.io.BufferedReader
@@ -60,11 +61,11 @@ fun Process.text(): String {
 
 fun execute(cmd: String): String {
     if (cmd == "adb devices") {
-        return BashUtils.execCommand(cmd)
+        return BashUtil.execCommand(cmd)
     } else if (currentDevice.value.isEmpty()) {
         return ""
     }
-    return BashUtils.execCommand("adb -s ${currentDevice.value} " + cmd)
+    return BashUtil.execCommand("${adb.value} -s ${currentDevice.value} " + cmd)
 }
 
 

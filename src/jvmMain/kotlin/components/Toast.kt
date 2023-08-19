@@ -19,6 +19,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import theme.GOOGLE_BLUE
+import utils.Log
 
 /**
  * Toast属性
@@ -57,9 +58,9 @@ fun Toast(
                         }.align(Alignment.CenterVertically))
                     }
                 }
-                println("autoClose before")
+                Log.d("autoClose before")
                 autoClose(showToast, showTime)
-                println("autoClose after")
+                Log.d("autoClose after")
             }
         }
     }

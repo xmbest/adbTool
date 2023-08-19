@@ -36,7 +36,7 @@ val pages = listOf(
 @Composable
 fun Route() {
     var curPage by remember {
-        mutableStateOf(index)
+        mutableStateOf(index.value)
     }
     var expanded by remember {
         mutableStateOf(false)

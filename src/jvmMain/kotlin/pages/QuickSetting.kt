@@ -70,7 +70,7 @@ fun QuickSetting() {
                             shell("service call statusbar 2")
                         }
                         Item(keyMapperList3[2].icon, keyMapperList3[2].name) {
-                            saveScreen("/sdcard", pathSave)
+                            saveScreen("/sdcard", pathSave.value)
                         }
                         Item(keyMapperList3[3].icon, keyMapperList3[3].name) {
                             shell("am start  -n com.android.settings/com.android.settings.Settings")

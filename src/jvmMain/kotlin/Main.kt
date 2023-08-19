@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import pages.Route
 import status.appIsMinimized
+import utils.BashUtil
 import utils.ListenDeviceUtil.Companion.listenDevices
 import utils.Log
 import utils.PropertiesUtil
@@ -34,6 +35,8 @@ fun App() {
 
 fun main() = application {
     PropertiesUtil.init()
+    Log.init()
+    BashUtil.init()
     val screenSize: Dimension = Toolkit.getDefaultToolkit().screenSize
     //显示大小
     val width = window_width
