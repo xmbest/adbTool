@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
@@ -21,7 +21,7 @@ jobs:
         cache: gradle
         
     - name: Build with Gradle
-      run: ./gradlew.bat packageReleaseMsi
+      run: ./gradlew packageReleaseMsi
     - name: upload
       uses: actions/upload-artifact@v3
       with:
