@@ -21,7 +21,7 @@ jobs:
         cache: gradle
         
     - name: Build with Gradle
-      run: ./gradlew.bat packageReleaseMsi
+      run: gradlew.bat packageReleaseMsi
     - name: upload
       uses: actions/upload-artifact@v3
       with:
