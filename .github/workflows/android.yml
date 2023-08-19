@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
@@ -19,11 +19,15 @@ jobs:
         java-version: '16'
         distribution: 'temurin'
         cache: gradle
-        
+        name: artifact
+        path: adbTool/build/compose/binaries/main-release
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
     - name: Build with Gradle
-      run: gradlew.bat packageReleaseMsi
-    - name: upload
+      run: ./gradlew packageReleaseMsi
+    - name: upload apk
       uses: actions/upload-artifact@v3
       with:
         name: artifact
-        path: ${{ github.workspace }}/build/compose/binaries/main-release/**/*
+        path: ${{ github.workspace }}/build/compose/binaries
