@@ -1,5 +1,6 @@
 package utils
 
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import status.*
@@ -8,11 +9,12 @@ import java.util.*
 
 class PropertiesUtil {
     companion object{
+        @OptIn(DelicateCoroutinesApi::class)
         fun init() {
             Log.d("workDir: " + BashUtil.workDir)
             val cfgParent = File(BashUtil.workDir, "cfg")
             if (!cfgParent.exists()){
-                cfgParent.mkdir()
+                cfgParent.mkdirs()
             }
 
             //205，207环境
@@ -128,7 +130,7 @@ class PropertiesUtil {
          * 获取Properties对象
          * @return
          */
-        fun getProperties(): Properties? {
+        private fun getProperties(): Properties? {
             val properties = Properties()
             var inputStream: InputStream? = null
             try {

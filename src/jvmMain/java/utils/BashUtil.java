@@ -16,11 +16,12 @@ public class BashUtil {
     public static boolean runing = false;
 
     public static final String dir = System.getProperty("user.home") + split + "Desktop";
-    public static final String workDir = System.getProperty("user.dir");
+    public static  String workDir = System.getProperty("user.dir");
 
     public static void init() throws IOException {
         if (!SysUtilKt.getOsType().equals("windows")){
             split = "/";
+            workDir = System.getProperty("user.home") + split + "adbTool";
         }
     }
 

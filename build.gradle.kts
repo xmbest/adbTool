@@ -62,7 +62,7 @@ compose.desktop {
                 // a build version only for the pkg package
                 pkgPackageBuildVersion = "1.0.0"
                 // 设置图标
-                iconFile.set(project.file("launcher/logo.ico"))
+                iconFile.set(project.file("launcher/logo.icns"))
             }
         }
     }
