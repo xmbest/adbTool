@@ -505,7 +505,7 @@ fun FileView(
 
 fun initFile() {
     fileList.clear()
-    val res = shell("ls -l ${defaultDir.value}")
+    val res = shell("ls -al ${defaultDir.value}")
     var arr = res.trim().split("\n")
     arr = arr.subList(1, arr.size)
     arr.forEach {
