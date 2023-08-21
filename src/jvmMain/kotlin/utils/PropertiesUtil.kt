@@ -1,5 +1,6 @@
 package utils
 
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import status.*
@@ -8,7 +9,7 @@ import java.util.*
 
 class PropertiesUtil {
     companion object{
-
+        @OptIn(DelicateCoroutinesApi::class)
         fun init() {
             Log.d("workDir: " + BashUtil.workDir)
             val cfgParent = File(BashUtil.workDir, "cfg")
@@ -54,7 +55,7 @@ class PropertiesUtil {
                 autoSync.value = getValue("autoSync")?.toInt() == 1
                 saveLog.value = getValue("saveLog")?.toInt() == 1
                 desktop.value = getValue("desktop")?: desktop.value
-                adb.value = getValue("adb")?: "adb"
+                BashUtil.adb = getValue("adb")?: "adb"
             }
 
             //adb环境
@@ -63,9 +64,8 @@ class PropertiesUtil {
                 val inputStream = ClassLoader.getSystemResourceAsStream("adb.exe")
                 GlobalScope.launch {
                     FileUtil.copyFileUsingFileStreams(inputStream,adb1)
-                    adb.value = adb1.absolutePath
-                    setValue("adb", adb.value,"")
-                    Log.d("create adb.exe")
+                    BashUtil.adb = adb1.absolutePath
+                    setValue("adb", BashUtil.adb,"")
                 }
             }
         }

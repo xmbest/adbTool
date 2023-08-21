@@ -16,10 +16,8 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import config.*
 import entity.Page
-import status.currentDevice
-import status.devicesList
-import status.autoSync
-import status.index
+import status.*
+import utils.BashUtil
 import utils.getDevices
 import utils.getRealLocation
 
@@ -35,6 +33,7 @@ val pages = listOf(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Route() {
+    adb.value = BashUtil.adb
     var curPage by remember {
         mutableStateOf(index.value)
     }

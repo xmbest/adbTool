@@ -34,9 +34,9 @@ fun App() {
 }
 
 fun main() = application {
-    PropertiesUtil.init()
     Log.init()
     BashUtil.init()
+    PropertiesUtil.init()
     val screenSize: Dimension = Toolkit.getDefaultToolkit().screenSize
     //显示大小
     val width = window_width
