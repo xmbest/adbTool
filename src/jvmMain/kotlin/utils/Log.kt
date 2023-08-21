@@ -13,7 +13,7 @@ class Log {
         fun init(){
             val logParent = File(BashUtil.workDir,"log")
             if (!logParent.exists()){
-                logParent.mkdir()
+                logParent.mkdirs()
             }
             val file = File(logParent,"result.log")
             if (file.exists()){
@@ -45,7 +45,7 @@ class Log {
             val date = sdf1.format(Date())
             val parent = File(BashUtil.workDir,"log")
             if (!parent.exists()){
-                parent.mkdir()
+                parent.mkdirs()
             }
             val file = File(parent,"${date}.log")
             if (!file.exists()){
@@ -62,7 +62,7 @@ class Log {
                 return
             val parent = File(BashUtil.workDir,"log")
             if (!parent.exists()){
-                parent.mkdir()
+                parent.mkdirs()
             }
             val file = File(parent,"result.log")
             val output = BufferedOutputStream(FileOutputStream(file,true))
