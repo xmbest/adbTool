@@ -126,7 +126,7 @@ fun Settings() {
                     }
                 }
             }
-            if (BashUtil.split == "\\"){
+
                 Row(
                     modifier = Modifier.padding(start = 14.dp, top = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -195,7 +195,6 @@ fun Settings() {
                         }
                     )
                 }
-            }
 
             Row(
                 modifier = Modifier.padding(start = 14.dp, top = 6.dp),

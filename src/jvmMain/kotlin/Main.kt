@@ -34,9 +34,6 @@ fun App() {
 }
 
 fun main() = application {
-    Log.init()
-    BashUtil.init()
-    PropertiesUtil.init()
     val screenSize: Dimension = Toolkit.getDefaultToolkit().screenSize
     //显示大小
     val width = window_width
@@ -49,6 +46,9 @@ fun main() = application {
         onCloseRequest = ::exitApplication, title = "ADBTool", state = state, icon = painterResource(getRealLocation("logo"))
     ) {
         App()
+        Log.init()
+        BashUtil.init()
+        PropertiesUtil.init()
         LaunchedEffect(state){
             snapshotFlow { state.isMinimized }
                 .onEach(::onMinimized).launchIn(this)

@@ -1,6 +1,5 @@
 package utils
 
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import status.*
@@ -9,7 +8,6 @@ import java.util.*
 
 class PropertiesUtil {
     companion object{
-        @OptIn(DelicateCoroutinesApi::class)
         fun init() {
             Log.d("workDir: " + BashUtil.workDir)
             val cfgParent = File(BashUtil.workDir, "cfg")
@@ -55,17 +53,32 @@ class PropertiesUtil {
                 autoSync.value = getValue("autoSync")?.toInt() == 1
                 saveLog.value = getValue("saveLog")?.toInt() == 1
                 desktop.value = getValue("desktop")?: desktop.value
-                BashUtil.adb = getValue("adb")?: "adb"
+                adb.value = getValue("adb")?: "adb"
             }
 
             //adb环境
-            val adb1 = File(cfgParent,"adb.exe")
-            if (!adb1.exists() && BashUtil.split == "\\"){
-                val inputStream = ClassLoader.getSystemResourceAsStream("adb.exe")
-                GlobalScope.launch {
-                    FileUtil.copyFileUsingFileStreams(inputStream,adb1)
-                    BashUtil.adb = adb1.absolutePath
-                    setValue("adb", BashUtil.adb,"")
+            if (BashUtil.split == "\\"){
+                val adb1 = File(cfgParent,"adb.exe")
+                if (!adb1.exists()){
+                    val inputStream = ClassLoader.getSystemResourceAsStream("adb.exe")
+                    GlobalScope.launch {
+                        FileUtil.copyFileUsingFileStreams(inputStream,adb1)
+                        adb.value = adb1.absolutePath
+                        setValue("adb", adb.value,"")
+                        Log.d("create windows adb.exe")
+                    }
+                }
+            }else{
+                val adb1 = File(cfgParent,"adb")
+                if (!adb1.exists()){
+                    val inputStream = ClassLoader.getSystemResourceAsStream("adb")
+                    GlobalScope.launch {
+                        FileUtil.copyFileUsingFileStreams(inputStream,adb1)
+                        adb1.setExecutable(true)
+                        adb.value = adb1.absolutePath
+                        setValue("adb", adb.value,"")
+                        Log.d("create mac adb")
+                    }
                 }
             }
         }
@@ -85,6 +98,7 @@ class PropertiesUtil {
                     cfgParent.mkdir()
                 }
                 val file = File(cfgParent, "cfg.properties")
+                file.setExecutable(true)
                 fileOutputStream = FileOutputStream(file)
                 properties.store(fileOutputStream, comments)
             } catch (e: FileNotFoundException) {

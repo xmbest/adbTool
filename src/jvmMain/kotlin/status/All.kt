@@ -17,4 +17,4 @@ val index = mutableStateOf(0)
 var saveLog = mutableStateOf(false)
 var desktop = mutableStateOf(BashUtil.dir)
 var pathSave = desktop
-val adb = mutableStateOf(BashUtil.adb)
+val adb = mutableStateOf("adb")

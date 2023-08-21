@@ -33,7 +33,6 @@ val pages = listOf(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Route() {
-    adb.value = BashUtil.adb
     var curPage by remember {
         mutableStateOf(index.value)
     }

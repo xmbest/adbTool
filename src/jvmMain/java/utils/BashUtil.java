@@ -15,7 +15,6 @@ public class BashUtil {
 
     public static boolean runing = false;
 
-    public static String adb = "adb";
     public static final String dir = System.getProperty("user.home") + split + "Desktop";
     public static final String workDir = System.getProperty("user.dir");
 
