@@ -20,8 +20,8 @@ jobs:
 #     run: chmod +x gradlew   
     - name: Build with Windows
       run: ./gradlew.bat packageReleaseMsi
-    - name: Build with MacOs
-      run: ./gradlew.bat packageReleaseDmg
+#    - name: Build with MacOs
+#      run: ./gradlew.bat packageReleaseDmg
     - name: upload
       uses: actions/upload-artifact@v3
       with:
