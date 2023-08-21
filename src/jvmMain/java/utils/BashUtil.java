@@ -1,5 +1,7 @@
 package utils;
 
+import status.AllKt;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,13 +17,15 @@ public class BashUtil {
 
     public static boolean runing = false;
 
-    public static final String dir = System.getProperty("user.home") + split + "Desktop";
+    public static String dir = System.getProperty("user.home") + split + "Desktop";
     public static  String workDir = System.getProperty("user.dir");
 
     public static void init() throws IOException {
         if (!SysUtilKt.getOsType().equals("windows")){
             split = "/";
+            dir = System.getProperty("user.home") + split + "Desktop";
             workDir = System.getProperty("user.home") + split + "adbTool";
+            AllKt.getDesktop().setValue(dir);
         }
     }
 
