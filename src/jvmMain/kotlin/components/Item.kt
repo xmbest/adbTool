@@ -11,11 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import config.*
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import status.currentDevice
 
+@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun Item(icon: String, label: String, runnable: () -> String = {
     ""

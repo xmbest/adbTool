@@ -1,4 +1,4 @@
-name: Android CI
+name: Mac CI
 
 on:
   push:
@@ -22,10 +22,12 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-    - name: Build with Mac
+    - name: Build with packageReleaseDeb
+      run: ./gradlew packageReleaseDeb
+    - name: Build with packageReleaseDmg
       run: ./gradlew packageReleaseDmg
     - name: upload
       uses: actions/upload-artifact@v3
       with:
         name: artifact
-        path: ${{ github.workspace }}/build/compose/binaries/main-release/dmg/**
+        path: ${{ github.workspace }}/build/compose/binaries/main-release/**

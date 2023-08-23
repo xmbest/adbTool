@@ -1,7 +1,6 @@
 package components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.PopupAlertDialogProvider.AlertDialog
@@ -14,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -22,7 +22,7 @@ import theme.GOOGLE_RED
 import theme.GOOGLE_YELLOW
 
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn( DelicateCoroutinesApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun ConfirmDialog(
     showingDialog: MutableState<Boolean>,
@@ -43,7 +43,6 @@ fun ConfirmDialog(
             Row(modifier = Modifier.fillMaxWidth().padding(5.dp).clip(RoundedCornerShape(5.dp))) {
                 Text(color = titleColor, text = title, fontSize = 16.sp, modifier = Modifier.padding(start = 4.dp))
             }
-            val scroll = rememberScrollState()
             Row(
                 modifier = Modifier.fillMaxWidth().weight(1f).padding(5.dp),
                 verticalAlignment = Alignment.CenterVertically
