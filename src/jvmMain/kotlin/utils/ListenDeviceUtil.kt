@@ -24,7 +24,7 @@ class ListenDeviceUtil {
                             continue
                         }
                         getDevices()
-                        Log.d("checkDevicesTime = ${checkDevicesTime.value}")
+                        LogUtil.d("checkDevicesTime = ${checkDevicesTime.value}")
                         delay(1000L * checkDevicesTime.value)
                     }
                 }
