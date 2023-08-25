@@ -13,11 +13,15 @@ import androidx.compose.ui.window.rememberWindowState
 import theme.GOOGLE_BLUE
 import config.window_height
 import config.window_width
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import pages.Route
 import status.appIsMinimized
 import utils.BashUtil
+import utils.FileUtil
 import utils.ListenDeviceUtil.Companion.listenDevices
 import utils.LogUtil
 import utils.PropertiesUtil
@@ -33,6 +37,7 @@ fun App() {
     }
 }
 
+@OptIn(DelicateCoroutinesApi::class)
 fun main() = application {
     val screenSize: Dimension = Toolkit.getDefaultToolkit().screenSize
     //显示大小
@@ -43,14 +48,17 @@ fun main() = application {
     val y: Double = screenSize.getHeight() / 2 - height / 2
     val state = rememberWindowState(width = width.dp, height = height.dp, position = WindowPosition(x.dp, y.dp))
     Window(
-        onCloseRequest = ::exitApplication, title = "ADBTool", state = state, icon = painterResource(getRealLocation("logo"))
+        onCloseRequest = ::exitApplication,
+        title = "ADBTool",
+        state = state,
+        icon = painterResource(getRealLocation("logo"))
     ) {
         LogUtil.init()
         BashUtil.init()
         PropertiesUtil.init()
         App()
-        PropertiesUtil.initFile()
-        LaunchedEffect(state){
+        FileUtil.initFile()
+        LaunchedEffect(state) {
             snapshotFlow { state.isMinimized }
                 .onEach(::onMinimized).launchIn(this)
         }
