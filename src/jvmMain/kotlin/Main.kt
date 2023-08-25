@@ -19,7 +19,7 @@ import pages.Route
 import status.appIsMinimized
 import utils.BashUtil
 import utils.ListenDeviceUtil.Companion.listenDevices
-import utils.Log
+import utils.LogUtil
 import utils.PropertiesUtil
 import utils.getRealLocation
 import java.awt.Dimension
@@ -45,10 +45,11 @@ fun main() = application {
     Window(
         onCloseRequest = ::exitApplication, title = "ADBTool", state = state, icon = painterResource(getRealLocation("logo"))
     ) {
-        App()
-        Log.init()
+        LogUtil.init()
         BashUtil.init()
         PropertiesUtil.init()
+        App()
+        PropertiesUtil.initFile()
         LaunchedEffect(state){
             snapshotFlow { state.isMinimized }
                 .onEach(::onMinimized).launchIn(this)
@@ -57,7 +58,7 @@ fun main() = application {
 }
 
 private fun onMinimized(isMinimized: Boolean) {
-    Log.d("isMinimized: $isMinimized")
+    LogUtil.d("isMinimized: $isMinimized")
     appIsMinimized.value = isMinimized
     if (!isMinimized)
         listenDevices()

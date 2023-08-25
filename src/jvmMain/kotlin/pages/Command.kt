@@ -31,6 +31,7 @@ import theme.GOOGLE_RED
 import theme.GOOGLE_YELLOW
 import utils.ClipboardUtil
 import utils.GenerexUtils
+import utils.PropertiesUtil
 
 
 /**
@@ -49,182 +50,173 @@ val checked = mutableStateOf(false)
 @Preview
 @Composable
 fun CommandGeneral() {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-            if (!checked.value) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        if (!checked.value) {
+            Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                CommandText(str = text1, hint = "TXZ语料规则\n1.去除多余序号和符号\n2.多种语料请换行\n")
+            }
+        } else {
+            Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
                 Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                    CommandText(str = text1, hint = "TXZ语料规则\n1.去除多余序号和符号\n2.多种语料请换行\n")
-                }
-            } else {
-                Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                    Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                                CommandText(str = text3, hint = "英文例：AC")
-                            }
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                                CommandText(str = text4, hint = "中文例：\"诶吸\",\"癌溪\",\"癌思衣\"")
-                            }
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                            CommandText(str = text3, hint = "英文例：AC")
                         }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                            CommandText(str = text4, hint = "中文例：\"诶吸\",\"癌溪\",\"癌思衣\"")
+                        }
+                    }
 
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                        CommandText(str = text5, hint = "要替换的列表例：\"关闭AC\", \"关闭AC模式\"")
-                    }
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                    CommandText(str = text5, hint = "要替换的列表例：\"关闭AC\", \"关闭AC模式\"")
                 }
             }
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                CommandButton("生成") {
-                    try {
-                        if (!checked.value) {
-                            if (text1.value.isBlank()) {
-                                if (!showToast.value) {
+        }
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            CommandButton("生成") {
+                try {
+                    if (!checked.value) {
+                        if (text1.value.isBlank()) {
+                            if (!showToast.value) {
+                                currentToastTask.value = "CommandGnerate"
+                                toastText.value = "内容不可空"
+                                showToast.value = true
+                            } else {
+                                PropertiesUtil.setValue("command", text1.value,"")
+                                if (currentToastTask.value == "CommandGnerate")
+                                    return@CommandButton
+                                GlobalScope.launch {
+                                    delay(1000)
                                     currentToastTask.value = "CommandGnerate"
                                     toastText.value = "内容不可空"
                                     showToast.value = true
-                                } else {
-                                    if (currentToastTask.value == "CommandGnerate")
-                                        return@CommandButton
-                                    GlobalScope.launch {
-                                        delay(1000)
-                                        currentToastTask.value = "CommandGnerate"
-                                        toastText.value = "内容不可空"
-                                        showToast.value = true
-                                    }
+                                }
 
-                                }
-                                return@CommandButton
                             }
-                            text2.value = GenerexUtils.generateAll(text1.value)
-                        } else {
-                            if (text3.value.isBlank() || text4.value.isBlank() || text5.value.isBlank()) {
-                                if (!showToast.value) {
+                            return@CommandButton
+                        }
+                        text2.value = GenerexUtils.generateAll(text1.value)
+                    } else {
+                        if (text3.value.isBlank() || text4.value.isBlank() || text5.value.isBlank()) {
+                            if (!showToast.value) {
+                                currentToastTask.value = "CommandGnerate"
+                                toastText.value = "内容不可空"
+                                showToast.value = true
+                            } else {
+                                if (currentToastTask.value == "CommandGnerate")
+                                    return@CommandButton
+                                GlobalScope.launch {
+                                    delay(1000)
                                     currentToastTask.value = "CommandGnerate"
                                     toastText.value = "内容不可空"
                                     showToast.value = true
-                                } else {
-                                    if (currentToastTask.value == "CommandGnerate")
-                                        return@CommandButton
-                                    GlobalScope.launch {
-                                        delay(1000)
-                                        currentToastTask.value = "CommandGnerate"
-                                        toastText.value = "内容不可空"
-                                        showToast.value = true
-                                    }
                                 }
-                                return@CommandButton
                             }
-                            val arr1 = text4.value.trim().replace("\"".toRegex(), "").split(",").filter {
-                                it.isNotBlank()
-                            }
-                            val arr2 = text5.value.trim().replace("\"".toRegex(), "").split(",").filter {
-                                it.isNotBlank()
-                            }
-                            var res = ""
-                            try {
-                                res = GenerexUtils.replace(text3.value, arr1, arr2)
-                            } catch (e: Exception) {
-                                if (!showToast.value) {
+                            return@CommandButton
+                        }
+                        val arr1 = text4.value.trim().replace("\"".toRegex(), "").split(",").filter {
+                            it.isNotBlank()
+                        }
+                        val arr2 = text5.value.trim().replace("\"".toRegex(), "").split(",").filter {
+                            it.isNotBlank()
+                        }
+                        var res = ""
+                        try {
+                            res = GenerexUtils.replace(text3.value, arr1, arr2)
+                        } catch (e: Exception) {
+                            if (!showToast.value) {
+                                currentToastTask.value = "CommandGnerate"
+                                toastText.value = "内容格式错误"
+                                showToast.value = true
+                            } else {
+                                if (currentToastTask.value == "CommandGnerate")
+                                    return@CommandButton
+                                GlobalScope.launch {
+                                    delay(1000)
                                     currentToastTask.value = "CommandGnerate"
                                     toastText.value = "内容格式错误"
                                     showToast.value = true
-                                } else {
-                                    if (currentToastTask.value == "CommandGnerate")
-                                        return@CommandButton
-                                    GlobalScope.launch {
-                                        delay(1000)
-                                        currentToastTask.value = "CommandGnerate"
-                                        toastText.value = "内容格式错误"
-                                        showToast.value = true
-                                    }
                                 }
-                                return@CommandButton
                             }
-                            text2.value = res
+                            return@CommandButton
                         }
+                        text2.value = res
+                    }
 
-                    } catch (_: Exception) {
-                        dialogTitle.value = "警告"
-                        dialogTitleColor.value = GOOGLE_RED
-                        dialogText.value = "请检查正则格式是否正确!!!"
-                        showingDialog.value = true
-                    }
+                } catch (_: Exception) {
+                    dialogTitle.value = "警告"
+                    dialogTitleColor.value = GOOGLE_RED
+                    dialogText.value = "请检查正则格式是否正确!!!"
+                    showingDialog.value = true
                 }
-                if (!checked.value) {
-                    CommandButton("粘贴", backgroundColor = GOOGLE_GREEN) {
-                        text1.value = ClipboardUtil.getSysClipboardText()
-                    }
+            }
+            if (!checked.value) {
+                CommandButton("粘贴", backgroundColor = GOOGLE_GREEN) {
+                    text1.value = ClipboardUtil.getSysClipboardText()
                 }
-                CommandButton("复制", backgroundColor = GOOGLE_YELLOW) {
-                    if (text2.value.isBlank())
+            }
+            CommandButton("复制", backgroundColor = GOOGLE_YELLOW) {
+                if (text2.value.isBlank())
+                    return@CommandButton
+                ClipboardUtil.setSysClipboardText(text2.value)
+                if (!showToast.value) {
+                    currentToastTask.value = "CommandCopy"
+                    toastText.value = "结果已复制"
+                    showToast.value = true
+                } else {
+                    if (currentToastTask.value == "CommandCopy")
                         return@CommandButton
-                    ClipboardUtil.setSysClipboardText(text2.value)
-                    if (!showToast.value) {
+                    GlobalScope.launch {
+                        delay(1000)
                         currentToastTask.value = "CommandCopy"
                         toastText.value = "结果已复制"
                         showToast.value = true
-                    } else {
-                        if (currentToastTask.value == "CommandCopy")
-                            return@CommandButton
-                        GlobalScope.launch {
-                            delay(1000)
-                            currentToastTask.value = "CommandCopy"
-                            toastText.value = "结果已复制"
-                            showToast.value = true
-                        }
                     }
                 }
-                CommandButton("清空", backgroundColor = GOOGLE_RED) {
-                    if (text2.value.isBlank() && text1.value.isBlank())
+            }
+            CommandButton("清空", backgroundColor = GOOGLE_RED) {
+                if (text2.value.isBlank() && text1.value.isBlank())
+                    return@CommandButton
+                text1.value = ""
+                text2.value = ""
+                text3.value = ""
+                text4.value = ""
+                text5.value = ""
+                if (!showToast.value) {
+                    currentToastTask.value = "CommandClear"
+                    toastText.value = "内容已清空"
+                    showToast.value = true
+                } else {
+                    if (currentToastTask.value == "CommandClear")
                         return@CommandButton
-                    text1.value = ""
-                    text2.value = ""
-                    text3.value = ""
-                    text4.value = ""
-                    text5.value = ""
-                    if (!showToast.value) {
+                    GlobalScope.launch {
+                        delay(1000)
                         currentToastTask.value = "CommandClear"
                         toastText.value = "内容已清空"
                         showToast.value = true
-                    } else {
-                        if (currentToastTask.value == "CommandClear")
-                            return@CommandButton
-                        GlobalScope.launch {
-                            delay(1000)
-                            currentToastTask.value = "CommandClear"
-                            toastText.value = "内容已清空"
-                            showToast.value = true
-                        }
                     }
                 }
-                Checkbox(
-                    checked.value,
-                    onCheckedChange = {
-                        checked.value = it
-                    },
-                    colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE)
-                )
-                Text(text = "谐音处理",
-                    color = route_left_item_color,
-                    modifier = Modifier.align(Alignment.CenterVertically).clickable {
-                        checked.value = !checked.value
-                    }
-                )
             }
-            Row(modifier = Modifier.fillMaxWidth().weight(2f)) {
-                CommandText(str = text2, hint = "结果")
-            }
-            if (showingDialog.value)
-                SimpleDialog(
-                    showingDialog,
-                    title = dialogTitle.value,
-                    titleColor = dialogTitleColor.value,
-                    text = dialogText.value
-                )
+            Checkbox(
+                checked.value,
+                onCheckedChange = {
+                    checked.value = it
+                },
+                colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE)
+            )
+            Text(text = "谐音处理",
+                color = route_left_item_color,
+                modifier = Modifier.align(Alignment.CenterVertically).clickable {
+                    checked.value = !checked.value
+                }
+            )
         }
-        Toast(showToast, toastText, background = toastBgColor.value, textColor = toastTextColor.value)
+        Row(modifier = Modifier.fillMaxWidth().weight(2f)) {
+            CommandText(str = text2, hint = "结果")
+        }
     }
 }
 

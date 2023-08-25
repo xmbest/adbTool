@@ -49,32 +49,29 @@ fun FileManage() {
             Text("请先连接设备")
         }
     } else {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(modifier = Modifier.fillMaxSize().padding(10.dp, top = 0.dp)) {
-                val back = File("", defaultDir.value, "返回上级", "", true)
-                LazyColumn {
-                    stickyHeader {
-                        Row(modifier = Modifier.background(Color.White)) {
-                            FileView(back) {
-                                backParent()
-                            }
+        Column(modifier = Modifier.fillMaxSize().padding(10.dp, top = 0.dp)) {
+            val back = File("", defaultDir.value, "返回上级", "", true)
+            LazyColumn {
+                stickyHeader {
+                    Row(modifier = Modifier.background(Color.White)) {
+                        FileView(back) {
+                            backParent()
                         }
                     }
-                    items(fileList) {
-                        FileView(it)
-                    }
                 }
-                if (fileList.isEmpty()) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().weight(1f),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("没有找到文件", color = route_left_item_color)
-                    }
+                items(fileList) {
+                    FileView(it)
                 }
             }
-            Toast(showToast, toastText)
+            if (fileList.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("没有找到文件", color = route_left_item_color)
+                }
+            }
         }
     }
 }
@@ -186,7 +183,7 @@ fun FileView(
                 )
             }
             Spacer(modifier = Modifier.width(5.dp))
-            if (!file.isDir){
+            if (!file.isDir) {
                 TooltipArea(tooltip = {
                     Text("push")
                 }) {
@@ -198,8 +195,8 @@ fun FileView(
                             JFileChooser().apply {
                                 dialogTitle = "选择文件"
                                 fileSelectionMode = JFileChooser.FILES_ONLY
-                                val state:Int = showOpenDialog(ComposeWindow())
-                                if (state == JFileChooser.CANCEL_OPTION){
+                                val state: Int = showOpenDialog(ComposeWindow())
+                                if (state == JFileChooser.CANCEL_OPTION) {
                                     return@clickable
                                 }
                                 val path = selectedFile?.absolutePath ?: ""
@@ -244,8 +241,8 @@ fun FileView(
                         JFileChooser().apply {
                             dialogTitle = "保存到"
                             fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
-                            val state:Int = showOpenDialog(ComposeWindow())
-                            if (state == JFileChooser.CANCEL_OPTION){
+                            val state: Int = showOpenDialog(ComposeWindow())
+                            if (state == JFileChooser.CANCEL_OPTION) {
                                 return@clickable
                             }
                             val path = selectedFile?.absolutePath ?: ""
@@ -276,7 +273,7 @@ fun FileView(
                     modifier = Modifier.size(50.dp).clickable {
                         title.value = "警告"
                         titleColor.value = GOOGLE_RED
-                        dialogText.value = "是否删除${file.name}"
+                        dialogText.value = "是否删除${defaultDir.value}${file.name}"
                         needRun.value = true
                         run.value = {
                             run.value = {}
@@ -286,7 +283,7 @@ fun FileView(
                                     delay(1000)
                                 }
                                 currentToastTask.value = "FileManageDelete"
-                                toastText.value = "${defaultDir.value} + ${file.name}已删除"
+                                toastText.value = "${file.name}已删除"
                                 showToast.value = true
                                 initFile()
                             }
@@ -320,15 +317,15 @@ fun FileView(
                         }
                         return@clickable
                     } else {
-                        if (res.contains("/") || res.contains("\\")){
+                        if (res.contains("/") || res.contains("\\")) {
                             val end =
                                 if (path.contains("\\")) path.lastIndexOf("\\") + 1 else path.lastIndexOf("/") + 1
-                            path = path.substring(0,end)
-                        }else{
-                            if (path.get(path.length -1) != '/' && path.get(path.length -1) != '\\')
+                            path = path.substring(0, end)
+                        } else {
+                            if (path.get(path.length - 1) != '/' && path.get(path.length - 1) != '\\')
                                 path += if (path.contains("\\")) "\\" else "/"
                         }
-                        defaultDir.value  = path
+                        defaultDir.value = path
                         initFile()
                         if (!showToast.value) {
                             toastText.value = "已跳转"
@@ -351,99 +348,119 @@ fun FileView(
             TooltipArea(tooltip = {
                 Text("paste file")
             }) {
-                Icon(painter = painterResource(getRealLocation("paste")), null, modifier = Modifier.size(50.dp).clickable {
-                    val path = ClipboardUtil.getSysClipboardText()
-                    val res = shell("ls $path")
-                    if (path.trim().isBlank() || res.trim().isBlank()) {
-                        if (!showToast.value) {
-                            showToast.value = true
-                            currentToastTask.value = "FileManagePaste"
-                            toastText.value = "不是有效路径"
-                        } else {
-                            if (currentToastTask.value == "FileManagePaste")
-                                return@clickable
-                            GlobalScope.launch {
-                                delay(1000)
+                Icon(
+                    painter = painterResource(getRealLocation("paste")),
+                    null,
+                    modifier = Modifier.size(50.dp).clickable {
+                        val path = ClipboardUtil.getSysClipboardText()
+                        val res = shell("ls $path")
+                        if (path.trim().isBlank() || res.trim().isBlank()) {
+                            if (!showToast.value) {
                                 showToast.value = true
                                 currentToastTask.value = "FileManagePaste"
                                 toastText.value = "不是有效路径"
+                            } else {
+                                if (currentToastTask.value == "FileManagePaste")
+                                    return@clickable
+                                GlobalScope.launch {
+                                    delay(1000)
+                                    showToast.value = true
+                                    currentToastTask.value = "FileManagePaste"
+                                    toastText.value = "不是有效路径"
+                                }
                             }
-                        }
-                        return@clickable
-                    } else {
-                        title.value = "警告"
-                        titleColor.value = GOOGLE_RED
-                        dialogText.value = "是否把${path}复制到此目录下"
-                        needRun.value = true
-                        run.value = {
-                            needRun.value = false
-                            run.value = {}
-                            GlobalScope.launch {
-                                shell("cp $path ${defaultDir.value}")
-                                currentToastTask.value = "FileManageFileCopy"
-                                toastText.value = "${path}复制成功"
-                                showToast.value = true
-                                initFile()
-                            }
-                        }
-                        showingDialog.value = true
-                    }
-                }.padding(10.dp), tint = GOOGLE_BLUE)
-            }
-            Spacer(modifier = Modifier.width(10.dp))
-            TooltipArea(tooltip = {
-                Text("push")
-            }) {
-                Icon(painter = painterResource(getRealLocation("push")), null, modifier = Modifier.size(50.dp).clickable {
-                    JFileChooser().apply {
-                        dialogTitle = "选择文件"
-                        fileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES
-                        val state:Int = showOpenDialog(ComposeWindow())
-                        if (state == JFileChooser.CANCEL_OPTION){
                             return@clickable
-                        }
-                        val path = selectedFile?.absolutePath ?: ""
-                        if (path.isNotBlank()) {
-                            val start =
-                                if (path.contains("\\")) path.lastIndexOf("\\") + 1 else path.lastIndexOf("/") + 1
-                            val path1 = path.substring(start, path.length)
+                        } else {
                             title.value = "警告"
                             titleColor.value = GOOGLE_RED
-                            dialogText.value = "是否把文件$path1 push到 ${defaultDir.value}"
+                            dialogText.value = "是否把${path}复制到此目录下"
                             needRun.value = true
                             run.value = {
+                                needRun.value = false
+                                run.value = {}
                                 GlobalScope.launch {
-                                    run.value = {}
-                                    push(path, defaultDir.value + path1)
-                                    if (showToast.value) {
-                                        delay(1000)
-                                    }
-                                    currentToastTask.value = "FileManagePush"
-                                    toastText.value = "文件push成功"
+                                    shell("cp $path ${defaultDir.value}")
+                                    currentToastTask.value = "FileManageFileCopy"
+                                    toastText.value = "${path}复制成功"
                                     showToast.value = true
                                     initFile()
                                 }
                             }
                             showingDialog.value = true
                         }
-                    }
-                }.padding(9.dp), tint = GOOGLE_BLUE)
+                    }.padding(10.dp),
+                    tint = GOOGLE_BLUE
+                )
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            TooltipArea(tooltip = {
+                Text("push")
+            }) {
+                Icon(
+                    painter = painterResource(getRealLocation("push")),
+                    null,
+                    modifier = Modifier.size(50.dp).clickable {
+                        JFileChooser().apply {
+                            dialogTitle = "选择文件"
+                            fileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES
+                            val state: Int = showOpenDialog(ComposeWindow())
+                            if (state == JFileChooser.CANCEL_OPTION) {
+                                return@clickable
+                            }
+                            val path = selectedFile?.absolutePath ?: ""
+                            if (path.isNotBlank()) {
+                                val start =
+                                    if (path.contains("\\")) path.lastIndexOf("\\") + 1 else path.lastIndexOf("/") + 1
+                                val path1 = path.substring(start, path.length)
+                                title.value = "警告"
+                                titleColor.value = GOOGLE_RED
+                                dialogText.value = "是否把文件$path1 push到 ${defaultDir.value}"
+                                needRun.value = true
+                                run.value = {
+                                    GlobalScope.launch {
+                                        run.value = {}
+                                        push(path, defaultDir.value + path1)
+                                        if (showToast.value) {
+                                            delay(1000)
+                                        }
+                                        currentToastTask.value = "FileManagePush"
+                                        toastText.value = "文件push成功"
+                                        showToast.value = true
+                                        initFile()
+                                    }
+                                }
+                                showingDialog.value = true
+                            }
+                        }
+                    }.padding(9.dp),
+                    tint = GOOGLE_BLUE
+                )
             }
             Spacer(modifier = Modifier.width(10.dp))
             TooltipArea(tooltip = {
                 Text("back")
             }) {
-                Icon(painter = painterResource(getRealLocation("back")), null, modifier = Modifier.size(50.dp).clickable {
-                    backParent()
-                }.padding(10.dp), tint = GOOGLE_BLUE)
+                Icon(
+                    painter = painterResource(getRealLocation("back")),
+                    null,
+                    modifier = Modifier.size(50.dp).clickable {
+                        backParent()
+                    }.padding(10.dp),
+                    tint = GOOGLE_BLUE
+                )
             }
             Spacer(modifier = Modifier.width(10.dp))
             TooltipArea(tooltip = {
                 Text("refresh")
             }) {
-                Icon(painter = painterResource(getRealLocation("sync")), null, modifier = Modifier.size(50.dp).clickable {
-                    initFile()
-                }.padding(10.dp), tint = GOOGLE_BLUE)
+                Icon(
+                    painter = painterResource(getRealLocation("sync")),
+                    null,
+                    modifier = Modifier.size(50.dp).clickable {
+                        initFile()
+                    }.padding(10.dp),
+                    tint = GOOGLE_BLUE
+                )
             }
             Spacer(modifier = Modifier.width(10.dp))
             TooltipArea(tooltip = {
@@ -456,7 +473,7 @@ fun FileView(
                     modifier = Modifier.size(50.dp).clickable {
                         title.value = "警告"
                         titleColor.value = GOOGLE_RED
-                        dialogText.value = "是否删除${file.name}下所有文件"
+                        dialogText.value = "是否删除${defaultDir.value}下所有文件"
                         needRun.value = true
                         run.value = {
                             run.value = {}
@@ -477,28 +494,6 @@ fun FileView(
                 )
                 Spacer(modifier = Modifier.width(15.dp))
             }
-        }
-        if (showingDialog.value) {
-            SimpleDialog(
-                showingDialog,
-                title = title.value,
-                titleColor = titleColor.value,
-                text = dialogText.value,
-                needRun = needRun.value,
-                runnable = run.value
-            )
-        }
-        if (showingConfirmDialog.value) {
-            ConfirmDialog(
-                showingConfirmDialog,
-                title = title.value,
-                titleColor = titleColor.value,
-                text = dialogText,
-                hint = hint.value,
-                needRun = needRun.value,
-                runnable = run.value,
-                list = fileList.map { it.name }
-            )
         }
     }
 }

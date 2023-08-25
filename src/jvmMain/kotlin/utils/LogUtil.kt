@@ -7,7 +7,7 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
-class Log {
+class LogUtil {
     companion object{
         private val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         fun init(){

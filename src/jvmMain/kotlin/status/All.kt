@@ -15,6 +15,6 @@ val autoSync = mutableStateOf(true)
 val index = mutableStateOf(0)
 //开启日志保存
 var saveLog = mutableStateOf(false)
-var desktop = mutableStateOf(BashUtil.dir)
+var desktop = mutableStateOf(BashUtil.desktop_dir)
 var pathSave = desktop
 val adb = mutableStateOf("adb")
