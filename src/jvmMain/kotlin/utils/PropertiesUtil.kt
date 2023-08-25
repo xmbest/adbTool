@@ -10,55 +10,6 @@ import java.util.*
 
 class PropertiesUtil {
     companion object {
-        fun initFile(){
-            val cfgParent = File(BashUtil.workDir, "cfg")
-            if (!cfgParent.exists()) {
-                cfgParent.mkdirs()
-            }
-            //205，207环境
-            val file205 = File(cfgParent, "back.inline.dev.conn.cfg.txz~dat")
-            if (!file205.exists()) {
-                val fileOutputStream = FileOutputStream(file205)
-                fileOutputStream.write(BashUtil.dev)
-                fileOutputStream.close()
-                LogUtil.d("create back.inline.dev.conn.cfg.txz~dat")
-            }
-
-            val file207 = File(cfgParent, "back.inline.test.conn.cfg.txz~dat")
-            if (!file207.exists()) {
-                val fileOutputStream = FileOutputStream(file207)
-                fileOutputStream.write(BashUtil.test)
-                fileOutputStream.close()
-                LogUtil.d("back.inline.test.conn.cfg.txz~dat")
-            }
-
-            //adb环境
-            if (BashUtil.split == "\\") {
-                val adb1 = File(cfgParent, "adb.exe")
-                if (!adb1.exists()) {
-                    val inputStream = ClassLoader.getSystemResourceAsStream("adb.exe")
-                    GlobalScope.launch {
-                        FileUtil.copyFileUsingFileStreams(inputStream, adb1)
-                        adb.value = adb1.absolutePath
-                        setValue("adb", adb.value, "")
-                        LogUtil.d("create windows adb.exe")
-                    }
-                }
-            } else {
-                val adb1 = File(cfgParent, "adb")
-                if (!adb1.exists()) {
-                    val inputStream = ClassLoader.getSystemResourceAsStream("adb")
-                    GlobalScope.launch {
-                        FileUtil.copyFileUsingFileStreams(inputStream, adb1)
-                        adb1.setExecutable(true)
-                        adb.value = adb1.absolutePath
-                        setValue("adb", adb.value, "")
-                        LogUtil.d("create mac adb")
-                    }
-                }
-            }
-        }
-        @OptIn(DelicateCoroutinesApi::class)
         fun init() {
             LogUtil.d("workDir: " + BashUtil.workDir)
             val cfgParent = File(BashUtil.workDir, "cfg")
