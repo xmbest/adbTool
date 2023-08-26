@@ -124,15 +124,15 @@ fun Settings() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 SettingLable("程序起始页")
-                for (page in pages) {
+                pages.forEachIndexed { index, page ->
                     SelectButton(
                         page.name,
-                        if (page.index != index.value) route_left_background else GOOGLE_BLUE,
-                        if (page.index != index.value) route_left_item_color else route_left_item_clicked_color
+                        if (index != status.index.value) route_left_background else GOOGLE_BLUE,
+                        if (index != status.index.value) route_left_item_color else route_left_item_clicked_color
                     ) {
-                        index.value = page.index
-                        PropertiesUtil.setValue("index", "${index.value}", "")
-                        LogUtil.d("index value change ==> ${index.value}")
+                        status.index.value = index
+                        PropertiesUtil.setValue("index", "${status.index.value}", "")
+                        LogUtil.d("index value change ==> ${status.index.value}")
                     }
                 }
             }
