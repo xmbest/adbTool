@@ -26,6 +26,7 @@ val pages = listOf(
     Page("应用管理", getRealLocation("android")) { AppManage() },
     Page("AAB工具", getRealLocation("aabtools")) { AABToolsManager() },
     Page("文件管理", getRealLocation("folder")) { FileManage() },
+    Page("命令泛化", getRealLocation("code")) { CommandGeneral() },
     Page("广播模拟", getRealLocation("board")) { BoardManage() },
     Page("程序设置", getRealLocation("settings")) { Settings() }
 )
