@@ -4,7 +4,7 @@ plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
 }
-
+val currentVersion = "1.0.2"
 group = "com.xxx"
 version = "1.0-SNAPSHOT"
 repositories {
@@ -36,33 +36,35 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb,TargetFormat.Exe)
             packageName = "ADBTool"
-            packageVersion = "1.0.0"
+            packageVersion = currentVersion
             windows{
                 // a version for all Windows distributables
-                packageVersion = "1.0.0"
+                packageVersion = currentVersion
                 // a version only for the msi package
-                msiPackageVersion = "1.0.0"
+                msiPackageVersion = currentVersion
                 // a version only for the exe package
-                exePackageVersion = "1.0.0"
+                exePackageVersion = currentVersion
                 iconFile.set(project.file("launcher/logo.ico"))
+                menu = true
+                shortcut = true
             }
             macOS {
                 // a version for all macOS distributables
-                packageVersion = "1.0.0"
+                packageVersion = currentVersion
                 // a version only for the dmg package
-                dmgPackageVersion = "1.0.0"
+                dmgPackageVersion = currentVersion
                 // a version only for the pkg package
-                pkgPackageVersion = "1.0.0"
+                pkgPackageVersion = currentVersion
                 // 显示在菜单栏、“关于”菜单项、停靠栏等中的应用程序名称
                 dockName = "ADBTool"
                 // a build version for all macOS distributables
-                packageBuildVersion = "1.0.0"
+                packageBuildVersion = currentVersion
                 // a build version only for the dmg package
-                dmgPackageBuildVersion = "1.0.0"
+                dmgPackageBuildVersion = currentVersion
                 // a build version only for the pkg package
-                pkgPackageBuildVersion = "1.0.0"
+                pkgPackageBuildVersion = currentVersion
                 // 设置图标
-                iconFile.set(project.file("launcher/logo.ico"))
+                iconFile.set(project.file("launcher/logo.icns"))
             }
         }
     }
