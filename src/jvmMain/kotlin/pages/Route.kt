@@ -18,17 +18,15 @@ import components.*
 import config.*
 import entity.Page
 import status.*
-import utils.LogUtil
 import utils.getDevices
 import utils.getRealLocation
 
 val pages = listOf(
-    Page(0, "快捷功能", getRealLocation("pushpin")) { QuickSetting() },
-    Page(1, "应用管理", getRealLocation("android")) { AppManage() },
-    Page(2, "文件管理", getRealLocation("folder")) { FileManage() },
-    Page(3, "命令泛化", getRealLocation("code")) { CommandGeneral() },
-    Page(4, "广播模拟", getRealLocation("board")) { BoardManage() },
-    Page(5, "程序设置", getRealLocation("settings")) { Settings() }
+    Page("快捷功能", getRealLocation("pushpin")) { QuickSetting() },
+    Page("应用管理", getRealLocation("android")) { AppManage() },
+    Page("文件管理", getRealLocation("folder")) { FileManage() },
+    Page("广播模拟", getRealLocation("board")) { BoardManage() },
+    Page("程序设置", getRealLocation("settings")) { Settings() }
 )
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -39,7 +37,6 @@ fun Route() {
     }
 
     var curPage by remember {
-        LogUtil.d("index.value == ${index.value}")
         mutableStateOf(index.value)
     }
 
@@ -53,27 +50,27 @@ fun Route() {
                     bottom = route_left_padding_bottom
                 )
             ) {
-                pages.forEach {
+                pages.forEachIndexed { index, page ->
                     Spacer(modifier = Modifier.height(route_left_item_spacer))
                     ListItem(
                         text = {
                             Text(
-                                it.name,
-                                color = if (curPage == it.index) route_left_item_clicked_color else route_left_item_color
+                                page.name,
+                                color = if (curPage == index) route_left_item_clicked_color else route_left_item_color
                             )
                         },
                         icon = {
                             Icon(
-                                painter = painterResource(it.icon),
-                                it.name,
-                                tint = if (curPage != it.index) it.color else Color.White
+                                painter = painterResource(page.icon),
+                                page.name,
+                                tint = if (curPage != index) page.color else Color.White
                             )
                         },
                         modifier = Modifier.clip(RoundedCornerShape(route_left_item_rounded))
                             .height(route_left_item_height)
                             .clickable {
-                                curPage = it.index
-                            }.background(if (curPage == it.index) route_left_item_background else route_left_background)
+                                curPage = index
+                            }.background(if (curPage == index) route_left_item_background else route_left_background)
                     )
                 }
                 Row(
