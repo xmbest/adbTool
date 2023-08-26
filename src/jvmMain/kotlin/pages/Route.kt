@@ -18,7 +18,6 @@ import components.*
 import config.*
 import entity.Page
 import status.*
-import utils.BashUtil
 import utils.LogUtil
 import utils.getDevices
 import utils.getRealLocation
@@ -27,9 +26,8 @@ val pages = listOf(
     Page(0, "快捷功能", getRealLocation("pushpin")) { QuickSetting() },
     Page(1, "应用管理", getRealLocation("android")) { AppManage() },
     Page(2, "文件管理", getRealLocation("folder")) { FileManage() },
-    Page(3, "命令泛化", getRealLocation("code")) { CommandGeneral() },
-    Page(4, "广播模拟", getRealLocation("board")) { BoardManage() },
-    Page(5, "程序设置", getRealLocation("settings")) { Settings() }
+    Page(3, "广播模拟", getRealLocation("board")) { BoardManage() },
+    Page(4, "程序设置", getRealLocation("settings")) { Settings() }
 )
 
 @OptIn(ExperimentalMaterialApi::class)
