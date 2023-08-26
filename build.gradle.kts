@@ -4,7 +4,7 @@ plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
 }
-val currentVersion = "1.0.1"
+val currentVersion = "1.0.2"
 group = "com.xxx"
 version = "1.0-SNAPSHOT"
 repositories {
@@ -45,6 +45,8 @@ compose.desktop {
                 // a version only for the exe package
                 exePackageVersion = currentVersion
                 iconFile.set(project.file("launcher/logo.ico"))
+                menu = true
+                shortcut = true
             }
             macOS {
                 // a version for all macOS distributables
