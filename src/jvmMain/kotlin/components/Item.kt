@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import status.currentDevice
 
 @Composable
-fun Item(icon: String, label: String, runnable: () -> String = {
+fun Item(icon: String, label: String,tip:Boolean = true, runnable: () -> String = {
     ""
 }) {
     Column(
@@ -27,20 +27,35 @@ fun Item(icon: String, label: String, runnable: () -> String = {
             .clip(RoundedCornerShape(item_clicked_rounded))
             .clickable {
                 if (currentDevice.value.isBlank()){
-                    showingDialog.value = true
-                }else{
-                    runnable()
                     if (!showToast.value) {
-                        toastText.value = "命令执行完毕"
-                        currentToastTask.value = "Item_$label"
+                        toastText.value = "请连接ADB后重试"
+                        currentToastTask.value = "ItemAdbNotConnect"
                         showToast.value = true
                     } else {
-                        if (currentToastTask.value != "Item_$label") {
+                        if (currentToastTask.value != "ItemAdbNotConnect") {
                             GlobalScope.launch {
                                 delay(1000)
-                                toastText.value = "命令执行完毕"
+                                toastText.value = "请连接ADB后重试"
                                 showToast.value = true
-                                currentToastTask.value = "Item_$label"
+                                currentToastTask.value = "ItemAdbNotConnect"
+                            }
+                        }
+                    }
+                }else{
+                    runnable()
+                    if (tip){
+                        if (!showToast.value) {
+                            toastText.value = "命令执行完毕"
+                            currentToastTask.value = "Item_$label"
+                            showToast.value = true
+                        } else {
+                            if (currentToastTask.value != "Item_$label") {
+                                GlobalScope.launch {
+                                    delay(1000)
+                                    toastText.value = "命令执行完毕"
+                                    showToast.value = true
+                                    currentToastTask.value = "Item_$label"
+                                }
                             }
                         }
                     }
@@ -54,8 +69,6 @@ fun Item(icon: String, label: String, runnable: () -> String = {
             tint = route_left_item_color
         )
         Text(label, fontSize = item_text_fontSize)
-        if (showingDialog.value)
-            SimpleDialog(showingDialog, text = "请连接ADB后重试")
     }
 }
 

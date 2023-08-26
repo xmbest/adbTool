@@ -6,14 +6,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import components.Toast
 import components.currentToastTask
 import components.showToast
 import components.toastText
@@ -35,15 +33,27 @@ import javax.swing.filechooser.FileNameExtensionFilter
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Settings() {
-    val pattern = remember { Regex("^\\d+\$") }
     Box(modifier = Modifier.fillMaxSize()) {
         Row(
-            modifier = Modifier.fillMaxSize().padding(bottom = 20.dp),
+            modifier = Modifier.fillMaxSize().padding(5.dp),
             verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.End
         ) {
-            Text("设置|关于", color = route_left_item_color, modifier = Modifier.clickable {
-
+            Text("ADBTool by xiaoming", color = route_left_item_color, modifier = Modifier.clickable {
+                if (!showToast.value) {
+                    toastText.value = "Hello World!"
+                    currentToastTask.value = "SettingAuthor"
+                    showToast.value = true
+                } else {
+                    if (currentToastTask.value != "SettingAuthor") {
+                        GlobalScope.launch {
+                            delay(1000)
+                            toastText.value = "Hello World!"
+                            showToast.value = true
+                            currentToastTask.value = "SettingAuthor"
+                        }
+                    }
+                }
             })
         }
         Column(modifier = Modifier.fillMaxSize().padding(5.dp)) {
@@ -55,7 +65,7 @@ fun Settings() {
                         if (autoSync.value)
                             ListenDeviceUtil.listenDevices()
                         PropertiesUtil.setValue("autoSync", if (autoSync.value) "1" else "0", "")
-                        Log.d("autoSync value change ==> " + autoSync.value)
+                        LogUtil.d("autoSync value change ==> " + autoSync.value)
                     },
                     colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE)
                 )
@@ -69,7 +79,7 @@ fun Settings() {
                             if (autoSync.value)
                                 ListenDeviceUtil.listenDevices()
                             PropertiesUtil.setValue("autoSync", if (autoSync.value) "1" else "0", "")
-                            Log.d("autoSync value change ==> " + autoSync.value)
+                            LogUtil.d("autoSync value change ==> " + autoSync.value)
                         })
                 }
             }
@@ -79,7 +89,7 @@ fun Settings() {
                     onCheckedChange = {
                         saveLog.value = it
                         PropertiesUtil.setValue("saveLog", if (saveLog.value) "1" else "0", "")
-                        Log.d("saveLog value change ==> " + saveLog.value)
+                        LogUtil.d("saveLog value change ==> " + saveLog.value)
                     },
                     colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE)
                 )
@@ -89,7 +99,7 @@ fun Settings() {
                     modifier = Modifier.align(Alignment.CenterVertically).clickable {
                         saveLog.value = !saveLog.value
                         PropertiesUtil.setValue("saveLog", if (saveLog.value) "1" else "0", "")
-                        Log.d("saveLog value change ==> " + saveLog.value)
+                        LogUtil.d("saveLog value change ==> " + saveLog.value)
                     })
             }
             Row(
@@ -105,7 +115,7 @@ fun Settings() {
                     ) {
                         checkDevicesTime.value = i
                         PropertiesUtil.setValue("checkDevicesTime", "${checkDevicesTime.value}", "")
-                        Log.d("checkDevicesTime value change ==> " + checkDevicesTime.value)
+                        LogUtil.d("checkDevicesTime value change ==> " + checkDevicesTime.value)
                     }
                 }
             }
@@ -122,11 +132,11 @@ fun Settings() {
                     ) {
                         index.value = page.index
                         PropertiesUtil.setValue("index", "${index.value}", "")
-                        Log.d("index value change ==> ${index.value}")
+                        LogUtil.d("index value change ==> ${index.value}")
                     }
                 }
             }
-            if (BashUtil.split == "\\"){
+
                 Row(
                     modifier = Modifier.padding(start = 14.dp, top = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -195,7 +205,6 @@ fun Settings() {
                         }
                     )
                 }
-            }
 
             Row(
                 modifier = Modifier.padding(start = 14.dp, top = 6.dp),
@@ -266,7 +275,6 @@ fun Settings() {
                     }
                 )
             }
-            Toast(showToast, toastText)
         }
     }
 }

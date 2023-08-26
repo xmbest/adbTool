@@ -1,8 +1,10 @@
 package components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -17,6 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import theme.GOOGLE_BLUE
@@ -59,7 +63,9 @@ fun SimpleDialog(
                 modifier = Modifier.fillMaxWidth().weight(1f).padding(5.dp).verticalScroll(scroll),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(color = Color.Gray, text = "    ${text}", fontSize = 16.sp, modifier = Modifier)
+                SelectionContainer{
+                    Text(color = Color.Gray, text = "   $text", fontSize = 16.sp)
+                }
             }
             Row(
                 verticalAlignment = Alignment.Bottom,
@@ -73,7 +79,7 @@ fun SimpleDialog(
                             runnable!!.invoke()
                         }
                     }, colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_BLUE),
-                    modifier = Modifier.padding(end = 10.dp, top = 5.dp, bottom = 5.dp)
+                    modifier = Modifier.padding(end = 5.dp)
                 ) {
                     Text(text = "确定", color = Color.White)
                 }
@@ -82,7 +88,7 @@ fun SimpleDialog(
                         onClick = {
                             showingDialog.value = false
                         }, colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_RED),
-                        modifier = Modifier.padding(end = 10.dp, top = 5.dp, bottom = 5.dp)
+                        modifier = Modifier.padding(end = 5.dp)
                     ) {
                         Text(text = "取消", color = Color.White)
                     }

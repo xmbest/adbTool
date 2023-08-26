@@ -149,6 +149,18 @@ fun kill(pids:String){
     shell("kill $pids")
 }
 
+fun reboot(){
+    execute("reboot")
+}
+
+fun serialno():String {
+    return execute("get-serialno")
+}
+
+fun logcatClear(){
+    execute("logcat -c")
+}
+
 fun board(action:String,params:String){
     val str = "am broadcast -a $action $params"
     shell(str)

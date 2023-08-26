@@ -1,5 +1,7 @@
 package utils;
 
+import status.AllKt;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,13 +17,15 @@ public class BashUtil {
 
     public static boolean runing = false;
 
-    public static String adb = "adb";
-    public static final String dir = System.getProperty("user.home") + split + "Desktop";
-    public static final String workDir = System.getProperty("user.dir");
+    public static String desktop_dir = System.getProperty("user.home") + split + "Desktop";
+    public static  String workDir = System.getProperty("user.home") + split + "ADBTool";
 
     public static void init() throws IOException {
         if (!SysUtilKt.getOsType().equals("windows")){
             split = "/";
+            desktop_dir = System.getProperty("user.home") + split + "Desktop";
+            workDir = System.getProperty("user.home") + split + "ADBTool";
+            AllKt.getDesktop().setValue(desktop_dir);
         }
     }
 
@@ -52,7 +56,7 @@ public class BashUtil {
             processBuilder.directory(new File(dir));
         }
         if (!command.equals("adb devices"))
-            Log.Companion.d("exec: "+command);
+            LogUtil.Companion.d("exec: "+command);
         runing = true;
         Process exec = processBuilder.start();
         // 获取外部程序标准输出流
@@ -63,7 +67,7 @@ public class BashUtil {
         exec.waitFor();
         runing = false;
 //        System.out.println(runnable.getText());
-        Log.Companion.flushRes(runnable.getText());
+        LogUtil.Companion.flushRes(runnable.getText());
         return runnable.getText();
     }
 
@@ -88,7 +92,7 @@ public class BashUtil {
                     if (!error) {
                         stringBuilder.append(line).append("\n");
                     } else {
-                        Log.Companion.e(line);
+                        LogUtil.Companion.e(line);
                     }
                 }
             } catch (IOException e) {

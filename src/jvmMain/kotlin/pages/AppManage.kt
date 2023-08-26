@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import components.*
 import config.route_left_item_color
 import config.route_right_background
-import entity.Task
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -39,7 +38,7 @@ val checkedList1 = mutableStateListOf<Boolean>()
 val checkAll = mutableStateOf(false)
 val checkAll1 = mutableStateOf(false)
 val checkA = mutableStateOf(true)
-val keyword = mutableStateOf("txz")
+val appKeyword = mutableStateOf("")
 val systemApp = mutableStateOf(false)
 val appManage = mutableStateOf(false)
 val first = mutableStateOf(true)
@@ -59,229 +58,226 @@ fun AppManage() {
         if (taskList.isEmpty() && first.value) {
             initTask()
         }
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier.fillMaxSize().fillMaxHeight().background(route_right_background).padding(10.dp)
-            ) {
-                LazyColumn {
-                    stickyHeader {
-                        Row(modifier = Modifier.fillMaxWidth().background(Color.White)) {
-                            if (appManage.value) {
-                                Checkbox(
-                                    checkAll.value,
-                                    onCheckedChange = {
-                                        checkAll.value = it
-                                        for (i in 0 until checkedList.size) {
-                                            checkedList[i] = it
-                                        }
-                                    },
-                                    colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE)
-                                )
-                            } else {
-                                Text(text = "-A",
-                                    color = route_left_item_color,
-                                    modifier = Modifier.align(Alignment.CenterVertically).clickable {
-                                        checkA.value = !checkA.value
-                                    })
-                                Checkbox(
-                                    checkA.value,
-                                    onCheckedChange = {
-                                        checkA.value = it
-                                        initTask()
-                                    },
-                                    colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE)
-                                )
-                            }
-
-                            TextField(
-                                keyword.value,
-                                trailingIcon = {
-                                    if (keyword.value.isNotBlank()) Icon(
-                                        Icons.Default.Close,
-                                        null,
-                                        modifier = Modifier.width(20.dp).height(20.dp).clickable {
-                                            keyword.value = ""
-                                        },
-                                        tint = route_left_item_color
-                                    )
+        Column(
+            modifier = Modifier.fillMaxSize().fillMaxHeight().background(route_right_background).padding(10.dp)
+        ) {
+            LazyColumn {
+                stickyHeader {
+                    Row(modifier = Modifier.fillMaxWidth().background(Color.White)) {
+                        if (appManage.value) {
+                            Checkbox(
+                                checkAll.value,
+                                onCheckedChange = {
+                                    checkAll.value = it
+                                    for (i in 0 until checkedList.size) {
+                                        checkedList[i] = it
+                                    }
                                 },
-                                placeholder = { Text("keyword") },
-                                onValueChange = { keyword.value = it },
-                                modifier = Modifier.weight(1f).height(48.dp).padding(end = 10.dp)
+                                colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE)
                             )
-                            Text(text = if (appManage.value) "进程管理" else "应用管理",
+                        } else {
+                            Text(text = "-A",
                                 color = route_left_item_color,
                                 modifier = Modifier.align(Alignment.CenterVertically).clickable {
-                                    appManage.value = !appManage.value
+                                    checkA.value = !checkA.value
                                 })
                             Checkbox(
-                                appManage.value,
+                                checkA.value,
                                 onCheckedChange = {
-                                    appManage.value = it
+                                    checkA.value = it
+                                    initTask()
+                                },
+                                colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE)
+                            )
+                        }
+
+                        TextField(
+                            appKeyword.value,
+                            trailingIcon = {
+                                if (appKeyword.value.isNotBlank()) Icon(
+                                    Icons.Default.Close,
+                                    null,
+                                    modifier = Modifier.width(20.dp).height(20.dp).clickable {
+                                        appKeyword.value = ""
+                                    },
+                                    tint = route_left_item_color
+                                )
+                            },
+                            placeholder = { Text("keyword") },
+                            onValueChange = { appKeyword.value = it },
+                            modifier = Modifier.weight(1f).height(48.dp).padding(end = 10.dp)
+                        )
+                        Text(text = if (appManage.value) "进程管理" else "应用管理",
+                            color = route_left_item_color,
+                            modifier = Modifier.align(Alignment.CenterVertically).clickable {
+                                appManage.value = !appManage.value
+                            })
+                        Checkbox(
+                            appManage.value,
+                            onCheckedChange = {
+                                appManage.value = it
+                                initAppList()
+                            },
+                            colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE)
+                        )
+                        if (appManage.value) {
+                            Text(text = "系统",
+                                color = route_left_item_color,
+                                modifier = Modifier.align(Alignment.CenterVertically).clickable {
+                                    systemApp.value = !systemApp.value
+                                })
+                            Checkbox(
+                                systemApp.value,
+                                onCheckedChange = {
+                                    systemApp.value = it
                                     initAppList()
                                 },
                                 colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE)
                             )
-                            if (appManage.value) {
-                                Text(text = "系统",
-                                    color = route_left_item_color,
-                                    modifier = Modifier.align(Alignment.CenterVertically).clickable {
-                                        systemApp.value = !systemApp.value
-                                    })
-                                Checkbox(
-                                    systemApp.value,
-                                    onCheckedChange = {
-                                        systemApp.value = it
-                                        initAppList()
-                                    },
-                                    colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE)
-                                )
-                            }
+                        }
 
-                            Button(
-                                onClick = { if (appManage.value) initAppList() else initTask() },
-                                modifier = Modifier.fillMaxHeight()
-                            ) {
-                                Text(text = "刷新")
-                            }
-                            if (appManage.value) {
-                                Button(onClick = {
-                                    JFileChooser().apply {
-                                        dialogTitle = "选择安装包"
-                                        fileSelectionMode = JFileChooser.FILES_ONLY
-                                        fileFilter = FileNameExtensionFilter(
-                                            "安装包(*.apk)", "apk"
-                                        )
-                                        val state: Int = showOpenDialog(ComposeWindow())
-                                        if (state == JFileChooser.CANCEL_OPTION) {
-                                            return@Button
-                                        }
-                                        val path = selectedFile?.absolutePath ?: ""
-                                        if (path.isNotBlank()) {
-                                            GlobalScope.launch {
-                                                install(path)
-                                                if (showToast.value) {
-                                                    delay(1000)
-                                                }
-                                                currentToastTask.value = "AppManageInstall"
-                                                toastText.value = "安装成功"
-                                                showToast.value = true
-                                                initAppList()
+                        Button(
+                            onClick = {
+                                if (appManage.value) initAppList() else initTask()
+                                PropertiesUtil.setValue("appKeyword",appKeyword.value,"")
+                            },
+                            modifier = Modifier.fillMaxHeight()
+                        ) {
+                            Text(text = "刷新")
+                        }
+                        if (appManage.value) {
+                            Button(onClick = {
+                                JFileChooser().apply {
+                                    dialogTitle = "选择安装包"
+                                    fileSelectionMode = JFileChooser.FILES_ONLY
+                                    fileFilter = FileNameExtensionFilter(
+                                        "安装包(*.apk)", "apk"
+                                    )
+                                    val state: Int = showOpenDialog(ComposeWindow())
+                                    if (state == JFileChooser.CANCEL_OPTION) {
+                                        return@Button
+                                    }
+                                    val path = selectedFile?.absolutePath ?: ""
+                                    if (path.isNotBlank()) {
+                                        GlobalScope.launch {
+                                            install(path)
+                                            if (showToast.value) {
+                                                delay(1000)
                                             }
+                                            currentToastTask.value = "AppManageInstall"
+                                            toastText.value = "安装成功"
+                                            showToast.value = true
+                                            initAppList()
                                         }
                                     }
-                                }, modifier = Modifier.fillMaxHeight().padding(start = 4.dp)) {
-                                    Text(text = "安装")
                                 }
-                                Button(
-                                    onClick = {
-                                        val list = ArrayList<String>()
-                                        checkedList.forEachIndexed { index, b ->
-                                            if (b) {
-                                                val index1 = appList[index].lastIndexOf("=")
-                                                val packageName = appList[index].substring(index1 + 1)
-                                                list.add(packageName)
-                                            }
+                            }, modifier = Modifier.fillMaxHeight().padding(start = 4.dp)) {
+                                Text(text = "安装")
+                            }
+                            Button(
+                                onClick = {
+                                    val list = ArrayList<String>()
+                                    checkedList.forEachIndexed { index, b ->
+                                        if (b) {
+                                            val index1 = appList[index].lastIndexOf("=")
+                                            val packageName = appList[index].substring(index1 + 1)
+                                            list.add(packageName)
                                         }
-                                        if (list.isEmpty() || list.size == 0) {
-                                            if (!showToast.value) {
+                                    }
+                                    if (list.isEmpty() || list.size == 0) {
+                                        if (!showToast.value) {
+                                            toastText.value = "至少选中一个"
+                                            showToast.value = true
+                                            currentToastTask.value = "AppManageLeastSelectOne"
+                                        } else {
+                                            if (currentToastTask.value == "AppManageLeastSelectOne")
+                                                return@Button
+                                            GlobalScope.launch {
+                                                delay(1000)
                                                 toastText.value = "至少选中一个"
                                                 showToast.value = true
                                                 currentToastTask.value = "AppManageLeastSelectOne"
-                                            } else {
-                                                if (currentToastTask.value == "AppManageLeastSelectOne")
-                                                    return@Button
-                                                GlobalScope.launch {
-                                                    delay(1000)
-                                                    toastText.value = "至少选中一个"
-                                                    showToast.value = true
-                                                    currentToastTask.value = "AppManageLeastSelectOne"
-                                                }
-                                            }
-                                            return@Button
-                                        }
-                                        var str = ""
-                                        list.forEach {
-                                            str += "    \n$it"
-                                        }
-                                        title.value = "警告"
-                                        titleColor.value = GOOGLE_RED
-                                        dialogText.value = "是否卸载选中应用$str"
-                                        needRun.value = true
-                                        run.value = {
-                                            GlobalScope.launch {
-                                                list.forEach {
-                                                    uninstall(it)
-                                                }
-                                                toastText.value = "应用已卸载"
-                                                showToast.value = true
-                                                currentToastTask.value = "AppManageMoreUninstall"
-                                                initAppList()
-                                            }
-                                            run.value = {}
-                                            needRun.value = false
-                                        }
-                                        showingDialog.value = true
-                                    },
-                                    modifier = Modifier.fillMaxHeight().padding(start = 4.dp),
-                                    colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_RED)
-                                ) {
-                                    Text(text = "卸载", color = Color.White)
-                                }
-                            } else {
-                                Button(
-                                    onClick = {
-                                        val stringBuilder = StringBuilder()
-                                        for (i in 0 until checkedList1.size) {
-                                            if(checkedList1[i]){
-                                                stringBuilder.append(taskList[i][1])
-                                                stringBuilder.append(" ")
                                             }
                                         }
-                                        kill(stringBuilder.toString())
-                                        initTask()
-                                        if (!showToast.value) {
-                                            toastText.value = "命令执行完毕"
-                                            currentToastTask.value = "AppManageKillAll"
+                                        return@Button
+                                    }
+                                    var str = ""
+                                    list.forEach {
+                                        str += "    \n$it"
+                                    }
+                                    title.value = "警告"
+                                    titleColor.value = GOOGLE_RED
+                                    dialogText.value = "是否卸载选中应用$str"
+                                    needRun.value = true
+                                    run.value = {
+                                        GlobalScope.launch {
+                                            list.forEach {
+                                                uninstall(it)
+                                            }
+                                            toastText.value = "应用已卸载"
                                             showToast.value = true
-                                        } else {
-                                            if (currentToastTask.value != "AppManageKillAll") {
-                                                GlobalScope.launch {
-                                                    delay(1000)
-                                                    toastText.value = "命令执行完毕"
-                                                    showToast.value = true
-                                                    currentToastTask.value = "AppManageKillAll"
-                                                }
+                                            currentToastTask.value = "AppManageMoreUninstall"
+                                            initAppList()
+                                        }
+                                        run.value = {}
+                                        needRun.value = false
+                                    }
+                                    showingDialog.value = true
+                                },
+                                modifier = Modifier.fillMaxHeight().padding(start = 4.dp),
+                                colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_RED)
+                            ) {
+                                Text(text = "卸载", color = Color.White)
+                            }
+                        } else {
+                            Button(
+                                onClick = {
+                                    val stringBuilder = StringBuilder()
+                                    for (i in 0 until checkedList1.size) {
+                                        if (checkedList1[i]) {
+                                            stringBuilder.append(taskList[i][1])
+                                            stringBuilder.append(" ")
+                                        }
+                                    }
+                                    kill(stringBuilder.toString())
+                                    initTask()
+                                    if (!showToast.value) {
+                                        toastText.value = "命令执行完毕"
+                                        currentToastTask.value = "AppManageKillAll"
+                                        showToast.value = true
+                                    } else {
+                                        if (currentToastTask.value != "AppManageKillAll") {
+                                            GlobalScope.launch {
+                                                delay(1000)
+                                                toastText.value = "命令执行完毕"
+                                                showToast.value = true
+                                                currentToastTask.value = "AppManageKillAll"
                                             }
                                         }
-                                    },
-                                    colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_RED),
-                                    modifier = Modifier.fillMaxHeight().padding(start = 4.dp)
-                                ) {
-                                    Text(text = "杀死", color = Color.White)
-                                }
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_RED),
+                                modifier = Modifier.fillMaxHeight().padding(start = 4.dp)
+                            ) {
+                                Text(text = "杀死", color = Color.White)
                             }
                         }
-                        if (!appManage.value) {
-                            TaskItem(listOf("USER", "PID", "PPID", "NAME", "RSS"), -1)
-                        }
                     }
-                    if (appManage.value) {
-                        itemsIndexed(appList) { index, item ->
-                            AppItem(item, index)
-                        }
-                    } else {
-                        itemsIndexed(taskList) { index, item ->
-                            TaskItem(item, index)
-                        }
+                    if (!appManage.value) {
+                        TaskItem(listOf("USER", "PID", "PPID", "NAME", "RSS"), -1)
                     }
                 }
-                if (showingDialog.value)
-                    SimpleDialog(showingDialog)
+                if (appManage.value) {
+                    itemsIndexed(appList) { index, item ->
+                        AppItem(item, index)
+                    }
+                } else {
+                    itemsIndexed(taskList) { index, item ->
+                        TaskItem(item, index)
+                    }
+                }
             }
-            Toast(showToast, toastText)
         }
-
     }
 }
 
@@ -540,16 +536,6 @@ fun AppItem(str: String, i: Int) {
             }
         }
     }
-    if (showingDialog.value) {
-        SimpleDialog(
-            showingDialog,
-            title = title.value,
-            titleColor = titleColor.value,
-            text = dialogText.value,
-            needRun = needRun.value,
-            runnable = run.value
-        )
-    }
 }
 
 fun initAppList() {
@@ -558,12 +544,12 @@ fun initAppList() {
     checkAll.value = false
     var cmd = ""
     if (getOsType() == "windows")
-        cmd += if (keyword.value.isEmpty()) "" else "\""
+        cmd += if (appKeyword.value.isEmpty()) "" else "\""
     cmd += "pm list packages -f"
     cmd += if (systemApp.value) "" else " -3"
-    cmd += if (keyword.value.isEmpty()) "" else " | grep ${keyword.value}"
+    cmd += if (appKeyword.value.isEmpty()) "" else " | grep ${appKeyword.value}"
     if (getOsType() == "windows")
-        cmd += if (keyword.value.isEmpty()) "" else "\""
+        cmd += if (appKeyword.value.isEmpty()) "" else "\""
 //    val cmd = "\"pm dump * | grep -E 'Package |version|codePath'\""
     val packages = shell(cmd)
     val split = packages.trim().split("\n").filter { it.isNotBlank() }.map { it.substring(8) }
@@ -580,9 +566,9 @@ fun initTask() {
     taskList.clear()
     checkedList1.clear()
     checkAll1.value = false
-    val res = ps(keyword.value, checkA.value)
+    val res = ps(appKeyword.value, checkA.value)
     var split = res.trim().split("\n").filter { it.isNotBlank() }
-    if (keyword.value.isBlank())
+    if (appKeyword.value.isBlank())
         split = split.subList(1, split.size)
     split.forEach {
         val contentArr = it.split(" ").filter {
