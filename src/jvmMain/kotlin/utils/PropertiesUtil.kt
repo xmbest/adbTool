@@ -1,7 +1,9 @@
 package utils
 
 import pages.appKeyword
+import pages.boardCommand
 import pages.boardCustomer
+import pages.text1
 import status.*
 import java.io.*
 import java.util.*
@@ -38,8 +40,12 @@ class PropertiesUtil {
                 adb.value = getValue("adb") ?: "adb"
                 //应用关键词
                 appKeyword.value = getValue("appKeyword") ?: ""
+                //命令词
+                text1.value = getValue("command") ?: ""
+                //core文本
+                boardCommand.value = getValue("boardCommand") ?: ""
                 //自定义广播
-                boardCustomer.value = getValue("boardCustomer") ?: "am broadcast -a xxx --es xxx"
+                boardCustomer.value = getValue("boardCustomer") ?: "am broadcast -a com.txznet.adapter.recv --es action ac.air.status --ei key_type 2080"
             }
         }
 
