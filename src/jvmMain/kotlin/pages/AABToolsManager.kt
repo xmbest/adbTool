@@ -9,26 +9,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
-import components.ContentMoreRowColumn
-import components.ContentNRow
-import components.General
-import components.Spinner
+import components.*
+import entity.AABToolsCfgBean
 import theme.GOOGLE_RED
 import theme.LIGHT_GRAY
-import utils.DefFileFilter
 import utils.PropertiesUtil
-import java.io.File
-import java.util.*
-import javax.swing.JFileChooser
-import javax.swing.filechooser.FileFilter
 
 
 private val notSelectedCfg = "配置未选择"
@@ -47,6 +39,8 @@ fun AABToolsManager() {
     val selectItem = remember {
         mutableStateOf(notSelectedCfg)
     }
+    val openDialog = remember { mutableStateOf(false) }
+    val aabToolsBeanState: MutableState<AABToolsCfgBean> = remember { mutableStateOf(AABToolsCfgBean()) }
     refreshCfg()
     Column(modifier = Modifier.fillMaxSize().fillMaxHeight().verticalScroll(rememberScrollState())) {
         General(title = "配置管理", height = 1, content = {
@@ -74,8 +68,7 @@ fun AABToolsManager() {
                     Button(content = {
                         Text("添加配置")
                     }, onClick = {
-                        selectFile("png")
-                        refreshCfg()
+                        openDialog.value = true
                     })
                     Button(content = {
                         Text("修改配置")
@@ -93,23 +86,11 @@ fun AABToolsManager() {
             }
         })
     }
+    if (openDialog.value) {
+        AABFormDialog(openDialog, aabToolsBeanState)
+    }
 }
 
-private fun selectFile(vararg fileType: String) {
-    val defFileFilter = DefFileFilter()
-    val sb = StringBuilder()
-    fileType.forEach {
-        defFileFilter.addExtension(it)
-        sb.append(it).append(" ")
-    }
-    defFileFilter.setDescription(sb.toString())
-    JFileChooser().apply {
-        fileSelectionMode = JFileChooser.FILES_ONLY
-        addChoosableFileFilter(defFileFilter)
-        showOpenDialog(ComposeWindow())
-        val path = selectedFile?.absolutePath ?: ""
-    }
-}
 
 private fun refreshCfg() {
     cfg.value.let {
