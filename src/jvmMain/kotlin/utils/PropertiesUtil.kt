@@ -36,6 +36,7 @@ class PropertiesUtil {
                 saveLog.value = getValue("saveLog")?.toInt() == 1
                 desktop.value = getValue("desktop") ?: desktop.value
                 adb.value = getValue("adb") ?: "adb"
+                bundletool.value = getValue("bundletool") ?: "bundletool"
                 //应用关键词
                 appKeyword.value = getValue("appKeyword") ?: ""
                 //自定义广播

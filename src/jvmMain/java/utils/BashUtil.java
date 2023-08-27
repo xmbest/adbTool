@@ -54,7 +54,7 @@ public class BashUtil {
             LogUtil.Companion.d("exec: "+command);
         runing = true;
         Process exec = processBuilder.start();
-        // 获取外部程序标准输出流
+        // 获取外部程序标准输出流B
         OutputHandlerRunnable runnable = new OutputHandlerRunnable(exec.getInputStream(), false);
         new Thread(runnable).start();
         // 获取外部程序标准错误流
