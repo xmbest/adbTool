@@ -1,9 +1,7 @@
 package utils
 
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import pages.*
+import pages.appKeyword
+import pages.boardCustomer
 import status.*
 import java.io.*
 import java.util.*
@@ -40,12 +38,8 @@ class PropertiesUtil {
                 adb.value = getValue("adb") ?: "adb"
                 //应用关键词
                 appKeyword.value = getValue("appKeyword") ?: ""
-                //命令词
-                text1.value = getValue("command") ?: ""
-                //core文本
-                boardCommand.value = getValue("boardCommand") ?: ""
                 //自定义广播
-                boardCustomer.value = getValue("boardCustomer") ?: "am broadcast -a com.txznet.adapter.recv --es action ac.air.status --ei key_type 2080"
+                boardCustomer.value = getValue("boardCustomer") ?: "am broadcast -a xxx --es xxx"
             }
         }
 
