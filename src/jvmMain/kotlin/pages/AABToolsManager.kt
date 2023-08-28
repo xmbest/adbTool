@@ -1,26 +1,29 @@
 package pages
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.TextField
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.google.gson.Gson
 import components.*
 import entity.AABToolsCfgBean
 import theme.GOOGLE_RED
 import theme.LIGHT_GRAY
 import utils.PropertiesUtil
+import utils.getRealLocation
 
 
 private val notSelectedCfg = "配置未选择"
@@ -31,7 +34,7 @@ val cfg = mutableStateOf(
     )
 )
 
-var popKey = "aabToolsCfg"
+var aabToolsPopKey = "aabToolsCfg"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -41,6 +44,11 @@ fun AABToolsManager() {
     }
     val openDialog = remember { mutableStateOf(false) }
     val aabToolsBeanState: MutableState<AABToolsCfgBean> = remember { mutableStateOf(AABToolsCfgBean()) }
+    val keyStoryPath = mutableStateOf("")
+    val keyStoryPwd = mutableStateOf("")
+    val keyAlias = mutableStateOf("")
+    val keyPwd = mutableStateOf("")
+    val cfgName = mutableStateOf("")
     refreshCfg()
     Column(modifier = Modifier.fillMaxSize().fillMaxHeight().verticalScroll(rememberScrollState())) {
         General(title = "配置管理", height = 1, content = {
@@ -48,7 +56,7 @@ fun AABToolsManager() {
                 ContentNRow {
                     Spinner(modifier = Modifier.wrapContentSize(),
                         dropDownModifier = Modifier.wrapContentSize(),
-                        items = cfg.value,
+                        items = cfg,
                         selectedItem = selectItem.value,
                         onItemSelected = {
                             selectItem.value = it
@@ -58,30 +66,87 @@ fun AABToolsManager() {
                                 modifier = modifier.padding(10.dp).wrapContentSize().clip(RoundedCornerShape(3.dp))
                             ) {
                                 Box(Modifier.background(LIGHT_GRAY).height(40.dp)) {
-                                    Text(item, Modifier.width(600.dp).align(Alignment.Center).padding(start = 10.dp))
+                                    Text(getCfgName(item), Modifier.width(600.dp).align(Alignment.Center).padding(start = 10.dp))
                                 }
+                                aabToolsBeanState.value = getCfgBean(item)
+                                keyStoryPath.value = aabToolsBeanState.value.keyStoryPath
+                                keyStoryPwd.value = aabToolsBeanState.value.keyStoryPwd
+                                keyAlias.value = aabToolsBeanState.value.keyAlias
+                                keyPwd.value = aabToolsBeanState.value.keyPwd
+                                cfgName.value = aabToolsBeanState.value.cfgName
                             }
                         },
                         dropdownItemFactory = { item, _ ->
-                            Text(text = item, Modifier.width(600.dp).padding(start = 10.dp))
+                            Row {
+                                Text(text = getCfgName(item), Modifier.width(150.dp).padding(start = 10.dp))
+                                if (item != notSelectedCfg) {
+                                    Icon(painter = painterResource(getRealLocation("clear")), null, modifier = Modifier.size(20.dp).clickable {
+                                        PropertiesUtil.deleteValue4List(aabToolsPopKey, item)
+                                        refreshCfg()
+                                    })
+                                }
+                            }
                         })
                     Button(content = {
                         Text("添加配置")
                     }, onClick = {
                         openDialog.value = true
                     })
-                    Button(content = {
-                        Text("修改配置")
-                    }, onClick = {
-
-                    })
                 }
             }
         })
         General(title = "当前配置", color = GOOGLE_RED, height = 3, content = {
-            ContentMoreRowColumn {
+            ContentMoreRowColumn(modifier = Modifier.padding(horizontal = 30.dp)) {
+                ContentNRow {
+                    Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                        Text("KeyStory路径:", modifier = Modifier.align(Alignment.CenterVertically))
+                        TextField(value = keyStoryPath.value, modifier = Modifier.align(Alignment.CenterVertically).fillMaxWidth(), onValueChange = {})
+                    }
+                }
+                ContentNRow {
+                    Row(
+                        modifier = Modifier.weight(0.5F).align(Alignment.CenterHorizontally).padding(horizontal = 5.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text("配置名:", modifier = Modifier.align(Alignment.CenterVertically))
+                        Text(
+                            cfgName.value,
+                            style = TextStyle(color = Color.Black, fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.weight(1F).align(Alignment.CenterHorizontally).padding(horizontal = 5.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text("Key别名:", modifier = Modifier.align(Alignment.CenterVertically))
+                        TextField(value = keyAlias.value, modifier = Modifier.align(Alignment.CenterVertically), onValueChange = { keyAlias.value = it })
+                    }
+                    Row(
+                        modifier = Modifier.weight(1F).align(Alignment.CenterHorizontally).padding(horizontal = 5.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text("KeyStory密钥:", modifier = Modifier.align(Alignment.CenterVertically))
+                        TextField(value = keyStoryPwd.value, modifier = Modifier.align(Alignment.CenterVertically), onValueChange = { keyStoryPwd.value = it })
+                    }
+                    Row(
+                        modifier = Modifier.weight(1F).align(Alignment.CenterHorizontally).padding(horizontal = 5.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text("Key密钥:", modifier = Modifier.align(Alignment.CenterVertically))
+                        TextField(value = keyPwd.value, modifier = Modifier.align(Alignment.CenterVertically), onValueChange = { keyPwd.value = it })
+                    }
+                }
                 ContentNRow {
 
+                }
+                ContentNRow {
+                    Button(modifier = Modifier.weight(1F).padding(horizontal = 10.dp), onClick = {}, content = {
+                        Text("生成APKS")
+                    })
+                    Button(modifier = Modifier.weight(1F).padding(horizontal = 10.dp), onClick = {}, content = {
+                        Text("安装APKS到手机")
+                    })
                 }
             }
         })
@@ -91,11 +156,29 @@ fun AABToolsManager() {
     }
 }
 
+fun getCfgName(item: String): String {
+    return try {
+        Gson().fromJson(item, AABToolsCfgBean::class.java).cfgName
+    } catch (e: Exception) {
+        item
+    }
+}
+
+fun getCfgBean(item: String): AABToolsCfgBean {
+    return try {
+        Gson().fromJson(item, AABToolsCfgBean::class.java)
+    } catch (e: Exception) {
+        AABToolsCfgBean()
+    }
+}
+
 
 private fun refreshCfg() {
-    cfg.value.let {
+    val value = cfg.value
+    value.let {
         it.clear()
         it.add(notSelectedCfg)
-        PropertiesUtil.getListByKey(popKey).forEach { ele -> cfg.value.add(ele) }
+        PropertiesUtil.getListByKey(aabToolsPopKey).forEach { ele -> value.add(ele) }
     }
+    cfg.value = value
 }

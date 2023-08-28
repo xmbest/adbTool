@@ -96,8 +96,8 @@ fun ContentNRow(content: @Composable (() -> Unit)) {
 }
 
 @Composable
-fun ContentMoreRowColumn(content: @Composable (() -> Unit)) {
-    Column(verticalArrangement = Arrangement.SpaceAround, modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+fun ContentMoreRowColumn(modifier: Modifier = Modifier, content: @Composable (() -> Unit)) {
+    Column(verticalArrangement = Arrangement.SpaceAround, modifier = modifier.fillMaxWidth().fillMaxHeight()) {
         content()
     }
 }
@@ -110,7 +110,7 @@ fun ContentMoreRowColumn(content: @Composable (() -> Unit)) {
 fun <T> Spinner(
     modifier: Modifier = Modifier,
     dropDownModifier: Modifier = Modifier,
-    items: List<T>,
+    items: MutableState<MutableList<T>>,
     selectedItem: T,
     onItemSelected: (T) -> Unit,
     selectedItemFactory: @Composable (Modifier, T) -> Unit,
@@ -130,9 +130,9 @@ fun <T> Spinner(
             onDismissRequest = { expanded = false },
             modifier = dropDownModifier
         ) {
-            items.forEachIndexed { index, element ->
+            items.value.forEachIndexed { index, element ->
                 DropdownMenuItem(onClick = {
-                    onItemSelected(items[index])
+                    onItemSelected(items.value[index])
                     expanded = false
                 }) {
                     dropdownItemFactory(element, index)
