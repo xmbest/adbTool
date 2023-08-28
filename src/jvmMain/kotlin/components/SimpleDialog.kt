@@ -1,26 +1,19 @@
 package components
 
-import androidx.compose.foundation.background
+import CustomDialogProvider
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.PopupAlertDialogProvider.AlertDialog
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import theme.GOOGLE_BLUE
@@ -50,27 +43,33 @@ fun SimpleDialog(
     needRun: Boolean = false,
     runnable: (() -> Unit)? = null,
     width: Int = 320,
-    height: Int = 220,
+    height: Int = 80,
     content: @Composable (() -> Unit) = {
         Column(
-            modifier = Modifier.height(height.dp).width(width.dp).clip(RoundedCornerShape(5.dp))
+            modifier = Modifier.height(height.dp).width(width.dp)
         ) {
-            Row(modifier = Modifier.fillMaxWidth().padding(5.dp).clip(RoundedCornerShape(5.dp))) {
-                Text(color = titleColor, text = title, fontSize = 16.sp, modifier = Modifier.padding(start = 4.dp))
-            }
             val scroll = rememberScrollState()
             Row(
                 modifier = Modifier.fillMaxWidth().weight(1f).padding(5.dp).verticalScroll(scroll),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                SelectionContainer{
+                SelectionContainer {
                     Text(color = Color.Gray, text = "   $text", fontSize = 16.sp)
                 }
             }
+        }
+    }
+) {
+
+    AlertDialog(
+        dialogProvider = CustomDialogProvider, modifier = Modifier.clip(RoundedCornerShape(5.dp)),
+        onDismissRequest = {
+
+        }, buttons = {
             Row(
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.End,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(bottom = 3.dp, end = 2.dp)
             ) {
                 Button(
                     onClick = {
@@ -94,12 +93,9 @@ fun SimpleDialog(
                     }
                 }
             }
-        }
-    }
-) {
-    AlertDialog(onDismissRequest = {
-//        showingDialog.value = false
-    }, content = {
-        content()
-    })
+        }, text = {
+            content()
+        }, title = {
+            Text(color = titleColor, text = title)
+        })
 }

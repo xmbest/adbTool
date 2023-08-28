@@ -66,8 +66,10 @@ fun FileManage() {
                             filter = filter.substring(0, filter.length - 1)
                     }
                     initFile()
+                    true
+                }else{
+                    false
                 }
-                true
             }.focusRequester(requester)
                 .focusable()
         ) {
@@ -205,7 +207,7 @@ fun FileView(
                     "icon",
                     tint = GOOGLE_BLUE,
                     modifier = Modifier.size(50.dp).clickable {
-                        title.value = "提示"
+                        title.value = "请输入文件新名称"
                         titleColor.value = GOOGLE_GREEN
                         dialogText.value = file.name
                         needRun.value = true
