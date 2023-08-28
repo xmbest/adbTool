@@ -7,6 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BashUtil {
+    // back.inline.test.conn.cfg.txz~dat
+    public static byte[] test = {9,0,0,0,8,-49,-127,-96,-123,12,16,-69,3,102,22,-28,120};
+    //back.inline.dev.conn.cfg.txz~dat
+    public static byte[] dev = {9,0,0,0,8,-51,-127,-96,-123,12,16,-69,3,27,17,-63,58};
 
     public static String split = "\\";
 
