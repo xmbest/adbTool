@@ -9,16 +9,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusOrder
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.graphics.Color
@@ -42,7 +40,7 @@ import javax.swing.JFileChooser
 val fileList = mutableStateListOf<File>()
 val defaultDir = mutableStateOf("/sdcard/")
 private var filter = ""
-
+private val requester = FocusRequester()
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun FileManage() {
@@ -58,8 +56,8 @@ fun FileManage() {
             Text("请先连接设备")
         }
     } else {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(modifier = Modifier.fillMaxSize().padding(10.dp, top = 0.dp).onKeyEvent {
+        Box(
+            modifier = Modifier.fillMaxSize().onKeyEvent {
                 if (it.type == KeyEventType.KeyDown) {
                     if (it.key.keyCode >= Key.A.keyCode && it.key.keyCode <= Key.Z.keyCode) {
                         filter += Char(it.key.nativeKeyCode).lowercase()
@@ -70,7 +68,10 @@ fun FileManage() {
                     initFile()
                 }
                 true
-            }) {
+            }.focusRequester(requester)
+                .focusable()
+        ) {
+            Column(modifier = Modifier.fillMaxSize().padding(10.dp, top = 0.dp)) {
                 val back = File("", defaultDir.value, "返回上级", "", true)
                 LazyColumn {
                     stickyHeader {
@@ -81,10 +82,9 @@ fun FileManage() {
                         }
                     }
                     items(fileList) {
-                        if (it.name == "." || it.name == ".." ){
+                        if (it.name == "." || it.name == "..") {
 
-                        }
-                        else
+                        } else
                             FileView(it)
                     }
                 }
@@ -99,13 +99,20 @@ fun FileManage() {
                 }
             }
             if (filter.isNotBlank())
-                Row(modifier = Modifier.background(route_left_item_color), verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.background(route_left_item_color),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = filter,
                         color = SIMPLE_WHITE,
                         modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 3.dp, bottom = 3.dp)
                     )
                 }
+        }
+        SideEffect {
+            // 直接在重组完成后请求Box的焦点
+            requester.requestFocus()
         }
     }
 }
@@ -114,6 +121,7 @@ fun backParent() {
     if (defaultDir.value != "/") {
         defaultDir.value = defaultDir.value.substring(0, defaultDir.value.lastIndexOf("/"))
         defaultDir.value = defaultDir.value.substring(0, defaultDir.value.lastIndexOf("/") + 1)
+        filter = ""
         initFile()
     }
 }
@@ -126,6 +134,7 @@ fun FileView(
         if (file.isDir) {
             defaultDir.value += file.name
             defaultDir.value += "/"
+            filter = ""
             initFile()
         }
     }
