@@ -44,7 +44,7 @@ private val requester = FocusRequester()
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun FileManage() {
-    if (fileList.isEmpty() && defaultDir.value == "/sdcard/" && filter.isBlank()) {
+    if (currentDevice.value.isNotBlank() && fileList.isEmpty() && defaultDir.value == "/sdcard/" && filter.isBlank()) {
         initFile()
     }
     if (currentDevice.value.isEmpty()) {
