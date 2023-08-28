@@ -24,6 +24,7 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation("com.github.mifmif:generex:1.0.2")
+                implementation("com.google.code.gson:gson:2.10")// https://mvnrepository.com/artifact/com.google.code.gson/gson
             }
         }
         val jvmTest by getting
@@ -34,10 +35,10 @@ compose.desktop {
     application {
         mainClass = "MainKt"
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb,TargetFormat.Exe)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
             packageName = "ADBTool"
             packageVersion = currentVersion
-            windows{
+            windows {
                 // a version for all Windows distributables
                 packageVersion = currentVersion
                 // a version only for the msi package

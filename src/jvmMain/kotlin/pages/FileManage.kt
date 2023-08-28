@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalComposeUiApi::class)
+
 package pages
 
 import androidx.compose.foundation.*
@@ -7,14 +9,18 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusOrder
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,11 +39,12 @@ import javax.swing.JFileChooser
 
 val fileList = mutableStateListOf<File>()
 val defaultDir = mutableStateOf("/sdcard/")
-
-@OptIn(ExperimentalFoundationApi::class)
+private var filter = ""
+private val requester = FocusRequester()
+@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun FileManage() {
-    if (fileList.isEmpty() && defaultDir.value == "/sdcard/") {
+    if (fileList.isEmpty() && defaultDir.value == "/sdcard/" && filter.isBlank()) {
         initFile()
     }
     if (currentDevice.value.isEmpty()) {
@@ -49,29 +56,63 @@ fun FileManage() {
             Text("请先连接设备")
         }
     } else {
-        Column(modifier = Modifier.fillMaxSize().padding(10.dp, top = 0.dp)) {
-            val back = File("", defaultDir.value, "返回上级", "", true)
-            LazyColumn {
-                stickyHeader {
-                    Row(modifier = Modifier.background(Color.White)) {
-                        FileView(back) {
-                            backParent()
+        Box(
+            modifier = Modifier.fillMaxSize().onKeyEvent {
+                if (it.type == KeyEventType.KeyDown) {
+                    if (it.key.keyCode >= Key.A.keyCode && it.key.keyCode <= Key.Z.keyCode) {
+                        filter += Char(it.key.nativeKeyCode).lowercase()
+                    } else if (it.key.keyCode == Key.Delete.keyCode || it.key.keyCode == Key.Backspace.keyCode) {
+                        if (filter.isNotBlank())
+                            filter = filter.substring(0, filter.length - 1)
+                    }
+                    initFile()
+                }
+                true
+            }.focusRequester(requester)
+                .focusable()
+        ) {
+            Column(modifier = Modifier.fillMaxSize().padding(10.dp, top = 0.dp)) {
+                val back = File("", defaultDir.value, "返回上级", "", true)
+                LazyColumn {
+                    stickyHeader {
+                        Row(modifier = Modifier.background(Color.White)) {
+                            FileView(back) {
+                                backParent()
+                            }
                         }
                     }
+                    items(fileList) {
+                        if (it.name == "." || it.name == "..") {
+
+                        } else
+                            FileView(it)
+                    }
                 }
-                items(fileList) {
-                    FileView(it)
+                if (fileList.isEmpty()) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("没有找到文件", color = route_left_item_color)
+                    }
                 }
             }
-            if (fileList.isEmpty()) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+            if (filter.isNotBlank())
+                Row(
+                    modifier = Modifier.background(route_left_item_color),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("没有找到文件", color = route_left_item_color)
+                    Text(
+                        text = filter,
+                        color = SIMPLE_WHITE,
+                        modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 3.dp, bottom = 3.dp)
+                    )
                 }
-            }
+        }
+        SideEffect {
+            // 直接在重组完成后请求Box的焦点
+            requester.requestFocus()
         }
     }
 }
@@ -80,6 +121,7 @@ fun backParent() {
     if (defaultDir.value != "/") {
         defaultDir.value = defaultDir.value.substring(0, defaultDir.value.lastIndexOf("/"))
         defaultDir.value = defaultDir.value.substring(0, defaultDir.value.lastIndexOf("/") + 1)
+        filter = ""
         initFile()
     }
 }
@@ -92,6 +134,7 @@ fun FileView(
         if (file.isDir) {
             defaultDir.value += file.name
             defaultDir.value += "/"
+            filter = ""
             initFile()
         }
     }
@@ -500,9 +543,21 @@ fun FileView(
 
 fun initFile() {
     fileList.clear()
-    val res = shell("ls -al ${defaultDir.value}")
-    var arr = res.trim().split("\n")
-    arr = arr.subList(1, arr.size)
+    var cmd = "ls -al ${defaultDir.value}"
+    if (filter.isNotBlank()) {
+        cmd += " | grep -i '${filter}'"
+        if (BashUtil.split == "\\") {
+            cmd = "\"" + cmd + "\""
+        }
+    }
+    val res = shell(cmd)
+    var arr = res.trim().split("\n").filter {
+        it.isNotBlank()
+    }
+    if (arr.isEmpty())
+        return
+    if (arr.size != 1)
+        arr = arr.subList(1, arr.size)
     arr.forEach {
         val contentArr = it.split(" ").filter {
             it.trim().isNotEmpty()

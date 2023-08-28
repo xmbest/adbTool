@@ -8,6 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import theme.GOOGLE_BLUE
 
@@ -21,21 +23,22 @@ fun General(
 ) {
     Card(modifier = Modifier.fillMaxWidth().padding(10.dp).height((height * 120).dp)) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            Row(modifier = Modifier.height(30.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(
+                modifier = Modifier.height(30.dp).padding(top = 10.dp, start = 10.dp).fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Box {
                     Canvas(modifier = Modifier.size(2.dp)) {
                         drawLine(color, start = Offset(10f, 2f), end = Offset(10f, 18f), strokeWidth = 2f)
                     }
-                    Text(title, modifier = Modifier.padding(start = 16.dp))
+                    Text(title, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp))
                 }
                 Box(modifier = Modifier.padding(end = 16.dp)) {
-                    if (topRight != null)
-                        topRight()
+                    if (topRight != null) topRight()
                 }
             }
             Row(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                if (content != null)
-                    content()
+                if (content != null) content()
             }
         }
     }

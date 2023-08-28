@@ -18,3 +18,4 @@ var saveLog = mutableStateOf(false)
 var desktop = mutableStateOf(BashUtil.desktop_dir)
 var pathSave = desktop
 val adb = mutableStateOf("adb")
+val bundletool = mutableStateOf("bundletool")

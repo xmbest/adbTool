@@ -42,41 +42,51 @@ public class FileUtil {
 
         //adb环境
         if (Objects.equals(BashUtil.split, "\\")) {
-            File adb1 = new File(cfgParent, "adb.exe");
+            String adbName = "adb.exe";
+            File adb1 = new File(cfgParent, adbName);
+            String bundleToolsName = "bundletool-all-1.15.4.jar";
+            File bundleTools = new File(cfgParent, bundleToolsName);
             if (!adb1.exists()) {
-
                 LogUtil.Companion.d("create windows adb.exe");
             }
-            new Thread(()->{
-                InputStream inputStream = ClassLoader.getSystemResourceAsStream("adb.exe");
-                if (inputStream != null) {
-                    try {
-                        FileUtil.copyFileUsingFileStreams(inputStream, adb1);
-                    } catch (IOException e) {
-                        LogUtil.Companion.d(e.getMessage());
-                    }
-                }
+            new Thread(() -> {
+                setFilePath(adb1, adbName, false);
+                setFilePath(bundleTools, bundleToolsName, false);
                 AllKt.getAdb().setValue(adb1.getAbsolutePath());
+                AllKt.getBundletool().setValue(bundleTools.getAbsolutePath());
                 PropertiesUtil.Companion.setValue("adb", AllKt.getAdb().getValue(), "");
+                PropertiesUtil.Companion.setValue("bundletool", AllKt.getAdb().getValue(), "");
             }).start();
         } else {
-            File adb1 = new File(cfgParent, "adb");
+            String adbName = "adb";
+            File adb1 = new File(cfgParent, adbName);
+            String bundleToolsName = "bundletool-all-1.15.4.jar";
+            File bundleTools = new File(cfgParent, bundleToolsName);
             if (!adb1.exists()) {
-                new Thread(()->{
-                    InputStream inputStream = ClassLoader.getSystemResourceAsStream("adb");
-                    if (inputStream != null) {
-                        try {
-                            FileUtil.copyFileUsingFileStreams(inputStream, adb1);
-                        } catch (IOException e) {
-                            LogUtil.Companion.d(e.getMessage());
-                        }
-                    }
-                    adb1.setExecutable(true);
+                new Thread(() -> {
+                    setFilePath(adb1, adbName, true);
+                    setFilePath(bundleTools, bundleToolsName, true);
                     AllKt.getAdb().setValue(adb1.getAbsolutePath());
+                    AllKt.getBundletool().setValue(bundleTools.getAbsolutePath());
                     PropertiesUtil.Companion.setValue("adb", AllKt.getAdb().getValue(), "");
+                    PropertiesUtil.Companion.setValue("bundletool", AllKt.getAdb().getValue(), "");
                     LogUtil.Companion.d("create mac adb");
                 }).start();
             }
+        }
+    }
+
+    private static void setFilePath(File file, String fileName, Boolean isMac) {
+        InputStream inputStream = ClassLoader.getSystemResourceAsStream(fileName);
+        if (inputStream != null) {
+            try {
+                FileUtil.copyFileUsingFileStreams(inputStream, file);
+            } catch (IOException e) {
+                LogUtil.Companion.d(e.getMessage());
+            }
+        }
+        if (isMac) {
+            file.setExecutable(true);
         }
     }
 }

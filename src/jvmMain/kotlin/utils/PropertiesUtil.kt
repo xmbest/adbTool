@@ -1,5 +1,7 @@
 package utils
 
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import pages.appKeyword
 import pages.boardCommand
 import pages.boardCustomer
@@ -38,6 +40,7 @@ class PropertiesUtil {
                 saveLog.value = getValue("saveLog")?.toInt() == 1
                 desktop.value = getValue("desktop") ?: desktop.value
                 adb.value = getValue("adb") ?: "adb"
+                bundletool.value = getValue("bundletool") ?: "bundletool"
                 //应用关键词
                 appKeyword.value = getValue("appKeyword") ?: ""
                 //命令词
@@ -47,6 +50,29 @@ class PropertiesUtil {
                 //自定义广播
                 boardCustomer.value = getValue("boardCustomer") ?: "am broadcast -a com.txznet.adapter.recv --es action ac.air.status --ei key_type 2080"
             }
+        }
+
+        /**
+         * 基于[setValue]的列表数据管理
+         */
+        fun addValueToList(key: String, value: String?, comments: String?) {
+            val list = getListByKeyWithGson(key).toMutableList()
+            list.add(value ?: "")
+            setValue(key, Gson().toJson(list), comments)
+        }
+
+        fun getListByKey(key: String): List<String> {
+            return getListByKeyWithGson(key)
+        }
+
+        private fun getListByKeyWithGson(key: String): List<String> {
+            val v = getValue(key)
+            val list = try {
+                Gson().fromJson<List<String>>(v ?: "", object : TypeToken<List<String>>() {}.type).toMutableList()
+            } catch (e: Exception) {
+                listOf()
+            }
+            return list
         }
 
         /**
