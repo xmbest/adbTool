@@ -55,6 +55,12 @@ class PropertiesUtil {
             setValue(key, Gson().toJson(list), comments)
         }
 
+        fun deleteValue4List(key: String, value: String, comments: String = "") {
+            val list = getListByKeyWithGson(key).toMutableList()
+            list.remove(value)
+            setValue(key, Gson().toJson(list),comments)
+        }
+
         fun getListByKey(key: String): List<String> {
             return getListByKeyWithGson(key)
         }
