@@ -1,27 +1,59 @@
 package utils
 
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import entity.AABToolsCfgBean
+import kotlinx.coroutines.*
 import status.bundletool
 import utils.LogUtil.Companion.flushRes
 import java.io.File
+import java.lang.StringBuilder
 
 object AABUtils {
     /**
      * aab转换为apks
      */
-    fun AAB2Apks() {
-        try {
-            excAAB()
+    suspend fun AAB2Apks(aabPath: String, aabToolsCfgBean: AABToolsCfgBean): String {
+        return try {
+            excAAB(aabPath, aabToolsCfgBean)
         } catch (e: Exception) {
             flushRes(e.toString())
+            ""
         }
     }
 
-    private fun excAAB() {
-//        val file = File(aabFilePath.getText())
-//        val apksOutput: String = (file.getParent() + "\\" + removeExtension(file.getName())).toString() + ".apks"
-//        //执行生成命令
-//        val cmd =
-//            (((((("java -jar " + bundletool.value) + " build-apks --bundle=" + aabFilePath.getText()) + " --output=" + apksOutput + " --ks=" + keyPath.getText()).toString() + " --ks-pass=pass:" + keyPwdInput.getText()).toString() + " --ks-key-alias=" + keyAliasInput.getText()).toString() + " --key-pass=pass:" + keyPwdInput.getText()) + " && pause"
-//        BashUtil.execCommand("javac")
+    suspend fun Install2Phont(apksPath: String): Boolean {
+        return true
+    }
+
+
+    private suspend fun excAAB(aabPath: String, aabToolsCfgBean: AABToolsCfgBean): String = coroutineScope {
+        val file = File(aabPath)
+        val apksOutput: String = (file.getParent() + "\\" + removeExtension(file.getName())) + ".apks"
+        File(apksOutput).let {
+            if (it.exists()) it.delete()
+        }
+        val sb = StringBuilder()
+        sb.append("java -jar ").append(bundletool.value)
+        sb.append(" build-apks --bundle=").append(aabPath)
+        sb.append(" --output=").append(apksOutput)
+        sb.append(" --ks=").append(aabToolsCfgBean.keyStoryPath)
+        sb.append(" --ks-pass=pass:").append(aabToolsCfgBean.keyStoryPwd)
+        sb.append(" --ks-key-alias=").append(aabToolsCfgBean.keyAlias)
+        sb.append(" --key-pass=pass:").append(aabToolsCfgBean.keyPwd)
+        return@coroutineScope try {
+            BashUtil.execCommand(sb.toString())
+            apksOutput
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    fun removeExtension(fileName: String): String {
+        val lastIndexOfDot = fileName.lastIndexOf('.')
+        return if (lastIndexOfDot > 0) {
+            fileName.substring(0, lastIndexOfDot)
+        } else {
+            fileName
+        }
     }
 }

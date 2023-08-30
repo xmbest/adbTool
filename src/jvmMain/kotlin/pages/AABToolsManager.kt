@@ -20,8 +20,12 @@ import androidx.compose.ui.unit.sp
 import com.google.gson.Gson
 import components.*
 import entity.AABToolsCfgBean
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import theme.GOOGLE_RED
 import theme.LIGHT_GRAY
+import utils.AABUtils
 import utils.PropertiesUtil
 import utils.getRealLocation
 
@@ -44,6 +48,8 @@ fun AABToolsManager() {
     }
     val openDialog = remember { mutableStateOf(false) }
     val aabToolsBeanState: MutableState<AABToolsCfgBean> = remember { mutableStateOf(AABToolsCfgBean()) }
+    val aabPath = mutableStateOf("")
+    val apksPath = mutableStateOf("")
     val keyStoryPath = mutableStateOf("")
     val keyStoryPwd = mutableStateOf("")
     val keyAlias = mutableStateOf("")
@@ -98,9 +104,21 @@ fun AABToolsManager() {
         General(title = "当前配置", color = GOOGLE_RED, height = 3, content = {
             ContentMoreRowColumn(modifier = Modifier.padding(horizontal = 30.dp)) {
                 ContentNRow {
-                    Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                    Row(modifier = Modifier.align(Alignment.CenterHorizontally).weight(1F).padding(end = 10.dp)) {
+                        Text("AAB包路径:", modifier = Modifier.align(Alignment.CenterVertically))
+                        TextField(value = aabPath.value, modifier = Modifier.align(Alignment.CenterVertically).fillMaxWidth().clickable(true) {
+                            val selectFile = FileSelector.selectFile("aab")
+                            if (selectFile.isNotEmpty()) aabPath.value = selectFile
+                        }, maxLines = 1, onValueChange = {
+                            aabPath.value = it
+                        }, enabled = false)
+                    }
+                    Row(modifier = Modifier.align(Alignment.CenterHorizontally).weight(1F).padding(start = 10.dp)) {
                         Text("KeyStory路径:", modifier = Modifier.align(Alignment.CenterVertically))
-                        TextField(value = keyStoryPath.value, modifier = Modifier.align(Alignment.CenterVertically).fillMaxWidth(), onValueChange = {})
+                        TextField(value = keyStoryPath.value,
+                            modifier = Modifier.align(Alignment.CenterVertically).fillMaxWidth(),
+                            maxLines = 1,
+                            onValueChange = { keyStoryPath.value = it })
                     }
                 }
                 ContentNRow {
@@ -141,10 +159,23 @@ fun AABToolsManager() {
 
                 }
                 ContentNRow {
-                    Button(modifier = Modifier.weight(1F).padding(horizontal = 10.dp), onClick = {}, content = {
+                    Button(modifier = Modifier.weight(1F).padding(horizontal = 10.dp), onClick = {
+                        CoroutineScope(Dispatchers.Default).launch {
+                            val apksPath = AABUtils.AAB2Apks(aabPath.value, aabToolsBeanState.value)
+                            if (apksPath.isEmpty()) {
+                                toastText.value = "生成错误"
+                                showToast.value = true
+                            } else {
+                                toastText.value = "生成成功,在AAB同级目录下"
+                                showToast.value = true
+                            }
+                        }
+                    }, content = {
                         Text("生成APKS")
                     })
-                    Button(modifier = Modifier.weight(1F).padding(horizontal = 10.dp), onClick = {}, content = {
+                    Button(modifier = Modifier.weight(1F).padding(horizontal = 10.dp), onClick = {
+
+                    }, content = {
                         Text("安装APKS到手机")
                     })
                 }
