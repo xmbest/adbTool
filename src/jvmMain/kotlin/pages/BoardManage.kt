@@ -17,9 +17,7 @@ import components.showToast
 import components.toastText
 import config.route_left_item_color
 import entity.BroadParam
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import status.currentDevice
 import utils.PropertiesUtil
 import utils.board
@@ -61,7 +59,7 @@ fun BoardManage() {
                                     } else {
                                         if (currentToastTask.value == "BoardManageCustomerSend")
                                             return@Button
-                                        GlobalScope.launch {
+                                        CoroutineScope(Dispatchers.Default).launch {
                                             delay(1000)
                                             currentToastTask.value = "BoardManageCustomerSend"
                                             toastText.value = "发送成功"

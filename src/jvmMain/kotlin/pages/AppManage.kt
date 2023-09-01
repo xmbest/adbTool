@@ -1,16 +1,20 @@
 package pages
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.TooltipArea
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -18,18 +22,14 @@ import androidx.compose.ui.unit.dp
 import components.*
 import config.route_left_item_color
 import config.route_right_background
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import status.currentDevice
 import theme.GOOGLE_BLUE
 import theme.GOOGLE_GREEN
 import theme.GOOGLE_RED
 import theme.GOOGLE_YELLOW
 import utils.*
-import java.lang.StringBuilder
 import javax.swing.JFileChooser
-import javax.swing.filechooser.FileNameExtensionFilter
 
 val appList = mutableStateListOf<String>()
 val taskList = mutableStateListOf<List<String>>()
@@ -40,8 +40,9 @@ val checkAll1 = mutableStateOf(false)
 val checkA = mutableStateOf(true)
 val appKeyword = mutableStateOf("")
 val systemApp = mutableStateOf(false)
-val appManage = mutableStateOf(false)
 val first = mutableStateOf(true)
+//进程管理/应用管理
+val appManage = mutableStateOf(true)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -55,9 +56,16 @@ fun AppManage() {
             Text("请先连接设备")
         }
     } else {
-        if (taskList.isEmpty() && first.value) {
-            initTask()
+        if (appManage.value){
+            if (appList.isEmpty() && first.value) {
+                initAppList()
+            }
+        }else{
+            if (taskList.isEmpty() && first.value) {
+                initTask()
+            }
         }
+
         Column(
             modifier = Modifier.fillMaxSize().fillMaxHeight().background(route_right_background).padding(10.dp)
         ) {
@@ -115,6 +123,7 @@ fun AppManage() {
                         Checkbox(
                             appManage.value,
                             onCheckedChange = {
+                                PropertiesUtil.setValue("appManage", if (appManage.value) "0" else "1", "")
                                 appManage.value = it
                                 initAppList()
                             },
@@ -139,7 +148,7 @@ fun AppManage() {
                         Button(
                             onClick = {
                                 if (appManage.value) initAppList() else initTask()
-                                PropertiesUtil.setValue("appKeyword",appKeyword.value,"")
+                                PropertiesUtil.setValue("appKeyword", appKeyword.value, "")
                             },
                             modifier = Modifier.fillMaxHeight()
                         ) {
@@ -147,28 +156,17 @@ fun AppManage() {
                         }
                         if (appManage.value) {
                             Button(onClick = {
-                                JFileChooser().apply {
-                                    dialogTitle = "选择安装包"
-                                    fileSelectionMode = JFileChooser.FILES_ONLY
-                                    fileFilter = FileNameExtensionFilter(
-                                        "安装包(*.apk)", "apk"
-                                    )
-                                    val state: Int = showOpenDialog(ComposeWindow())
-                                    if (state == JFileChooser.CANCEL_OPTION) {
-                                        return@Button
-                                    }
-                                    val path = selectedFile?.absolutePath ?: ""
-                                    if (path.isNotBlank()) {
-                                        GlobalScope.launch {
-                                            install(path)
-                                            if (showToast.value) {
-                                                delay(1000)
-                                            }
-                                            currentToastTask.value = "AppManageInstall"
-                                            toastText.value = "安装成功"
-                                            showToast.value = true
-                                            initAppList()
+                                val path = PathSelector.selectPath("选择安装包", JFileChooser.FILES_ONLY, "apk")
+                                if (path.isNotBlank()) {
+                                    CoroutineScope(Dispatchers.Default).launch {
+                                        install(path)
+                                        if (showToast.value) {
+                                            delay(1000)
                                         }
+                                        currentToastTask.value = "AppManageInstall"
+                                        toastText.value = "安装成功"
+                                        showToast.value = true
+                                        initAppList()
                                     }
                                 }
                             }, modifier = Modifier.fillMaxHeight().padding(start = 4.dp)) {

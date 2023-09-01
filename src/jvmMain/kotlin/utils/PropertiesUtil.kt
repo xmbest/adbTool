@@ -3,6 +3,7 @@ package utils
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import pages.appKeyword
+import pages.appManage
 import pages.boardCustomer
 import status.*
 import java.io.*
@@ -43,6 +44,8 @@ class PropertiesUtil {
                 appKeyword.value = getValue("appKeyword") ?: ""
                 //自定义广播
                 boardCustomer.value = getValue("boardCustomer") ?: "am broadcast -a xxx --es xxx"
+                //应用管理/进程管理
+                appManage.value = getValue("appManage")?.toInt() == 1
             }
         }
 
