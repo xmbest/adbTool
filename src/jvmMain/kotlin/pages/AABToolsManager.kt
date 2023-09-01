@@ -1,3 +1,5 @@
+@file:Suppress("NAME_SHADOWING")
+
 package pages
 
 import androidx.compose.foundation.*
@@ -156,16 +158,17 @@ fun AABToolsManager() {
                     }
                 }
                 ContentNRow {
-
+                    
                 }
                 ContentNRow {
                     Button(modifier = Modifier.weight(1F).padding(horizontal = 10.dp), onClick = {
                         CoroutineScope(Dispatchers.Default).launch {
-                            val apksPath = AABUtils.AAB2Apks(aabPath.value, aabToolsBeanState.value)
-                            if (apksPath.isEmpty()) {
+                            val genApksPath = AABUtils.AAB2Apks(aabPath.value, aabToolsBeanState.value)
+                            if (genApksPath.isEmpty()) {
                                 toastText.value = "生成错误"
                                 showToast.value = true
                             } else {
+                                apksPath.value = genApksPath
                                 toastText.value = "生成成功,在AAB同级目录下"
                                 showToast.value = true
                             }
@@ -174,7 +177,16 @@ fun AABToolsManager() {
                         Text("生成APKS")
                     })
                     Button(modifier = Modifier.weight(1F).padding(horizontal = 10.dp), onClick = {
-
+                        CoroutineScope(Dispatchers.Default).launch {
+                            val excResult = AABUtils.Install2Phont(apksPath.value)
+                            if (excResult) {
+                                toastText.value = "安装错误,请检查路径"
+                                showToast.value = true
+                            } else {
+                                toastText.value = "安装成功"
+                                showToast.value = true
+                            }
+                        }
                     }, content = {
                         Text("安装APKS到手机")
                     })
