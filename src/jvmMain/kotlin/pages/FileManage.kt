@@ -27,9 +27,7 @@ import androidx.compose.ui.unit.sp
 import components.*
 import config.route_left_item_color
 import entity.File
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import status.*
 import theme.*
 import utils.*
@@ -41,6 +39,7 @@ val fileList = mutableStateListOf<File>()
 val defaultDir = mutableStateOf("/sdcard/")
 private var filter = ""
 private val requester = FocusRequester()
+
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun FileManage() {
@@ -62,16 +61,14 @@ fun FileManage() {
                     if (it.key.keyCode >= Key.A.keyCode && it.key.keyCode <= Key.Z.keyCode) {
                         filter += Char(it.key.nativeKeyCode).lowercase()
                     } else if (it.key.keyCode == Key.Delete.keyCode || it.key.keyCode == Key.Backspace.keyCode) {
-                        if (filter.isNotBlank())
-                            filter = filter.substring(0, filter.length - 1)
+                        if (filter.isNotBlank()) filter = filter.substring(0, filter.length - 1)
                     }
                     initFile()
                     true
-                }else{
+                } else {
                     false
                 }
-            }.focusRequester(requester)
-                .focusable()
+            }.focusRequester(requester).focusable()
         ) {
             Column(modifier = Modifier.fillMaxSize().padding(10.dp, top = 0.dp)) {
                 val back = File("", defaultDir.value, "返回上级", "", true)
@@ -86,8 +83,7 @@ fun FileManage() {
                     items(fileList) {
                         if (it.name == "." || it.name == "..") {
 
-                        } else
-                            FileView(it)
+                        } else FileView(it)
                     }
                 }
                 if (fileList.isEmpty()) {
@@ -100,17 +96,15 @@ fun FileManage() {
                     }
                 }
             }
-            if (filter.isNotBlank())
-                Row(
-                    modifier = Modifier.background(route_left_item_color),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = filter,
-                        color = SIMPLE_WHITE,
-                        modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 3.dp, bottom = 3.dp)
-                    )
-                }
+            if (filter.isNotBlank()) Row(
+                modifier = Modifier.background(route_left_item_color), verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = filter,
+                    color = SIMPLE_WHITE,
+                    modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 3.dp, bottom = 3.dp)
+                )
+            }
         }
         SideEffect {
             // 直接在重组完成后请求Box的焦点
@@ -157,18 +151,13 @@ fun FileView(
             Row {
                 Text(file.name)
                 Text(
-                    file.permission,
-                    modifier = Modifier.padding(start = 5.dp, end = 5.dp),
-                    color = SIMPLE_GRAY
+                    file.permission, modifier = Modifier.padding(start = 5.dp, end = 5.dp), color = SIMPLE_GRAY
                 )
             }
             Row {
                 Text(file.date, fontSize = 12.sp, color = SIMPLE_GRAY)
                 Text(
-                    file.size,
-                    fontSize = 12.sp,
-                    color = SIMPLE_GRAY,
-                    modifier = Modifier.padding(start = 5.dp)
+                    file.size, fontSize = 12.sp, color = SIMPLE_GRAY, modifier = Modifier.padding(start = 5.dp)
                 )
             }
         }
@@ -187,8 +176,7 @@ fun FileView(
                             currentToastTask.value = "FileManagePathCopy"
                             toastText.value = "路径复制成功"
                         } else {
-                            if (currentToastTask.value == "FileManagePathCopy")
-                                return@clickable
+                            if (currentToastTask.value == "FileManagePathCopy") return@clickable
                             GlobalScope.launch {
                                 delay(1000)
                                 showToast.value = true
@@ -237,38 +225,30 @@ fun FileView(
                         "icon",
                         tint = GOOGLE_GREEN,
                         modifier = Modifier.size(50.dp).clickable {
-                            JFileChooser().apply {
-                                dialogTitle = "选择文件"
-                                fileSelectionMode = JFileChooser.FILES_ONLY
-                                val state: Int = showOpenDialog(ComposeWindow())
-                                if (state == JFileChooser.CANCEL_OPTION) {
-                                    return@clickable
-                                }
-                                val path = selectedFile?.absolutePath ?: ""
-                                if (path.isNotBlank()) {
-                                    val start =
-                                        if (path.contains("\\")) path.lastIndexOf("\\") + 1 else path.lastIndexOf("/") + 1
-                                    val path1 = path.substring(start, path.length)
-                                    title.value = "警告"
-                                    titleColor.value = GOOGLE_RED
-                                    dialogText.value = "是否把文件$path1 push到 ${file.name}"
-                                    needRun.value = true
-                                    run.value = {
-                                        run.value = {}
-                                        needRun.value = false
-                                        GlobalScope.launch {
-                                            push(path, defaultDir.value + file.name)
-                                            if (showToast.value) {
-                                                delay(1000)
-                                            }
-                                            currentToastTask.value = "FileManagePush"
-                                            toastText.value = "文件push成功"
-                                            showToast.value = true
-                                            initFile()
+                            val path = PathSelector.selectPath("选择文件", JFileChooser.FILES_ONLY)
+                            if (path.isNotBlank()) {
+                                val start =
+                                    if (path.contains("\\")) path.lastIndexOf("\\") + 1 else path.lastIndexOf("/") + 1
+                                val path1 = path.substring(start, path.length)
+                                title.value = "警告"
+                                titleColor.value = GOOGLE_RED
+                                dialogText.value = "是否把文件$path1 push到 ${file.name}"
+                                needRun.value = true
+                                run.value = {
+                                    run.value = {}
+                                    needRun.value = false
+                                    CoroutineScope(Dispatchers.Default).launch {
+                                        push(path, defaultDir.value + file.name)
+                                        if (showToast.value) {
+                                            delay(1000)
                                         }
+                                        currentToastTask.value = "FileManagePush"
+                                        toastText.value = "文件push成功"
+                                        showToast.value = true
+                                        initFile()
                                     }
-                                    showingDialog.value = true
                                 }
+                                showingDialog.value = true
                             }
                         }.padding(9.dp)
                     )
@@ -283,25 +263,17 @@ fun FileView(
                     "icon",
                     tint = GOOGLE_YELLOW,
                     modifier = Modifier.size(50.dp).clickable {
-                        JFileChooser().apply {
-                            dialogTitle = "保存到"
-                            fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
-                            val state: Int = showOpenDialog(ComposeWindow())
-                            if (state == JFileChooser.CANCEL_OPTION) {
-                                return@clickable
-                            }
-                            val path = selectedFile?.absolutePath ?: ""
-                            if (path.isNotBlank()) {
-                                GlobalScope.launch {
-                                    val line = if (path.contains("\\")) "\\" else "/"
-                                    pull("${defaultDir.value}${file.name}", "$path$line${file.name}")
-                                    if (showToast.value) {
-                                        delay(1000)
-                                    }
-                                    currentToastTask.value = "FileManageSave"
-                                    toastText.value = "文件已保存到$path"
-                                    showToast.value = true
+                        val path = PathSelector.selectDir("保存到")
+                        if (path.isNotBlank()) {
+                            CoroutineScope(Dispatchers.Default).launch {
+                                val line = if (path.contains("\\")) "\\" else "/"
+                                pull("${defaultDir.value}${file.name}", "$path$line${file.name}")
+                                if (showToast.value) {
+                                    delay(1000)
                                 }
+                                currentToastTask.value = "FileManageSave"
+                                toastText.value = "文件已保存到$path"
+                                showToast.value = true
                             }
                         }
                     }.padding(10.dp)
@@ -351,8 +323,7 @@ fun FileView(
                             currentToastTask.value = "FileManagePaste"
                             toastText.value = "不是有效路径"
                         } else {
-                            if (currentToastTask.value == "FileManagePaste")
-                                return@clickable
+                            if (currentToastTask.value == "FileManagePaste") return@clickable
                             GlobalScope.launch {
                                 delay(1000)
                                 showToast.value = true
@@ -363,12 +334,13 @@ fun FileView(
                         return@clickable
                     } else {
                         if (res.contains("/") || res.contains("\\")) {
-                            val end =
-                                if (path.contains("\\")) path.lastIndexOf("\\") + 1 else path.lastIndexOf("/") + 1
+                            val end = if (path.contains("\\")) path.lastIndexOf("\\") + 1 else path.lastIndexOf("/") + 1
                             path = path.substring(0, end)
                         } else {
-                            if (path.get(path.length - 1) != '/' && path.get(path.length - 1) != '\\')
-                                path += if (path.contains("\\")) "\\" else "/"
+                            if (path.get(path.length - 1) != '/' && path.get(path.length - 1) != '\\') path += if (path.contains(
+                                    "\\"
+                                )
+                            ) "\\" else "/"
                         }
                         defaultDir.value = path
                         initFile()
@@ -405,8 +377,7 @@ fun FileView(
                                 currentToastTask.value = "FileManagePaste"
                                 toastText.value = "不是有效路径"
                             } else {
-                                if (currentToastTask.value == "FileManagePaste")
-                                    return@clickable
+                                if (currentToastTask.value == "FileManagePaste") return@clickable
                                 GlobalScope.launch {
                                     delay(1000)
                                     showToast.value = true
@@ -445,37 +416,29 @@ fun FileView(
                     painter = painterResource(getRealLocation("push")),
                     null,
                     modifier = Modifier.size(50.dp).clickable {
-                        JFileChooser().apply {
-                            dialogTitle = "选择文件"
-                            fileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES
-                            val state: Int = showOpenDialog(ComposeWindow())
-                            if (state == JFileChooser.CANCEL_OPTION) {
-                                return@clickable
-                            }
-                            val path = selectedFile?.absolutePath ?: ""
-                            if (path.isNotBlank()) {
-                                val start =
-                                    if (path.contains("\\")) path.lastIndexOf("\\") + 1 else path.lastIndexOf("/") + 1
-                                val path1 = path.substring(start, path.length)
-                                title.value = "警告"
-                                titleColor.value = GOOGLE_RED
-                                dialogText.value = "是否把文件$path1 push到 ${defaultDir.value}"
-                                needRun.value = true
-                                run.value = {
-                                    GlobalScope.launch {
-                                        run.value = {}
-                                        push(path, defaultDir.value + path1)
-                                        if (showToast.value) {
-                                            delay(1000)
-                                        }
-                                        currentToastTask.value = "FileManagePush"
-                                        toastText.value = "文件push成功"
-                                        showToast.value = true
-                                        initFile()
+                        val path = PathSelector.selectFileOrDir("选择文件")
+                        if (path.isNotBlank()) {
+                            val start =
+                                if (path.contains("\\")) path.lastIndexOf("\\") + 1 else path.lastIndexOf("/") + 1
+                            val path1 = path.substring(start, path.length)
+                            title.value = "警告"
+                            titleColor.value = GOOGLE_RED
+                            dialogText.value = "是否把文件$path1 push到 ${defaultDir.value}"
+                            needRun.value = true
+                            run.value = {
+                                GlobalScope.launch {
+                                    run.value = {}
+                                    push(path, defaultDir.value + path1)
+                                    if (showToast.value) {
+                                        delay(1000)
                                     }
+                                    currentToastTask.value = "FileManagePush"
+                                    toastText.value = "文件push成功"
+                                    showToast.value = true
+                                    initFile()
                                 }
-                                showingDialog.value = true
                             }
+                            showingDialog.value = true
                         }
                     }.padding(9.dp),
                     tint = GOOGLE_BLUE
@@ -556,10 +519,8 @@ fun initFile() {
     var arr = res.trim().split("\n").filter {
         it.isNotBlank()
     }
-    if (arr.isEmpty())
-        return
-    if (arr.size != 1)
-        arr = arr.subList(1, arr.size)
+    if (arr.isEmpty()) return
+    if (arr.size != 1) arr = arr.subList(1, arr.size)
     arr.forEach {
         val contentArr = it.split(" ").filter {
             it.trim().isNotEmpty()
@@ -604,24 +565,16 @@ fun setSize(oldSize: String): String {
 
 fun getFileIcon(fileName: String, isDir: Boolean): String {
     return if (isDir) getRealLocation("folder")
-    else if (fileName.endsWith(".apk"))
-        getRealLocation("android")
-    else if (fileName.endsWith(".jar"))
-        getRealLocation("java")
-    else if (fileName.endsWith(".json"))
-        getRealLocation("json")
-    else if (fileName.endsWith(".so"))
-        getRealLocation("dependency")
-    else if (fileName.endsWith(".cfg") || fileName.endsWith(".conf"))
-        getRealLocation("settings")
-    else if (fileName.endsWith(".txt") || fileName.endsWith(".xml"))
-        getRealLocation("file-text")
-    else if (fileName.endsWith(".png") || fileName.endsWith(".jpg"))
-        getRealLocation("file-image")
-    else if (fileName.endsWith(".zip") || fileName.endsWith(".tar") || fileName.endsWith(".gz") || fileName.endsWith(".7z"))
-        getRealLocation("file-zip")
-    else if (fileName.endsWith(".mp3") || fileName.endsWith(".wav") || fileName.endsWith(".rf"))
-        getRealLocation("music")
-    else
-        getRealLocation("file")
+    else if (fileName.endsWith(".apk")) getRealLocation("android")
+    else if (fileName.endsWith(".jar")) getRealLocation("java")
+    else if (fileName.endsWith(".json")) getRealLocation("json")
+    else if (fileName.endsWith(".so")) getRealLocation("dependency")
+    else if (fileName.endsWith(".cfg") || fileName.endsWith(".conf")) getRealLocation("settings")
+    else if (fileName.endsWith(".txt") || fileName.endsWith(".xml")) getRealLocation("file-text")
+    else if (fileName.endsWith(".png") || fileName.endsWith(".jpg")) getRealLocation("file-image")
+    else if (fileName.endsWith(".zip") || fileName.endsWith(".tar") || fileName.endsWith(".gz") || fileName.endsWith(".7z")) getRealLocation(
+        "file-zip"
+    )
+    else if (fileName.endsWith(".mp3") || fileName.endsWith(".wav") || fileName.endsWith(".rf")) getRealLocation("music")
+    else getRealLocation("file")
 }

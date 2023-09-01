@@ -20,7 +20,7 @@ public class BashUtil {
     public static  String workDir = System.getProperty("user.home") + split + "ADBTool";
 
     public static void init() throws IOException {
-        if (!SysUtilKt.getOsType().equals("windows")){
+        if (!SysUtilKt.isWindows()){
             split = "/";
             desktop_dir = System.getProperty("user.home") + split + "Desktop";
             workDir = System.getProperty("user.home") + split + "ADBTool";

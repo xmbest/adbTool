@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import pages.appKeyword
 import pages.boardCommand
+import pages.appManage
 import pages.boardCustomer
 import pages.text1
 import status.*
@@ -49,6 +50,8 @@ class PropertiesUtil {
                 boardCommand.value = getValue("boardCommand") ?: ""
                 //自定义广播
                 boardCustomer.value = getValue("boardCustomer") ?: "am broadcast -a com.txznet.adapter.recv --es action ac.air.status --ei key_type 2080"
+                //应用管理/进程管理
+                appManage.value = getValue("appManage")?.toInt() == 1
             }
         }
 
@@ -59,6 +62,12 @@ class PropertiesUtil {
             val list = getListByKeyWithGson(key).toMutableList()
             list.add(value ?: "")
             setValue(key, Gson().toJson(list), comments)
+        }
+
+        fun deleteValue4List(key: String, value: String, comments: String = "") {
+            val list = getListByKeyWithGson(key).toMutableList()
+            list.remove(value)
+            setValue(key, Gson().toJson(list),comments)
         }
 
         fun getListByKey(key: String): List<String> {

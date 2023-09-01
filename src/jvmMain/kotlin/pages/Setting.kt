@@ -12,22 +12,20 @@ import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import components.PathSelector
 import components.currentToastTask
 import components.showToast
 import components.toastText
 import config.route_left_background
 import config.route_left_item_clicked_color
 import config.route_left_item_color
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import status.*
 import status.autoSync
 import theme.GOOGLE_BLUE
 import utils.*
 import java.io.File
-import javax.swing.JFileChooser
-import javax.swing.filechooser.FileNameExtensionFilter
+import kotlin.text.StringBuilder
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -46,7 +44,7 @@ fun Settings() {
                     showToast.value = true
                 } else {
                     if (currentToastTask.value != "SettingAuthor") {
-                        GlobalScope.launch {
+                        CoroutineScope(Dispatchers.Default).launch {
                             delay(1000)
                             toastText.value = "Hello World!"
                             showToast.value = true
@@ -137,74 +135,49 @@ fun Settings() {
                 }
             }
 
-                Row(
-                    modifier = Modifier.padding(start = 14.dp, top = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    SettingLable("当前adb")
-                    TextField(
-                        adb.value,
-                        onValueChange = { },
-                        modifier = Modifier.weight(1f).height(48.dp).padding(end = 10.dp),
-                        enabled = false,
-                        trailingIcon = {
-                            TooltipArea(tooltip = {
-                                Text("切换")
-                            }) {
-                                Icon(
-                                    painterResource(getRealLocation("folder")),
-                                    null,
-                                    modifier = Modifier.size(30.dp).clickable {
-                                        JFileChooser().apply {
-                                            dialogTitle = "切换为"
-                                            fileFilter = FileNameExtensionFilter(
-                                                "adb(*.exe)", "exe"
-                                            )
-                                            fileSelectionMode = JFileChooser.FILES_ONLY
-                                            val state: Int = showOpenDialog(ComposeWindow())
-                                            if (state == JFileChooser.CANCEL_OPTION) {
-                                                //取消更换
-                                                GlobalScope.launch {
-                                                    if (showToast.value) {
-                                                        delay(1000)
-                                                    }
-                                                    currentToastTask.value = "SettingAdbPathChangeCancel"
-                                                    toastText.value = "已取消"
-                                                    showToast.value = true
-                                                }
-                                                return@clickable
+            Row(
+                modifier = Modifier.padding(start = 14.dp, top = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SettingLable("当前adb")
+                TextField(
+                    adb.value,
+                    onValueChange = { },
+                    modifier = Modifier.weight(1f).height(48.dp).padding(end = 10.dp),
+                    enabled = false,
+                    trailingIcon = {
+                        TooltipArea(tooltip = {
+                            Text("切换")
+                        }) {
+                            Icon(
+                                painterResource(getRealLocation("folder")),
+                                null,
+                                modifier = Modifier.size(30.dp).clickable {
+                                    val path = if (isWindows) {
+                                        PathSelector.selectFile(StringBuilder("切换为"), "exe")
+                                    } else {
+                                        PathSelector.selectFile(StringBuilder("切换为"))
+                                    }
+                                    if (path.isNotBlank()) {
+                                        adb.value = path
+                                        PropertiesUtil.setValue("adb", adb.value, "")
+                                        CoroutineScope(Dispatchers.Default).launch {
+                                            if (showToast.value) {
+                                                delay(1000)
                                             }
-                                            val path = selectedFile?.absolutePath ?: ""
-                                            if (path.isNotBlank()) {
-                                                adb.value = path
-                                                PropertiesUtil.setValue("adb", adb.value, "")
-                                                GlobalScope.launch {
-                                                    if (showToast.value) {
-                                                        delay(1000)
-                                                    }
-                                                    currentToastTask.value = "SettingAdbPathChangeSuccess"
-                                                    toastText.value = "已更新"
-                                                    showToast.value = true
-                                                }
-                                            } else {
-                                                GlobalScope.launch {
-                                                    if (showToast.value) {
-                                                        delay(1000)
-                                                    }
-                                                    currentToastTask.value = "SettingAdbPathChangeThrow"
-                                                    toastText.value = "异常"
-                                                    showToast.value = true
-                                                }
-                                            }
+                                            currentToastTask.value = "SettingAdbPathChangeSuccess"
+                                            toastText.value = "已更新"
+                                            showToast.value = true
                                         }
-                                    },
-                                    tint = route_left_item_color
-                                )
-                            }
-
+                                    }
+                                },
+                                tint = route_left_item_color
+                            )
                         }
-                    )
-                }
+
+                    }
+                )
+            }
 
             Row(
                 modifier = Modifier.padding(start = 14.dp, top = 6.dp),
@@ -228,43 +201,26 @@ fun Settings() {
                                 painterResource(getRealLocation("folder")),
                                 null,
                                 modifier = Modifier.size(30.dp).clickable {
-                                    JFileChooser().apply {
-                                        dialogTitle = "切换到"
-                                        fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
-                                        val state: Int = showOpenDialog(ComposeWindow())
-                                        if (state == JFileChooser.CANCEL_OPTION) {
-                                            //取消更换
-                                            GlobalScope.launch {
-                                                if (showToast.value) {
-                                                    delay(1000)
-                                                }
-                                                currentToastTask.value = "SettingFilePathChangeCancel"
-                                                toastText.value = "已取消"
-                                                showToast.value = true
+                                    val path = PathSelector.selectDir("切换目录到")
+                                    if (path.isNotBlank()) {
+                                        desktop.value = path
+                                        PropertiesUtil.setValue("desktop", desktop.value, "")
+                                        CoroutineScope(Dispatchers.Default).launch {
+                                            if (showToast.value) {
+                                                delay(1000)
                                             }
-                                            return@clickable
+                                            currentToastTask.value = "SettingFilePathChangeSuccess"
+                                            toastText.value = "已更新"
+                                            showToast.value = true
                                         }
-                                        val path = selectedFile?.absolutePath ?: ""
-                                        if (path.isNotBlank()) {
-                                            desktop.value = path
-                                            PropertiesUtil.setValue("desktop", desktop.value, "")
-                                            GlobalScope.launch {
-                                                if (showToast.value) {
-                                                    delay(1000)
-                                                }
-                                                currentToastTask.value = "SettingFilePathChangeSuccess"
-                                                toastText.value = "已更新"
-                                                showToast.value = true
+                                    } else {
+                                        CoroutineScope(Dispatchers.Default).launch {
+                                            if (showToast.value) {
+                                                delay(1000)
                                             }
-                                        } else {
-                                            GlobalScope.launch {
-                                                if (showToast.value) {
-                                                    delay(1000)
-                                                }
-                                                currentToastTask.value = "SettingFilePathChangeThrow"
-                                                toastText.value = "异常"
-                                                showToast.value = true
-                                            }
+                                            currentToastTask.value = "SettingFilePathChangeThrow"
+                                            toastText.value = "异常"
+                                            showToast.value = true
                                         }
                                     }
                                 },

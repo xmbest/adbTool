@@ -23,6 +23,7 @@ class ListenDeviceUtil {
                         if (BashUtil.runing){
                             continue
                         }
+//                        LogUtil.d("isMac = $isMac,isWindows = $isWindows,isLinux = $isLinux,isOther = $isOther")
                         getDevices()
                         LogUtil.d("checkDevicesTime = ${checkDevicesTime.value}")
                         delay(1000L * checkDevicesTime.value)

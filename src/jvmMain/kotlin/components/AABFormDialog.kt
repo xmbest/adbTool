@@ -8,16 +8,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import com.google.gson.Gson
 import entity.AABToolsCfgBean
 import kotlinx.coroutines.DelicateCoroutinesApi
+import pages.aabToolsPopKey
+import utils.PropertiesUtil
 
 @OptIn(DelicateCoroutinesApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun AABFormDialog(openDialog: MutableState<Boolean>, aabToolsBeanState: MutableState<AABToolsCfgBean>) {
 
     if (openDialog.value) {
-        val aabToolsBean = AABToolsCfgBean()
-        val selectPath: MutableState<String> = mutableStateOf("")
+        val keyStoryPath = mutableStateOf("")
+        val keyStoryPwd = mutableStateOf("")
+        val keyAlias = mutableStateOf("")
+        val keyPwd = mutableStateOf("")
+        val cfgName = mutableStateOf("")
         AlertDialog(dialogProvider = CustomDialogProvider, modifier = Modifier.clip(RoundedCornerShape(14.dp)), onDismissRequest = {
             openDialog.value = false
         }, title = {
@@ -27,25 +33,24 @@ fun AABFormDialog(openDialog: MutableState<Boolean>, aabToolsBeanState: MutableS
                 Column(
                     modifier = Modifier.padding(all = 5.dp), verticalArrangement = Arrangement.Center
                 ) {
-                    if (selectPath.value.isNotEmpty()) {
-                        Text(selectPath.value)
+                    if (keyStoryPath.value.isNotEmpty()) {
+                        Text(keyStoryPath.value)
                     }
                     Button(modifier = Modifier.fillMaxWidth(), onClick = {
-                        val selectFile = FileSelector.selectFile("jks")
-                        selectPath.value = selectFile
-                        aabToolsBean.keyStoryPath = selectFile
+                        val selectFile = PathSelector.selectFile("jks")
+                        keyStoryPath.value = selectFile
                     }) {
                         Text("选择KeyStore路径")
                     }
                 }
                 Text("输入KeyStore的密钥库口令", modifier = Modifier.padding(top = 10.dp))
-                TextField(value = aabToolsBean.keyStoryPwd, onValueChange = { aabToolsBean.keyStoryPwd = it })
+                TextField(value = keyStoryPwd.value, onValueChange = { keyStoryPwd.value = it })
                 Text("输入KeyStore的Alias", modifier = Modifier.padding(top = 10.dp))
-                TextField(value = aabToolsBean.keyAlias, onValueChange = { aabToolsBean.keyAlias = it })
+                TextField(value = keyAlias.value, onValueChange = { keyAlias.value = it })
                 Text("输入KeyStore的口令", modifier = Modifier.padding(top = 10.dp))
-                TextField(value = aabToolsBean.keyPwd, onValueChange = { aabToolsBean.keyPwd = it })
+                TextField(value = keyPwd.value, onValueChange = { keyPwd.value = it })
                 Text("为配置取个名吧", modifier = Modifier.padding(top = 10.dp))
-                TextField(value = aabToolsBean.cfgName, onValueChange = { aabToolsBean.cfgName = it })
+                TextField(value = cfgName.value, onValueChange = { cfgName.value = it })
             }
         }, buttons = {
             Row(
@@ -53,7 +58,14 @@ fun AABFormDialog(openDialog: MutableState<Boolean>, aabToolsBeanState: MutableS
             ) {
                 Button(modifier = Modifier.fillMaxWidth(), onClick = {
                     openDialog.value = false
-                    aabToolsBeanState.value = aabToolsBean
+                    aabToolsBeanState.value = AABToolsCfgBean(
+                        keyStoryPath.value,
+                        keyStoryPwd.value,
+                        keyAlias.value,
+                        keyPwd.value,
+                        cfgName.value,
+                    )
+                    PropertiesUtil.addValueToList(aabToolsPopKey, Gson().toJson(aabToolsBeanState.value), "")
                 }) {
                     Text("Done")
                 }
