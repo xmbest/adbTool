@@ -37,7 +37,7 @@ fun AABFormDialog(openDialog: MutableState<Boolean>, aabToolsBeanState: MutableS
                         Text(keyStoryPath.value)
                     }
                     Button(modifier = Modifier.fillMaxWidth(), onClick = {
-                        val selectFile = FileSelector.selectFile("jks")
+                        val selectFile = PathSelector.selectFile("jks")
                         keyStoryPath.value = selectFile
                     }) {
                         Text("选择KeyStore路径")

@@ -127,19 +127,19 @@ fun clear(packageName:String):String{
 }
 
 fun dump(packageName: String, filter: String): String {
-    if (getOsType() == "windows")
+    if (isWindows)
         return shell("\"pm dump $packageName | grep $filter\"")
     return shell("pm dump $packageName | grep $filter")
 }
 
 fun dumpsys(packageName: String, filter: String = ""): String {
-    if (getOsType() == "windows")
+    if (isWindows)
         return shell("\"dumpsys package $packageName${if (filter.isNotBlank()) " | grep $filter\"" else "\""}")
     return shell("dumpsys package $packageName${if (filter.isNotBlank()) " | grep $filter" else ""}")
 }
 
 fun ps(keyWord:String,isA:Boolean):String{
-    if (getOsType() == "windows")
+    if (isWindows)
         return shell("\"ps ${if(isA) "-A" else ""} ${if (keyWord.isNotBlank()) " | grep $keyWord\"" else "\""}")
     return shell("ps ${if(isA) "-A" else ""} ${if (keyWord.isNotBlank()) " | grep $keyWord" else ""}")
 }

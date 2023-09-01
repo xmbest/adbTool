@@ -259,7 +259,7 @@ fun AppManage() {
                                 colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_RED),
                                 modifier = Modifier.fillMaxHeight().padding(start = 4.dp)
                             ) {
-                                Text(text = "杀死", color = Color.White)
+                                Text(text = "kill", color = Color.White)
                             }
                         }
                     }
@@ -336,7 +336,7 @@ fun TaskItem(arr: List<String>, i: Int) {
                             },
                             colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_RED),
                         ) {
-                            Text(text = "杀死", color = Color.White)
+                            Text(text = "kill", color = Color.White)
                         }
                     }
                 } else {
@@ -543,12 +543,12 @@ fun initAppList() {
     checkedList.clear()
     checkAll.value = false
     var cmd = ""
-    if (getOsType() == "windows")
+    if (isWindows)
         cmd += if (appKeyword.value.isEmpty()) "" else "\""
     cmd += "pm list packages -f"
     cmd += if (systemApp.value) "" else " -3"
     cmd += if (appKeyword.value.isEmpty()) "" else " | grep ${appKeyword.value}"
-    if (getOsType() == "windows")
+    if (isWindows)
         cmd += if (appKeyword.value.isEmpty()) "" else "\""
 //    val cmd = "\"pm dump * | grep -E 'Package |version|codePath'\""
     val packages = shell(cmd)

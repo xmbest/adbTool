@@ -20,12 +20,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import pages.Route
 import status.appIsMinimized
-import utils.BashUtil
-import utils.FileUtil
+import utils.*
 import utils.ListenDeviceUtil.Companion.listenDevices
-import utils.LogUtil
-import utils.PropertiesUtil
-import utils.getRealLocation
 import java.awt.Dimension
 import java.awt.Toolkit
 
@@ -53,6 +49,7 @@ fun main() = application {
         state = state,
         icon = painterResource(getRealLocation("logo"))
     ) {
+        initOsType()
         LogUtil.init()
         BashUtil.init()
         PropertiesUtil.init()

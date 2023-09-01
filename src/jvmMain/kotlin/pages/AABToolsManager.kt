@@ -109,7 +109,7 @@ fun AABToolsManager() {
                     Row(modifier = Modifier.align(Alignment.CenterHorizontally).weight(1F).padding(end = 10.dp)) {
                         Text("AAB包路径:", modifier = Modifier.align(Alignment.CenterVertically))
                         TextField(value = aabPath.value, modifier = Modifier.align(Alignment.CenterVertically).fillMaxWidth().clickable(true) {
-                            val selectFile = FileSelector.selectFile("aab")
+                            val selectFile = PathSelector.selectFile("aab")
                             if (selectFile.isNotEmpty()) aabPath.value = selectFile
                         }, maxLines = 1, onValueChange = {
                             aabPath.value = it
