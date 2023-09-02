@@ -257,7 +257,7 @@ fun AppManage() {
                                 colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_RED),
                                 modifier = Modifier.fillMaxHeight().padding(start = 4.dp)
                             ) {
-                                Text(text = "kill", color = Color.White)
+                                Text(text = "结束", color = Color.White)
                             }
                         }
                     }
@@ -334,7 +334,7 @@ fun TaskItem(arr: List<String>, i: Int) {
                             },
                             colors = ButtonDefaults.buttonColors(backgroundColor = GOOGLE_RED),
                         ) {
-                            Text(text = "kill", color = Color.White)
+                            Text(text = "结束", color = Color.White)
                         }
                     }
                 } else {

@@ -153,9 +153,10 @@ fun Route() {
                 titleColor = titleColor.value,
                 text = dialogText,
                 hint = hint.value,
-                needRun = needRun.value,
-                runnable = run.value,
-                list = fileList.map { it.name }
+                runnable = runBoolean.value,
+                checkBox = checkBox,
+                showCheckBox = showCheckBox,
+                checkBoxText = checkBoxText
             )
         }
     }

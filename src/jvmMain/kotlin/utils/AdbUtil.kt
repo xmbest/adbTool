@@ -109,6 +109,10 @@ fun mkdir(path: String):String{
     return shell("mkdir -p $path")
 }
 
+fun touch(path: String):String{
+    return shell("touch $path")
+}
+
 fun start(packageName: String):String{
     val dumpsys = dumpsys(packageName)
     val regex = Regex(".* (.*)/(.*?) .*")

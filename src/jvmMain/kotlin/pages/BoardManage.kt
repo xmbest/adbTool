@@ -16,11 +16,12 @@ import components.currentToastTask
 import components.showToast
 import components.toastText
 import config.route_left_item_color
-import entity.BroadParam
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import status.currentDevice
 import utils.PropertiesUtil
-import utils.board
 import utils.shell
 
 val boardCustomer = mutableStateOf("")
@@ -84,29 +85,4 @@ fun BoardManage() {
 @Composable
 fun Title(title: String) {
     Text(text = title, color = route_left_item_color, modifier = Modifier.padding(5.dp))
-}
-
-@Composable
-fun ButtonByBoard(
-    str: String,
-    action: String = "",
-    key: Int = -1,
-    paramType: String = "",
-    param: String = "",
-    value: String = ""
-) {
-    Button(onClick = {
-        board(action, key, BroadParam(paramType, param, value))
-    }, modifier = Modifier.padding(start = 5.dp)) {
-        Text(text = str)
-    }
-}
-
-@Composable
-fun ButtonClick(str: String, click: () -> Unit) {
-    Button(onClick = {
-        click()
-    }, modifier = Modifier.padding(start = 5.dp)) {
-        Text(text = str)
-    }
 }

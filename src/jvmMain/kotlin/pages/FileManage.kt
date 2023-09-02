@@ -9,16 +9,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusOrder
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.res.painterResource
@@ -28,7 +28,7 @@ import components.*
 import config.route_left_item_color
 import entity.File
 import kotlinx.coroutines.*
-import status.*
+import status.currentDevice
 import theme.*
 import utils.*
 import java.text.DecimalFormat
@@ -71,7 +71,7 @@ fun FileManage() {
             }.focusRequester(requester).focusable()
         ) {
             Column(modifier = Modifier.fillMaxSize().padding(10.dp, top = 0.dp)) {
-                val back = File("", defaultDir.value, "返回上级", "", true)
+                val back = File("", defaultDir.value, "back", "", true)
                 LazyColumn {
                     stickyHeader {
                         Row(modifier = Modifier.background(Color.White)) {
@@ -177,7 +177,7 @@ fun FileView(
                             toastText.value = "路径复制成功"
                         } else {
                             if (currentToastTask.value == "FileManagePathCopy") return@clickable
-                            GlobalScope.launch {
+                            CoroutineScope(Dispatchers.Default).launch {
                                 delay(1000)
                                 showToast.value = true
                                 currentToastTask.value = "FileManagePathCopy"
@@ -198,17 +198,48 @@ fun FileView(
                         title.value = "请输入文件新名称"
                         titleColor.value = GOOGLE_GREEN
                         dialogText.value = file.name
-                        needRun.value = true
+                        showCheckBox.value = false
                         hint.value = "请输入文件新名字"
-                        run.value = {
-                            run.value = {}
-                            needRun.value = false
-                            GlobalScope.launch {
-                                shell("mv ${defaultDir.value}${file.name} ${defaultDir.value}${dialogText.value}")
-                                currentToastTask.value = "FileManageRename"
-                                toastText.value = "重命名成功"
-                                showToast.value = true
-                                initFile()
+                        runBoolean.value = {
+                            var isError = false
+                            var errorMsg = ""
+                            if (dialogText.value.isBlank()) {
+                                isError = true
+                                errorMsg = "请正确输入内容"
+                            }
+                            val list = fileList.map { it.name }
+                            if (list.isNotEmpty()) {
+                                if (list.contains(dialogText.value.trim())) {
+                                    errorMsg = "名称已存在"
+                                    isError = true
+                                }
+                            }
+                            if (isError) {
+                                if (!showToast.value) {
+                                    currentToastTask.value = "ConfirmDialogRenameError"
+                                    toastText.value = errorMsg
+                                    showToast.value = true
+                                } else {
+                                    if (currentToastTask.value != "ConfirmDialogRenameError") {
+                                        CoroutineScope(Dispatchers.Default).launch {
+                                            delay(1000)
+                                            currentToastTask.value = "ConfirmDialogRenameError"
+                                            toastText.value = errorMsg
+                                            showToast.value = true
+                                        }
+                                    }
+                                }
+                                false
+                            } else {
+                                CoroutineScope(Dispatchers.Default).launch {
+                                    shell("mv ${defaultDir.value}${file.name} ${defaultDir.value}${dialogText.value}")
+                                    currentToastTask.value = "FileManageRename"
+                                    toastText.value = "重命名成功"
+                                    showToast.value = true
+                                    initFile()
+                                }
+                                run.value = { }
+                                true
                             }
                         }
                         showingConfirmDialog.value = true
@@ -312,7 +343,7 @@ fun FileView(
             }
         } else {
             TooltipArea(tooltip = {
-                Text("go path")
+                Text("Jump to the copied path")
             }) {
                 Icon(painter = painterResource(getRealLocation("go")), null, modifier = Modifier.size(50.dp).clickable {
                     var path = ClipboardUtil.getSysClipboardText()
@@ -324,7 +355,7 @@ fun FileView(
                             toastText.value = "不是有效路径"
                         } else {
                             if (currentToastTask.value == "FileManagePaste") return@clickable
-                            GlobalScope.launch {
+                            CoroutineScope(Dispatchers.Default).launch {
                                 delay(1000)
                                 showToast.value = true
                                 currentToastTask.value = "FileManagePaste"
@@ -350,7 +381,7 @@ fun FileView(
                             showToast.value = true
                         } else {
                             if (currentToastTask.value != "FileManageGoPath") {
-                                GlobalScope.launch {
+                                CoroutineScope(Dispatchers.Default).launch {
                                     delay(1000)
                                     toastText.value = "已跳转"
                                     showToast.value = true
@@ -363,7 +394,7 @@ fun FileView(
             }
             Spacer(modifier = Modifier.width(10.dp))
             TooltipArea(tooltip = {
-                Text("paste file")
+                Text("Paste the path file you copied")
             }) {
                 Icon(
                     painter = painterResource(getRealLocation("paste")),
@@ -378,7 +409,7 @@ fun FileView(
                                 toastText.value = "不是有效路径"
                             } else {
                                 if (currentToastTask.value == "FileManagePaste") return@clickable
-                                GlobalScope.launch {
+                                CoroutineScope(Dispatchers.Default).launch {
                                     delay(1000)
                                     showToast.value = true
                                     currentToastTask.value = "FileManagePaste"
@@ -394,7 +425,7 @@ fun FileView(
                             run.value = {
                                 needRun.value = false
                                 run.value = {}
-                                GlobalScope.launch {
+                                CoroutineScope(Dispatchers.Default).launch {
                                     shell("cp $path ${defaultDir.value}")
                                     currentToastTask.value = "FileManageFileCopy"
                                     toastText.value = "${path}复制成功"
@@ -426,7 +457,7 @@ fun FileView(
                             dialogText.value = "是否把文件$path1 push到 ${defaultDir.value}"
                             needRun.value = true
                             run.value = {
-                                GlobalScope.launch {
+                                CoroutineScope(Dispatchers.Default).launch {
                                     run.value = {}
                                     push(path, defaultDir.value + path1)
                                     if (showToast.value) {
@@ -441,6 +472,92 @@ fun FileView(
                             showingDialog.value = true
                         }
                     }.padding(9.dp),
+                    tint = GOOGLE_BLUE
+                )
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            TooltipArea(tooltip = {
+                Text("create folder or file")
+            }) {
+                Icon(
+                    painter = painterResource(getRealLocation("folder-add")),
+                    null,
+                    modifier = Modifier.size(50.dp).clickable {
+                        title.value = "请输入文件夹/文件名称"
+                        titleColor.value = GOOGLE_GREEN
+                        dialogText.value = file.name
+                        showCheckBox.value = true
+                        checkBox.value = true
+                        checkBoxText.value = "文件"
+                        hint.value = "请输入文件夹/文件名称"
+                        runBoolean.value = {
+                            var isError = false
+                            var errorMsg = ""
+                            if (dialogText.value.isBlank()) {
+                                isError = true
+                                errorMsg = "请正确输入内容"
+                            }
+                            if (dialogText.value.contains("/")) {
+                                val res = shell("ls ${dialogText.value}")
+                                if (res.isNotBlank()) {
+                                    isError = true
+                                    errorMsg = "重复创建"
+                                }
+                            }else{
+                                val listDir = fileList.filter { it.isDir }.map { it.name }
+                                if (listDir.isNotEmpty()) {
+                                    if (listDir.contains(dialogText.value.trim())) {
+                                        errorMsg = "文件夹已存在"
+                                        isError = true
+                                    }
+                                }
+                                val listFile = fileList.filter { !it.isDir }.map { it.name }
+                                if (listFile.isNotEmpty()) {
+                                    if (listFile.contains(dialogText.value.trim())) {
+                                        errorMsg = "文件已存在"
+                                        isError = true
+                                    }
+                                }
+                            }
+                            if (isError) {
+                                if (!showToast.value) {
+                                    currentToastTask.value = "NewFileConfirmDialogRenameError"
+                                    toastText.value = errorMsg
+                                    showToast.value = true
+                                } else {
+                                    if (currentToastTask.value != "NewFileConfirmDialogRenameError") {
+                                        CoroutineScope(Dispatchers.Default).launch {
+                                            delay(1000)
+                                            currentToastTask.value = "NewFileConfirmDialogRenameError"
+                                            toastText.value = errorMsg
+                                            showToast.value = true
+                                        }
+                                    }
+                                }
+                                false
+                            } else {
+                                CoroutineScope(Dispatchers.Default).launch {
+                                    if (checkBox.value) {
+                                        if (dialogText.value.contains("/")) {
+                                            val end = dialogText.value.lastIndexOf("/")
+                                            mkdir(defaultDir.value + dialogText.value.substring(0,end))
+                                        }
+                                        touch(defaultDir.value + dialogText.value)
+                                        toastText.value = "文件创建成功"
+                                    } else {
+                                        mkdir(defaultDir.value  + dialogText.value)
+                                        toastText.value = "文件夹创建成功"
+                                    }
+                                    currentToastTask.value = "FileManageRename"
+                                    showToast.value = true
+                                    initFile()
+                                }
+                                run.value = { }
+                                true
+                            }
+                        }
+                        showingConfirmDialog.value = true
+                    }.padding(10.dp),
                     tint = GOOGLE_BLUE
                 )
             }
@@ -485,7 +602,7 @@ fun FileView(
                         needRun.value = true
                         run.value = {
                             run.value = {}
-                            GlobalScope.launch {
+                            CoroutineScope(Dispatchers.Default).launch {
                                 shell("rm -rf '${defaultDir.value}'")
                                 mkdir(defaultDir.value)
                                 if (showToast.value) {
@@ -516,7 +633,7 @@ fun initFile() {
         }
     }
     val res = shell(cmd)
-    var arr = res.trim().split("\n").filter {
+    var arr = res.replace("total 0","").trim().split("\n").filter {
         it.isNotBlank()
     }
     if (arr.isEmpty()) return
