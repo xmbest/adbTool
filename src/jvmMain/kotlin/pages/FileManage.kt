@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +23,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import components.*
@@ -149,10 +153,16 @@ fun FileView(
         )
         Column(modifier = Modifier.padding(start = 10.dp).weight(1f)) {
             Row {
-                Text(file.name)
-                Text(
-                    file.permission, modifier = Modifier.padding(start = 5.dp, end = 5.dp), color = SIMPLE_GRAY
-                )
+                SelectionContainer {
+                    Text(
+                        buildAnnotatedString {
+                            append(file.name + " ")
+                            withStyle(style = SpanStyle(SIMPLE_GRAY)) {
+                                append(file.permission)
+                            }
+                        }
+                    )
+                }
             }
             Row {
                 Text(file.date, fontSize = 12.sp, color = SIMPLE_GRAY)
@@ -503,7 +513,7 @@ fun FileView(
                                     isError = true
                                     errorMsg = "重复创建"
                                 }
-                            }else{
+                            } else {
                                 val listDir = fileList.filter { it.isDir }.map { it.name }
                                 if (listDir.isNotEmpty()) {
                                     if (listDir.contains(dialogText.value.trim())) {
@@ -540,12 +550,12 @@ fun FileView(
                                     if (checkBox.value) {
                                         if (dialogText.value.contains("/")) {
                                             val end = dialogText.value.lastIndexOf("/")
-                                            mkdir(defaultDir.value + dialogText.value.substring(0,end))
+                                            mkdir(defaultDir.value + dialogText.value.substring(0, end))
                                         }
                                         touch(defaultDir.value + dialogText.value)
                                         toastText.value = "文件创建成功"
                                     } else {
-                                        mkdir(defaultDir.value  + dialogText.value)
+                                        mkdir(defaultDir.value + dialogText.value)
                                         toastText.value = "文件夹创建成功"
                                     }
                                     currentToastTask.value = "FileManageRename"
@@ -633,7 +643,7 @@ fun initFile() {
         }
     }
     val res = shell(cmd)
-    var arr = res.replace("total 0","").trim().split("\n").filter {
+    var arr = res.replace("total 0", "").trim().split("\n").filter {
         it.isNotBlank()
     }
     if (arr.isEmpty()) return

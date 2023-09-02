@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -17,17 +18,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import components.*
 import config.route_left_item_color
 import config.route_right_background
+import config.window_width
 import kotlinx.coroutines.*
 import status.currentDevice
-import theme.GOOGLE_BLUE
-import theme.GOOGLE_GREEN
-import theme.GOOGLE_RED
-import theme.GOOGLE_YELLOW
+import theme.*
 import utils.*
 import javax.swing.JFileChooser
 
@@ -41,6 +43,7 @@ val checkA = mutableStateOf(true)
 val appKeyword = mutableStateOf("")
 val systemApp = mutableStateOf(false)
 val first = mutableStateOf(true)
+
 //进程管理/应用管理
 val appManage = mutableStateOf(true)
 
@@ -56,11 +59,11 @@ fun AppManage() {
             Text("请先连接设备")
         }
     } else {
-        if (appManage.value){
+        if (appManage.value) {
             if (appList.isEmpty() && first.value) {
                 initAppList()
             }
-        }else{
+        } else {
             if (taskList.isEmpty() && first.value) {
                 initTask()
             }
@@ -369,64 +372,30 @@ fun AppItem(str: String, i: Int) {
                 tint = GOOGLE_GREEN,
                 modifier = Modifier.size(40.dp)
             )
-            Column(modifier = Modifier.fillMaxHeight().weight(1f), verticalArrangement = Arrangement.Center) {
+            Column(modifier = Modifier.fillMaxHeight().weight(1f).padding(start = 10.dp), verticalArrangement = Arrangement.Center) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("包名:$packageName")
-                    Spacer(modifier = Modifier.width(5.dp))
-                    TooltipArea(tooltip = {
-                        Text("复制")
-                    }) {
-                        Icon(
-                            painter = painterResource(getRealLocation("copy")),
-                            null,
-                            modifier = Modifier.size(15.dp).clickable {
-                                ClipboardUtil.setSysClipboardText(packageName)
-                                if (!showToast.value) {
-                                    toastText.value = "包名已复制"
-                                    showToast.value = true
-                                    currentToastTask.value = "AppManagePackageNameCopy"
-                                } else {
-                                    if (currentToastTask.value == "AppManagePackageNameCopy")
-                                        return@clickable
-                                    GlobalScope.launch {
-                                        delay(1000)
-                                        toastText.value = "包名已复制"
-                                        showToast.value = true
-                                        currentToastTask.value = "AppManagePackageNameCopy"
-                                    }
+                    SelectionContainer {
+                        Text(
+                            buildAnnotatedString {
+                                withStyle(style = SpanStyle(SIMPLE_GRAY)) {
+                                    append("包名: ")
                                 }
-                            },
-                            tint = route_left_item_color
+                                withStyle(style = SpanStyle(GOOGLE_BLUE)) {
+                                    append(packageName)
+                                }
+                            }
                         )
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("路径:$path", modifier = Modifier)
-                    Spacer(modifier = Modifier.width(5.dp))
-                    TooltipArea(tooltip = {
-                        Text("复制")
-                    }) {
-                        Icon(
-                            painter = painterResource(getRealLocation("copy")),
-                            null,
-                            modifier = Modifier.size(15.dp).clickable {
-                                ClipboardUtil.setSysClipboardText(path)
-                                if (!showToast.value) {
-                                    toastText.value = "路径已复制"
-                                    showToast.value = true
-                                    currentToastTask.value = "AppManagePathCopy"
-                                } else {
-                                    if (currentToastTask.value == "AppManagePathCopy")
-                                        return@clickable
-                                    GlobalScope.launch {
-                                        delay(1000)
-                                        toastText.value = "路径已复制"
-                                        showToast.value = true
-                                        currentToastTask.value = "AppManagePathCopy"
-                                    }
+                    SelectionContainer {
+                        Text(
+                            buildAnnotatedString {
+                                withStyle(style = SpanStyle(SIMPLE_GRAY)) {
+                                    append("路径: ")
+                                    append(path)
                                 }
-                            },
-                            tint = route_left_item_color
+                            }
                         )
                     }
                 }
