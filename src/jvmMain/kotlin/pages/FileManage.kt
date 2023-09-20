@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.isTypedEvent
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -17,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.awtEventOrNull
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -35,6 +37,7 @@ import kotlinx.coroutines.*
 import status.currentDevice
 import theme.*
 import utils.*
+import java.awt.event.InputEvent
 import java.text.DecimalFormat
 import javax.swing.JFileChooser
 
@@ -61,13 +64,36 @@ fun FileManage() {
     } else {
         Box(
             modifier = Modifier.fillMaxSize().onKeyEvent {
+                if (it.isCtrlPressed && it.key.keyCode == Key.N.keyCode){
+                    LogUtil.d("ctrl + n")
+                    createFile()
+                    return@onKeyEvent true
+                }
+                if (it.isCtrlPressed || it.isMetaPressed) {
+                    LogUtil.d("filter ctrl、window、command")
+                    return@onKeyEvent true
+                }
                 if (it.type == KeyEventType.KeyDown) {
                     if (it.key.keyCode >= Key.A.keyCode && it.key.keyCode <= Key.Z.keyCode) {
                         filter += Char(it.key.nativeKeyCode).lowercase()
-                    } else if (it.key.keyCode == Key.Delete.keyCode || it.key.keyCode == Key.Backspace.keyCode) {
+                    } else if (it.key.keyCode == Key.Backspace.keyCode) {
                         if (filter.isNotBlank()) filter = filter.substring(0, filter.length - 1)
+                    }else if (it.key.keyCode == Key.Delete.keyCode){
+                        deleteAll()
+                        return@onKeyEvent true
+                    }else if (it.key.keyCode == Key.F5.keyCode){
+                        initFile()
+                        return@onKeyEvent true
+                    }else if (it.key.keyCode == Key.Escape.keyCode){
+                        if (filter.isBlank()){
+                            LogUtil.d("backParent Esc")
+                            backParent()
+                            return@onKeyEvent true
+                        }else{
+                            filter = ""
+                            initFile()
+                        }
                     }
-                    initFile()
                     true
                 } else {
                     false
@@ -119,8 +145,9 @@ fun FileManage() {
 
 fun backParent() {
     if (defaultDir.value != "/") {
-        defaultDir.value = defaultDir.value.substring(0, defaultDir.value.lastIndexOf("/"))
+        defaultDir.value = defaultDir.value.substring(0, defaultDir.value.length - 1)
         defaultDir.value = defaultDir.value.substring(0, defaultDir.value.lastIndexOf("/") + 1)
+        LogUtil.d(defaultDir.value)
         filter = ""
         initFile()
     }
@@ -493,80 +520,7 @@ fun FileView(
                     painter = painterResource(getRealLocation("folder-add")),
                     null,
                     modifier = Modifier.size(50.dp).clickable {
-                        title.value = "请输入文件夹/文件名称"
-                        titleColor.value = GOOGLE_GREEN
-                        dialogText.value = file.name
-                        showCheckBox.value = true
-                        checkBox.value = true
-                        checkBoxText.value = "文件"
-                        hint.value = "请输入文件夹/文件名称"
-                        runBoolean.value = {
-                            var isError = false
-                            var errorMsg = ""
-                            if (dialogText.value.isBlank()) {
-                                isError = true
-                                errorMsg = "请正确输入内容"
-                            }
-                            if (dialogText.value.contains("/")) {
-                                val res = shell("ls ${dialogText.value}")
-                                if (res.isNotBlank()) {
-                                    isError = true
-                                    errorMsg = "重复创建"
-                                }
-                            } else {
-                                val listDir = fileList.filter { it.isDir }.map { it.name }
-                                if (listDir.isNotEmpty()) {
-                                    if (listDir.contains(dialogText.value.trim())) {
-                                        errorMsg = "文件夹已存在"
-                                        isError = true
-                                    }
-                                }
-                                val listFile = fileList.filter { !it.isDir }.map { it.name }
-                                if (listFile.isNotEmpty()) {
-                                    if (listFile.contains(dialogText.value.trim())) {
-                                        errorMsg = "文件已存在"
-                                        isError = true
-                                    }
-                                }
-                            }
-                            if (isError) {
-                                if (!showToast.value) {
-                                    currentToastTask.value = "NewFileConfirmDialogRenameError"
-                                    toastText.value = errorMsg
-                                    showToast.value = true
-                                } else {
-                                    if (currentToastTask.value != "NewFileConfirmDialogRenameError") {
-                                        CoroutineScope(Dispatchers.Default).launch {
-                                            delay(1000)
-                                            currentToastTask.value = "NewFileConfirmDialogRenameError"
-                                            toastText.value = errorMsg
-                                            showToast.value = true
-                                        }
-                                    }
-                                }
-                                false
-                            } else {
-                                CoroutineScope(Dispatchers.Default).launch {
-                                    if (checkBox.value) {
-                                        if (dialogText.value.contains("/")) {
-                                            val end = dialogText.value.lastIndexOf("/")
-                                            mkdir(defaultDir.value + dialogText.value.substring(0, end))
-                                        }
-                                        touch(defaultDir.value + dialogText.value)
-                                        toastText.value = "文件创建成功"
-                                    } else {
-                                        mkdir(defaultDir.value + dialogText.value)
-                                        toastText.value = "文件夹创建成功"
-                                    }
-                                    currentToastTask.value = "FileManageRename"
-                                    showToast.value = true
-                                    initFile()
-                                }
-                                run.value = { }
-                                true
-                            }
-                        }
-                        showingConfirmDialog.value = true
+                        createFile()
                     }.padding(10.dp),
                     tint = GOOGLE_BLUE
                 )
@@ -606,31 +560,112 @@ fun FileView(
                     "icon",
                     tint = GOOGLE_RED,
                     modifier = Modifier.size(50.dp).clickable {
-                        title.value = "警告"
-                        titleColor.value = GOOGLE_RED
-                        dialogText.value = "是否删除${defaultDir.value}下所有文件"
-                        needRun.value = true
-                        run.value = {
-                            run.value = {}
-                            CoroutineScope(Dispatchers.Default).launch {
-                                shell("rm -rf '${defaultDir.value}'")
-                                mkdir(defaultDir.value)
-                                if (showToast.value) {
-                                    delay(1000)
-                                }
-                                currentToastTask.value = "FileManageDeleteAll"
-                                toastText.value = "删除成功"
-                                showToast.value = true
-                                initFile()
-                            }
-                        }
-                        showingDialog.value = true
+                        deleteAll()
                     }.padding(10.dp)
                 )
                 Spacer(modifier = Modifier.width(15.dp))
             }
         }
     }
+}
+
+fun deleteAll() {
+    title.value = "警告"
+    titleColor.value = GOOGLE_RED
+    dialogText.value = "是否删除${defaultDir.value}下所有文件"
+    needRun.value = true
+    run.value = {
+        run.value = {}
+        CoroutineScope(Dispatchers.Default).launch {
+            shell("rm -rf '${defaultDir.value}'")
+            mkdir(defaultDir.value)
+            if (showToast.value) {
+                delay(1000)
+            }
+            currentToastTask.value = "FileManageDeleteAll"
+            toastText.value = "删除成功"
+            showToast.value = true
+            initFile()
+        }
+    }
+    showingDialog.value = true
+}
+
+fun createFile() {
+    title.value = "请输入文件夹/文件名称"
+    titleColor.value = GOOGLE_GREEN
+    dialogText.value = ""
+    showCheckBox.value = true
+    checkBox.value = true
+    checkBoxText.value = "文件"
+    hint.value = "请输入文件夹/文件名称"
+    runBoolean.value = {
+        var isError = false
+        var errorMsg = ""
+        if (dialogText.value.isBlank()) {
+            isError = true
+            errorMsg = "请正确输入内容"
+        }
+        if (dialogText.value.contains("/")) {
+            val res = shell("ls ${dialogText.value}")
+            if (res.isNotBlank()) {
+                isError = true
+                errorMsg = "重复创建"
+            }
+        } else {
+            val listDir = fileList.filter { it.isDir }.map { it.name }
+            if (listDir.isNotEmpty()) {
+                if (listDir.contains(dialogText.value.trim())) {
+                    errorMsg = "文件夹已存在"
+                    isError = true
+                }
+            }
+            val listFile = fileList.filter { !it.isDir }.map { it.name }
+            if (listFile.isNotEmpty()) {
+                if (listFile.contains(dialogText.value.trim())) {
+                    errorMsg = "文件已存在"
+                    isError = true
+                }
+            }
+        }
+        if (isError) {
+            if (!showToast.value) {
+                currentToastTask.value = "NewFileConfirmDialogRenameError"
+                toastText.value = errorMsg
+                showToast.value = true
+            } else {
+                if (currentToastTask.value != "NewFileConfirmDialogRenameError") {
+                    CoroutineScope(Dispatchers.Default).launch {
+                        delay(1000)
+                        currentToastTask.value = "NewFileConfirmDialogRenameError"
+                        toastText.value = errorMsg
+                        showToast.value = true
+                    }
+                }
+            }
+            false
+        } else {
+            CoroutineScope(Dispatchers.Default).launch {
+                if (checkBox.value) {
+                    if (dialogText.value.contains("/")) {
+                        val end = dialogText.value.lastIndexOf("/")
+                        mkdir(defaultDir.value + dialogText.value.substring(0, end))
+                    }
+                    touch(defaultDir.value + dialogText.value)
+                    toastText.value = "文件创建成功"
+                } else {
+                    mkdir(defaultDir.value + dialogText.value)
+                    toastText.value = "文件夹创建成功"
+                }
+                currentToastTask.value = "FileManageRename"
+                showToast.value = true
+                initFile()
+            }
+            run.value = { }
+            true
+        }
+    }
+    showingConfirmDialog.value = true
 }
 
 fun initFile() {
