@@ -64,7 +64,7 @@ fun FileManage() {
     } else {
         Box(
             modifier = Modifier.fillMaxSize().onKeyEvent {
-                if (it.isCtrlPressed && it.key.keyCode == Key.N.keyCode){
+                if (it.isCtrlPressed && it.key.keyCode == Key.N.keyCode) {
                     LogUtil.d("ctrl + n")
                     createFile()
                     return@onKeyEvent true
@@ -77,23 +77,24 @@ fun FileManage() {
                     if (it.key.keyCode >= Key.A.keyCode && it.key.keyCode <= Key.Z.keyCode) {
                         filter += Char(it.key.nativeKeyCode).lowercase()
                     } else if (it.key.keyCode == Key.Backspace.keyCode) {
-                        if (filter.isNotBlank()) filter = filter.substring(0, filter.length - 1)
-                    }else if (it.key.keyCode == Key.Delete.keyCode){
+                        if (filter.isNotBlank())
+                            filter = filter.substring(0, filter.length - 1)
+                    } else if (it.key.keyCode == Key.Delete.keyCode) {
                         deleteAll()
                         return@onKeyEvent true
-                    }else if (it.key.keyCode == Key.F5.keyCode){
+                    } else if (it.key.keyCode == Key.F5.keyCode) {
                         initFile()
                         return@onKeyEvent true
-                    }else if (it.key.keyCode == Key.Escape.keyCode){
-                        if (filter.isBlank()){
+                    } else if (it.key.keyCode == Key.Escape.keyCode) {
+                        if (filter.isBlank()) {
                             LogUtil.d("backParent Esc")
                             backParent()
                             return@onKeyEvent true
-                        }else{
+                        } else {
                             filter = ""
-                            initFile()
                         }
                     }
+                    initFile()
                     true
                 } else {
                     false
