@@ -1,26 +1,38 @@
 package pages
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.Composable
+import androidx.compose.material.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.dp
 import components.*
 import entity.KeyMapper
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import status.pathSave
+import theme.GOOGLE_BLUE
 import theme.GOOGLE_GREEN
 import theme.GOOGLE_RED
 import theme.GOOGLE_YELLOW
 import utils.*
 
+val packageName = mutableStateOf("")
+
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun QuickSetting() {
+    var expanded by remember {
+        mutableStateOf(false)
+    }
+    val appList = mutableStateListOf<String>()
     val keyPre = "input keyevent "
     val keyMapperList1 = listOf(
         KeyMapper(getRealLocation("task"), 187, "任务列表"),
@@ -84,7 +96,7 @@ fun QuickSetting() {
                 }
                 ContentNRow {
                     Item(keyMapperList4[0].icon, keyMapperList4[0].name, false) {
-                        GlobalScope.launch {
+                        CoroutineScope(Dispatchers.Default).launch {
                             val serialno = serialno()
                             title.value = "get-serialno: "
                             titleColor.value = GOOGLE_GREEN
@@ -96,7 +108,7 @@ fun QuickSetting() {
                         ""
                     }
                     Item(keyMapperList4[1].icon, keyMapperList4[1].name, false) {
-                        GlobalScope.launch {
+                        CoroutineScope(Dispatchers.Default).launch {
                             val cmd =
                                 if (BashUtil.split == "\\") "\"dumpsys window | grep mCurrentFocus\"" else "dumpsys window | grep mCurrentFocus"
                             val res = shell(cmd)
@@ -116,7 +128,7 @@ fun QuickSetting() {
                         needRun.value = true
                         run.value = {
                             run.value = {}
-                            GlobalScope.launch {
+                            CoroutineScope(Dispatchers.Default).launch {
                                 logcatClear()
                                 if (showToast.value) {
                                     delay(1000)
@@ -136,7 +148,7 @@ fun QuickSetting() {
                         needRun.value = true
                         run.value = {
                             run.value = {}
-                            GlobalScope.launch {
+                            CoroutineScope(Dispatchers.Default).launch {
                                 reboot()
                                 if (showToast.value) {
                                     delay(1000)
@@ -155,19 +167,204 @@ fun QuickSetting() {
         General(title = "应用相关", color = GOOGLE_RED, height = 2, content = {
             ContentMoreRowColumn {
                 ContentNRow {
-                    Item(getRealLocation("file"), "测试1") {
-                        execute("aapt.exe dump badging xxx.apk")
+                    Item(getRealLocation("start"), "启动应用") {
+                        applicationManager {
+                            start(packageName.value)
+                        }
                     }
-                    Item(getRealLocation("file"), "测试1")
-                    Item(getRealLocation("file"), "测试1")
-                    Item(getRealLocation("file"), "查看当前Activity")
+                    Item(getRealLocation("power"), "停止运行", false) {
+                        applicationManager {
+                            title.value = "警告"
+                            titleColor.value = GOOGLE_RED
+                            dialogText.value = "是否停止运行\"${packageName.value}\""
+                            needRun.value = true
+                            run.value = {
+                                run.value = {}
+                                needRun.value = false
+                                CoroutineScope(Dispatchers.Default).launch {
+                                    killall(packageName.value)
+                                    toastText.value = "${packageName.value}已停止"
+                                    showToast.value = true
+                                    currentToastTask.value = "ApplicationManageStop"
+                                }
+                            }
+                            showingDialog.value = true
+                            ""
+                        }
+                    }
+                    Item(getRealLocation("clear"), "清除数据", false) {
+                        applicationManager {
+                            title.value = "警告"
+                            titleColor.value = GOOGLE_RED
+                            dialogText.value = "是否清除\"${packageName.value}\"数据"
+                            needRun.value = true
+                            run.value = {
+                                run.value = {}
+                                needRun.value = false
+                                CoroutineScope(Dispatchers.Default).launch {
+                                    clear(packageName.value)
+                                    toastText.value = "${packageName.value}数据已清除"
+                                    showToast.value = true
+                                    currentToastTask.value = "ApplicationManageClear"
+                                }
+                            }
+                            showingDialog.value = true
+                            ""
+                        }
+                    }
+                    Item(getRealLocation("delete"), "卸载应用", false) {
+                        applicationManager {
+                            title.value = "警告"
+                            titleColor.value = GOOGLE_RED
+                            dialogText.value = "是否卸载\"${packageName.value}\"程序"
+                            needRun.value = true
+                            run.value = {
+                                run.value = {}
+                                needRun.value = false
+                                CoroutineScope(Dispatchers.Default).launch {
+                                    uninstall(packageName.value)
+                                    toastText.value = "${packageName.value}程序已卸载"
+                                    showToast.value = true
+                                    packageName.value = ""
+                                    currentToastTask.value = "ApplicationManageUnInstall"
+                                }
+                            }
+                            showingDialog.value = true
+                            ""
+                        }
+                    }
                 }
                 ContentNRow {
-                    Item(getRealLocation("file"), "测试1")
-                    Item(getRealLocation("file"), "测试1")
-                    Item(getRealLocation("file"), "测试1")
-                    Item(getRealLocation("file"), "查看当前Activity")
+                    Item(getRealLocation("go"), "授予所有权限", false) {
+                        applicationManager {
+                            title.value = "警告"
+                            titleColor.value = GOOGLE_RED
+                            dialogText.value = "是否授予\"${packageName.value}\"所有权限"
+                            needRun.value = true
+                            run.value = {
+                                run.value = {}
+                                needRun.value = false
+                                CoroutineScope(Dispatchers.Default).launch {
+                                    getAppPermissionList(packageName.value).forEach {
+                                        grant(packageName.value, it)
+                                    }
+                                    toastText.value = "${packageName.value}已授予所有权限"
+                                    showToast.value = true
+                                    currentToastTask.value = "ApplicationManageGrant"
+                                }
+                            }
+                            showingDialog.value = true
+                            ""
+                        }
+                    }
+
+                    Item(getRealLocation("back"), "撤销所有权限", false) {
+                        applicationManager {
+                            title.value = "警告"
+                            titleColor.value = GOOGLE_RED
+                            dialogText.value = "是否撤销\"${packageName.value}\"所有权限"
+                            needRun.value = true
+                            run.value = {
+                                run.value = {}
+                                needRun.value = false
+                                CoroutineScope(Dispatchers.Default).launch {
+                                    getAppPermissionList(packageName.value).forEach {
+                                        revoke(packageName.value, it)
+                                    }
+                                    toastText.value = "${packageName.value}已撤销所有权限"
+                                    showToast.value = true
+                                    currentToastTask.value = "ApplicationManageRevoke"
+                                }
+                            }
+                            showingDialog.value = true
+                            ""
+                        }
+                    }
+
+                    Item(getRealLocation("eye"), "查看应用信息", false) {
+                        applicationManager {
+                            title.value = "应用信息"
+                            titleColor.value = GOOGLE_GREEN
+                            needRun.value = false
+                            run.value = {}
+                            CoroutineScope(Dispatchers.Default).launch {
+                                dialogText.value = dump(packageName.value, "version")
+                                showingDialog.value = true
+                            }
+                            ""
+                        }
+                    }
+                    Item(getRealLocation("save"), "保存程序到电脑", false) {
+                        applicationManager {
+                            val path = shell("pm path ${packageName.value}").trim().substring(8)
+                            val path1 = PathSelector.selectDir("保存到")
+                            if (path1.isNotBlank()) {
+                                CoroutineScope(Dispatchers.Default).launch {
+                                    pull(path, path1)
+                                    toastText.value = "文件已保存至$path1"
+                                    showToast.value = true
+                                    currentToastTask.value = "ApplicationManageSave"
+                                }
+                            }
+                            ""
+                        }
+
+                    }
                 }
+            }
+        }, topRight = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.End
+            ) {
+                ListItem(
+                    text = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.End
+                        ){
+                            Text(
+                                if (packageName.value.isBlank()) "请选择应用" else packageName.value,
+                                color = GOOGLE_BLUE,
+                                maxLines = 2,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier.clickable {
+                                    appList.clear()
+                                    appList.addAll(syncAppList())
+                                    expanded = true
+                                }
+                            )
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = {
+                                    expanded = false
+                                },
+                                offset = DpOffset(x = 260.dp, y = 2.dp)
+                            ) {
+                                if (appList.size == 0) {
+                                    DropdownMenuItem(onClick = {
+
+                                    }) {
+                                        Text(text = "请选择应用")
+                                    }
+                                } else {
+                                    appList.forEach {
+                                        DropdownMenuItem(onClick = {
+                                            expanded = false
+                                            packageName.value = it
+                                        }) {
+                                            Text(text = it)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    },
+                    modifier = Modifier.width(480.dp)
+                )
             }
         })
         General(title = "测试功能", color = GOOGLE_YELLOW, content = {
@@ -179,4 +376,32 @@ fun QuickSetting() {
             }
         })
     }
+}
+
+fun applicationManager(runnable: () -> String): String {
+    return if (packageName.value.isBlank()) {
+        CoroutineScope(Dispatchers.Default).launch {
+            if (showToast.value) {
+                delay(1000)
+            }
+            currentToastTask.value = "ApplicationManager"
+            toastText.value = "请选择应用后重试"
+            showToast.value = true
+        }
+        ""
+    } else {
+        runnable.invoke()
+    }
+}
+
+fun syncAppList(): List<String> {
+    val appList = ArrayList<String>()
+    val packages = shell("pm list packages -f -3")
+    val split = packages.trim().split("\n").filter { it.isNotBlank() }.map { it.substring(8) }
+    split.forEach {
+        val index = it.lastIndexOf("=")
+        val packageName = it.substring(index + 1)
+        appList.add(packageName)
+    }
+    return appList
 }

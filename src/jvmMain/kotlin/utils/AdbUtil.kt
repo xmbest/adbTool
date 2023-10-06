@@ -84,6 +84,7 @@ fun push(srcPath: String, destPath: String): String {
 fun root(): String {
     return execute("root")
 }
+
 fun remount(): String {
     return execute("remount")
 }
@@ -97,36 +98,48 @@ fun saveScreen(srcPath: String, destPath: String): String {
     return shell("rm -rf $srcPath/screen_$formattedDateTime.png")
 }
 
-fun uninstall(packageName:String): String {
+fun uninstall(packageName: String): String {
     return shell("pm uninstall $packageName")
 }
 
-fun install(path:String):String{
+fun install(path: String): String {
     return execute("install $path")
 }
 
-fun mkdir(path: String):String{
+fun mkdir(path: String): String {
     return shell("mkdir -p $path")
 }
 
-fun touch(path: String):String{
+fun touch(path: String): String {
     return shell("touch $path")
 }
 
-fun start(packageName: String):String{
-    val dumpsys = dumpsys(packageName)
-    val regex = Regex(".* (.*)/(.*?) .*")
-    val find = regex.find(dumpsys)
-    if (find != null) {
-        val mainActivity= find.groups[2]?.value?:""
-        if (mainActivity.isNotBlank())
-            return shell("am start ${packageName}/${packageName}$mainActivity")
-    }
-    //以上方式未成功尝试monkey启动应用
-    return shell("monkey -p $packageName -v 1")
+fun start(packageName: String): String {
+    val launchActivity = getLaunchActivity(packageName)
+    //未成功获取尝试monkey启动应用
+    if (launchActivity.isBlank())
+        return shell("monkey -p $packageName -v 1")
+    return shell("am start -n $launchActivity")
 }
 
-fun clear(packageName:String):String{
+fun getLaunchActivity(packageName: String):String{
+    val launchActivity = dumpsys(packageName,"-A 1 MAIN")
+    if (launchActivity.isBlank()) return ""
+    val outLines = launchActivity.lines()
+    if (outLines.isEmpty()) {
+        return ""
+    } else {
+        for (value in outLines) {
+            if (value.contains("$packageName/")) {
+                return value.substring(
+                    value.indexOf("$packageName/"), value.indexOf(" filter"))
+            }
+        }
+        return ""
+    }
+}
+
+fun clear(packageName: String): String {
     return shell("pm clear $packageName")
 }
 
@@ -142,36 +155,67 @@ fun dumpsys(packageName: String, filter: String = ""): String {
     return shell("dumpsys package $packageName${if (filter.isNotBlank()) " | grep $filter" else ""}")
 }
 
-fun ps(keyWord:String,isA:Boolean):String{
+fun ps(keyWord: String, isA: Boolean): String {
     if (isWindows)
-        return shell("\"ps ${if(isA) "-A" else ""} ${if (keyWord.isNotBlank()) " | grep $keyWord\"" else "\""}")
-    return shell("ps ${if(isA) "-A" else ""} ${if (keyWord.isNotBlank()) " | grep $keyWord" else ""}")
+        return shell("\"ps ${if (isA) "-A" else ""} ${if (keyWord.isNotBlank()) " | grep $keyWord\"" else "\""}")
+    return shell("ps ${if (isA) "-A" else ""} ${if (keyWord.isNotBlank()) " | grep $keyWord" else ""}")
 }
 
 
-fun kill(pids:String){
+fun kill(pids: String) {
     shell("kill $pids")
 }
 
-fun reboot(){
+fun killall(packageName: String):String{
+    return shell("killall $packageName")
+}
+
+fun reboot() {
     execute("reboot")
 }
 
-fun serialno():String {
+fun serialno(): String {
     return execute("get-serialno")
 }
 
-fun logcatClear(){
+fun logcatClear() {
     execute("logcat -c")
 }
 
-fun board(action:String,params:String){
+// 获取应用权限列表
+fun getAppPermissionList(packageName: String): List<String> {
+    val permission = shell("dumpsys package $packageName")
+    val permissionList: ArrayList<String> = ArrayList()
+    if (permission.isBlank()) return permissionList
+    val outLines = permission.lines()
+    for (value in outLines) {
+        if (value.contains("permission.")) {
+            val permissionLine = value.replace(" ", "").split(":")
+            if (permissionLine.isEmpty()) {
+                continue;
+            }
+            permissionList.add(permissionLine[0]);
+        }
+    }
+    return permissionList;
+}
+
+//授予应用权限
+fun grant(packageName: String, permission: String): String {
+    return shell("pm grant $packageName $permission")
+}
+
+fun revoke(packageName: String, permission: String): String {
+    return shell("pm revoke $packageName $permission")
+}
+
+fun board(action: String, params: String) {
     val str = "am broadcast -a $action $params"
     shell(str)
 }
 
 
-fun board(action:String, key:Int, list: List<BroadParam>?){
+fun board(action: String, key: Int, list: List<BroadParam>?) {
     var str = "am broadcast -a com.txznet.adapter.recv --ei key_type $key --es action $action"
     if (list != null) {
         if (list.isNotEmpty()) {
@@ -183,10 +227,12 @@ fun board(action:String, key:Int, list: List<BroadParam>?){
     shell(str)
 }
 
-fun board(action:String, key:Int, broadParam: BroadParam){
-    val str = "am broadcast -a com.txznet.adapter.recv --ei key_type $key --es action $action ${broadParam.paramType} ${broadParam.param} ${broadParam.value}"
+fun board(action: String, key: Int, broadParam: BroadParam) {
+    val str =
+        "am broadcast -a com.txznet.adapter.recv --ei key_type $key --es action $action ${broadParam.paramType} ${broadParam.param} ${broadParam.value}"
     shell(str)
 }
+
 /**
  * @Description： 获取设备列表
  */
@@ -208,7 +254,7 @@ fun getDevices() {
         }
     }
     if (devicesList.size > 0) {
-        if (!devicesList.contains(currentDevice.value)){
+        if (!devicesList.contains(currentDevice.value)) {
             currentDevice.value = devicesList[0]
             GlobalScope.launch {
                 root()

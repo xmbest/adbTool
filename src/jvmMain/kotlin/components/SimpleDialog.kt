@@ -2,10 +2,8 @@ package components
 
 import CustomDialogProvider
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -43,21 +41,17 @@ fun SimpleDialog(
     needRun: Boolean = false,
     runnable: (() -> Unit)? = null,
     width: Int = 320,
-    height: Int = 80,
+    height: Int = 160,
     content: @Composable (() -> Unit) = {
-        Column(
-            modifier = Modifier.height(height.dp).width(width.dp)
-        ) {
-            val scroll = rememberScrollState()
             Row(
-                modifier = Modifier.fillMaxWidth().weight(1f).padding(5.dp).verticalScroll(scroll),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.width(width.dp).height(height.dp).padding(5.dp, bottom = 0.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
             ) {
                 SelectionContainer {
-                    Text(color = Color.Gray, text = "   $text", fontSize = 16.sp)
+                    Text(color = Color.Gray, text = "   $text", fontSize = 16.sp, modifier = Modifier.fillMaxWidth())
                 }
             }
-        }
     }
 ) {
 
