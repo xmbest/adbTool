@@ -2,8 +2,9 @@ name: Mac CI
 
 on:
   push:
-    branches: [ "dev","master"]
-
+    branches:
+      - "master"
+      - "dev"
 jobs:
   build:
 

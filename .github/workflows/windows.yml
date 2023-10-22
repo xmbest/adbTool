@@ -2,7 +2,9 @@ name: Windows CI
 
 on:
   push:
-    branches: [ "master" , "dev"]
+    branches:
+      - "master"
+      - "dev"
 jobs:
   build:
     runs-on: windows-latest
