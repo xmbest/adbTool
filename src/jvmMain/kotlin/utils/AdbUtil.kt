@@ -1,14 +1,18 @@
 package utils
 
 import entity.BroadParam
+import entity.DeviceInfo
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import pages.deviceInfo
+import pages.setSize
 import status.adb
 import status.currentDevice
 import status.devicesList
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.text.DecimalFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -122,8 +126,8 @@ fun start(packageName: String): String {
     return shell("am start -n $launchActivity")
 }
 
-fun getLaunchActivity(packageName: String):String{
-    val launchActivity = dumpsys(packageName,"-A 1 MAIN")
+fun getLaunchActivity(packageName: String): String {
+    val launchActivity = dumpsys(packageName, "-A 1 MAIN")
     if (launchActivity.isBlank()) return ""
     val outLines = launchActivity.lines()
     if (outLines.isEmpty()) {
@@ -132,7 +136,8 @@ fun getLaunchActivity(packageName: String):String{
         for (value in outLines) {
             if (value.contains("$packageName/")) {
                 return value.substring(
-                    value.indexOf("$packageName/"), value.indexOf(" filter"))
+                    value.indexOf("$packageName/"), value.indexOf(" filter")
+                )
             }
         }
         return ""
@@ -166,7 +171,7 @@ fun kill(pids: String) {
     shell("kill $pids")
 }
 
-fun killall(packageName: String):String{
+fun killall(packageName: String): String {
     return shell("killall $packageName")
 }
 
@@ -258,10 +263,39 @@ fun getDevices() {
             currentDevice.value = devicesList[0]
             GlobalScope.launch {
                 root()
-                remount()
+//                remount()
+                setDeviceInfo()
             }
         }
     }
 
+}
+
+fun getProp(key: String) :String{
+    return shell("getprop $key").trim().uppercase()
+}
+
+fun setDeviceInfo() {
+    val deviceInfo1 = DeviceInfo()
+    deviceInfo1.brand = getProp("ro.product.brand")
+    deviceInfo1.device = getProp("ro.product.device")
+    deviceInfo1.model = getProp("ro.product.model")
+    deviceInfo1.serialNo = getProp("ro.serialno")
+    deviceInfo1.cpu = getProp("ro.soc.model")
+    deviceInfo1.androidVersion = getProp("ro.vendor.build.version.release")
+    deviceInfo1.density = shell("wm size").trim().split(":")[1].trim()
+    var memoryCmd = "cat /proc/meminfo | grep MemTotal"
+    if (isWindows)
+        memoryCmd = "\"" + memoryCmd + "\""
+    deviceInfo1.memory = shell(memoryCmd).trim().split(":")[1].replace("kB","").trim()
+    deviceInfo1.memory = "${convertKBToGB(deviceInfo1.memory.toLong())}GB"
+    deviceInfo1.storage = ""
+    deviceInfo1.sdkVersion = getProp("ro.vendor.build.version.sdk")
+    deviceInfo.value = deviceInfo1
+}
+
+fun convertKBToGB(size: Long): String {
+    val df = DecimalFormat("0.00") //格式化小数
+    return df.format(size.toDouble() / 1024 / 1024)
 }
 

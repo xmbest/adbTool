@@ -3,6 +3,7 @@ package pages
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -15,6 +16,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import components.*
 import config.route_left_item_color
+import entity.DeviceInfo
 import entity.KeyMapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,11 +26,12 @@ import status.pathSave
 import theme.GOOGLE_BLUE
 import theme.GOOGLE_GREEN
 import theme.GOOGLE_RED
-import theme.GOOGLE_YELLOW
 import utils.*
 
 val packageName = mutableStateOf("")
 val quickSettingKeyword = mutableStateOf("")
+val deviceInfo = mutableStateOf(DeviceInfo())
+
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -60,14 +63,36 @@ fun QuickSetting() {
     )
 
     val keyMapperList4 = listOf(
-        KeyMapper(getRealLocation("android"), 0, "查看序列号"),
         KeyMapper(getRealLocation("eye"), 1, "查看当前Activity"),
         KeyMapper(getRealLocation("delete"), 2, "清理logcat缓存"),
+        KeyMapper(getRealLocation("android"), 0, "挂载设备"),
         KeyMapper(getRealLocation("sync"), 0, "重启设备")
     )
     val scroll = rememberScrollState()
 
     Column(modifier = Modifier.fillMaxSize().fillMaxHeight().verticalScroll(scroll)) {
+
+        General(title = "系统信息", height = 2, color = GOOGLE_GREEN) {
+            Row(modifier = Modifier.fillMaxSize().padding(start = 20.dp, top = 20.dp)) {
+                Column(modifier = Modifier.weight(1f)) {
+                    SelectionContainer {
+                        Text(
+                            "${deviceInfo.value.brand} ${deviceInfo.value.device} \n" +
+                                    "安卓版本: ${deviceInfo.value.androidVersion} \n" +
+                                    "系统版本: ${deviceInfo.value.sdkVersion} \n" +
+                                    "代号: ${deviceInfo.value.model} \n" +
+                                    "处理器: ${deviceInfo.value.cpu} \n" +
+                                    "序列号: ${deviceInfo.value.serialNo} \n" +
+                                    "分辨率: ${deviceInfo.value.density} \n" +
+                                    "运行内存: ${deviceInfo.value.memory} \n"
+                        )
+                    }
+
+                }
+            }
+
+        }
+
         General(title = "按键模拟", height = 4, content = {
             ContentMoreRowColumn {
                 ContentNRow {
@@ -101,18 +126,6 @@ fun QuickSetting() {
                 ContentNRow {
                     Item(keyMapperList4[0].icon, keyMapperList4[0].name, false) {
                         CoroutineScope(Dispatchers.Default).launch {
-                            val serialno = serialno()
-                            title.value = "get-serialno: "
-                            titleColor.value = GOOGLE_GREEN
-                            dialogText.value = serialno
-                            run.value = {}
-                            needRun.value = false
-                            showingDialog.value = true
-                        }
-                        ""
-                    }
-                    Item(keyMapperList4[1].icon, keyMapperList4[1].name, false) {
-                        CoroutineScope(Dispatchers.Default).launch {
                             val cmd =
                                 if (BashUtil.split == "\\") "\"dumpsys window | grep mCurrentFocus\"" else "dumpsys window | grep mCurrentFocus"
                             val res = shell(cmd)
@@ -125,7 +138,7 @@ fun QuickSetting() {
                         }
                         ""
                     }
-                    Item(keyMapperList4[2].icon, keyMapperList4[2].name, false) {
+                    Item(keyMapperList4[1].icon, keyMapperList4[1].name, false) {
                         title.value = "警告"
                         titleColor.value = GOOGLE_RED
                         dialogText.value = "是否清理logcat缓存"
@@ -140,6 +153,28 @@ fun QuickSetting() {
                                 currentToastTask.value = "QuickSettingReboot"
                                 toastText.value = "logcat缓存清理中..."
                                 showToast.value = true
+                                needRun.value = false
+                            }
+                        }
+                        showingDialog.value = true
+                        ""
+                    }
+                    Item(keyMapperList4[2].icon, keyMapperList4[2].name, false) {
+                        title.value = "警告"
+                        titleColor.value = GOOGLE_RED
+                        dialogText.value = "是否挂载设备remount"
+                        needRun.value = true
+                        run.value = {
+                            run.value = {}
+                            CoroutineScope(Dispatchers.Default).launch {
+                                remount()
+                                if (showToast.value) {
+                                    delay(1000)
+                                }
+                                currentToastTask.value = "QuickSettingRemount"
+                                toastText.value = "remount..."
+                                showToast.value = true
+                                needRun.value = false
                             }
                         }
                         showingDialog.value = true
@@ -418,10 +453,10 @@ fun applicationManager(runnable: () -> String): String {
     }
 }
 
-fun syncAppList(keyWord:String = ""): List<String> {
+fun syncAppList(keyWord: String = ""): List<String> {
     val appList = ArrayList<String>()
     var cmd = "pm list packages -f"
-    if (keyWord.isNotBlank()){
+    if (keyWord.isNotBlank()) {
         cmd += " | grep $keyWord"
     }
     val packages = shell(cmd)

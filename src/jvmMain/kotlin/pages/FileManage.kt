@@ -698,7 +698,9 @@ fun initFile() {
 }
 
 
+
 fun setSize(oldSize: String): String {
+    println(oldSize)
     var size = 0
     size = try {
         oldSize.toInt()
