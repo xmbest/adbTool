@@ -399,14 +399,6 @@ fun QuickSetting() {
                 )
             }
         })
-        General(title = "测试功能", color = GOOGLE_YELLOW, content = {
-            ContentRow {
-                Item(getRealLocation("file"), "测试1")
-                Item(getRealLocation("file"), "测试1")
-                Item(getRealLocation("file"), "测试1")
-                Item(getRealLocation("file"), "查看当前Activity")
-            }
-        })
     }
 }
 
