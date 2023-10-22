@@ -383,13 +383,6 @@ fun QuickSetting() {
                                 },
                                 offset = DpOffset(x = 260.dp, y = 2.dp)
                             ) {
-                                if (appList.size == 0) {
-                                    DropdownMenuItem(onClick = {
-
-                                    }) {
-                                        Text(text = "请选择应用")
-                                    }
-                                } else {
                                     Row {
                                         TextField(
                                             quickSettingKeyword.value,
@@ -417,18 +410,25 @@ fun QuickSetting() {
                                                 .padding(end = 10.dp, start = 10.dp)
                                         )
                                     }
-                                    appList.forEach {
+                                    if (appList.size == 0){
                                         DropdownMenuItem(onClick = {
                                             expanded = false
-                                            packageName.value = it
                                         }) {
-                                            Text(text = it)
+                                            Text(text = "未找到相关应用")
+                                        }
+                                    }else{
+                                        appList.forEach {
+                                            DropdownMenuItem(onClick = {
+                                                expanded = false
+                                                packageName.value = it
+                                            }) {
+                                                Text(text = it)
+                                            }
                                         }
                                     }
+
                                 }
                             }
-                        }
-
                     },
                     modifier = Modifier.width(480.dp)
                 )
