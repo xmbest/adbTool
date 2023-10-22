@@ -161,7 +161,7 @@ fun AABToolsManager() {
                     Text(apksPath.value.ifEmpty {
                         "没有APKS路径,请点击该文本手动选择或使用<生成APKS>功能生成"
                     }, modifier = Modifier.onClick {
-                        val path = FileSelector.selectFile("apks")
+                        val path = PathSelector.selectFile("apks")
                         if (path.isNotEmpty()) apksPath.value = path
                     })
                 }
