@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -12,6 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import components.*
+import config.route_left_item_color
 import entity.KeyMapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +28,7 @@ import theme.GOOGLE_YELLOW
 import utils.*
 
 val packageName = mutableStateOf("")
+val quickSettingKeyword = mutableStateOf("")
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -324,15 +328,16 @@ fun QuickSetting() {
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.Bottom,
                             horizontalArrangement = Arrangement.End
-                        ){
+                        ) {
                             Text(
                                 if (packageName.value.isBlank()) "请选择应用" else packageName.value,
                                 color = GOOGLE_BLUE,
                                 maxLines = 2,
                                 textAlign = TextAlign.End,
                                 modifier = Modifier.clickable {
+                                    val newList = syncAppList(quickSettingKeyword.value)
                                     appList.clear()
-                                    appList.addAll(syncAppList())
+                                    appList.addAll(newList)
                                     expanded = true
                                 }
                             )
@@ -350,6 +355,33 @@ fun QuickSetting() {
                                         Text(text = "请选择应用")
                                     }
                                 } else {
+                                    Row {
+                                        TextField(
+                                            quickSettingKeyword.value,
+                                            trailingIcon = {
+                                                if (quickSettingKeyword.value.isNotBlank()) Icon(
+                                                    Icons.Default.Close,
+                                                    null,
+                                                    modifier = Modifier.width(20.dp).height(20.dp).clickable {
+                                                        quickSettingKeyword.value = ""
+                                                        val newList = syncAppList(quickSettingKeyword.value)
+                                                        appList.clear()
+                                                        appList.addAll(newList)
+                                                    },
+                                                    tint = route_left_item_color
+                                                )
+                                            },
+                                            placeholder = { Text("keyword") },
+                                            onValueChange = {
+                                                quickSettingKeyword.value = it
+                                                val newList = syncAppList(quickSettingKeyword.value)
+                                                appList.clear()
+                                                appList.addAll(newList)
+                                            },
+                                            modifier = Modifier.weight(1f).height(48.dp)
+                                                .padding(end = 10.dp, start = 10.dp)
+                                        )
+                                    }
                                     appList.forEach {
                                         DropdownMenuItem(onClick = {
                                             expanded = false
@@ -394,9 +426,13 @@ fun applicationManager(runnable: () -> String): String {
     }
 }
 
-fun syncAppList(): List<String> {
+fun syncAppList(keyWord:String = ""): List<String> {
     val appList = ArrayList<String>()
-    val packages = shell("pm list packages -f -3")
+    var cmd = "pm list packages -f"
+    if (keyWord.isNotBlank()){
+        cmd += " | grep $keyWord"
+    }
+    val packages = shell(cmd)
     val split = packages.trim().split("\n").filter { it.isNotBlank() }.map { it.substring(8) }
     split.forEach {
         val index = it.lastIndexOf("=")
