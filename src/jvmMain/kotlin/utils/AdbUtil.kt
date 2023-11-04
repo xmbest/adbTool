@@ -2,11 +2,8 @@ package utils
 
 import entity.BroadParam
 import entity.DeviceInfo
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import pages.deviceInfo
-import pages.setSize
 import status.adb
 import status.currentDevice
 import status.devicesList
@@ -261,10 +258,9 @@ fun getDevices() {
     if (devicesList.size > 0) {
         if (!devicesList.contains(currentDevice.value)) {
             currentDevice.value = devicesList[0]
-            GlobalScope.launch {
-                root()
-//                remount()
+            CoroutineScope(Dispatchers.Default).launch {
                 setDeviceInfo()
+                root()
             }
         }
     }
@@ -272,7 +268,7 @@ fun getDevices() {
 }
 
 fun getProp(key: String) :String{
-    return shell("getprop $key").trim().uppercase()
+    return shell("getprop $key").trim()
 }
 
 fun setDeviceInfo() {
@@ -282,15 +278,26 @@ fun setDeviceInfo() {
     deviceInfo1.model = getProp("ro.product.model")
     deviceInfo1.serialNo = getProp("ro.serialno")
     deviceInfo1.cpu = getProp("ro.soc.model")
+    val hard = shell("cat /proc/cpuinfo | grep Hardware").trim()
+    if (hard.isNotBlank()){
+        deviceInfo1.cpu += hard.trim().split(":")[1]
+    }
+    deviceInfo1.cpu += "(" + getProp("ro.product.cpu.abi") + "架构 "
+    deviceInfo1.core = shell("cat /proc/cpuinfo | grep processor | wc -l").trim()
+    deviceInfo1.cpu += deviceInfo1.core + "核心)"
     deviceInfo1.androidVersion = getProp("ro.vendor.build.version.release")
+    if(deviceInfo1.androidVersion.isBlank()){
+        deviceInfo1.androidVersion = getProp("ro.build.version.release")
+    }
     deviceInfo1.density = shell("wm size").trim().split(":")[1].trim()
+    deviceInfo1.density += "(dpi = " + shell("wm density").trim().split(":")[1].trim() + ")"
     var memoryCmd = "cat /proc/meminfo | grep MemTotal"
     if (isWindows)
         memoryCmd = "\"" + memoryCmd + "\""
     deviceInfo1.memory = shell(memoryCmd).trim().split(":")[1].replace("kB","").trim()
     deviceInfo1.memory = "${convertKBToGB(deviceInfo1.memory.toLong())}GB"
     deviceInfo1.storage = ""
-    deviceInfo1.sdkVersion = getProp("ro.vendor.build.version.sdk")
+    deviceInfo1.systemVersion = getProp("ro.bootimage.build.fingerprint")
     deviceInfo.value = deviceInfo1
 }
 

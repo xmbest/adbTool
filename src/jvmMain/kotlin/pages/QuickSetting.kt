@@ -79,12 +79,12 @@ fun QuickSetting() {
                         Text(
                             "${deviceInfo.value.brand} ${deviceInfo.value.device} \n" +
                                     "安卓版本: ${deviceInfo.value.androidVersion} \n" +
-                                    "系统版本: ${deviceInfo.value.sdkVersion} \n" +
+                                    "系统版本: ${deviceInfo.value.systemVersion} \n" +
                                     "代号: ${deviceInfo.value.model} \n" +
                                     "处理器: ${deviceInfo.value.cpu} \n" +
                                     "序列号: ${deviceInfo.value.serialNo} \n" +
                                     "分辨率: ${deviceInfo.value.density} \n" +
-                                    "运行内存: ${deviceInfo.value.memory} \n"
+                                    "可用内存: ${deviceInfo.value.memory} \n"
                         )
                     }
 
