@@ -126,6 +126,9 @@ fun BoardManage() {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().height(60.dp).padding(start = 5.dp)
             ) {
+                ButtonClick("core调试界面"){
+                    shell("am start -n com.txznet.txz/.module.ui.TestActivity")
+                }
                 ButtonClick("注入205环境") {
                     push(
                         "${BashUtil.workDir}${BashUtil.split}cfg${BashUtil.split}back.inline.dev.conn.cfg.txz~dat",
