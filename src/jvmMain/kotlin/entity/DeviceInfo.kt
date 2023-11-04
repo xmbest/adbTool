@@ -11,7 +11,9 @@ package entity
  * memory 手机运存
  * storage 存储空间
  * cpu 处理器
+ * core 核心数
+ *
  */
 data class DeviceInfo(var model:String = "", var brand:String = "", var device:String = "",
-                      var serialNo:String = "", var density:String = "", var sdkVersion:String = "",
-                      var androidVersion:String = "", var memory:String = "", var storage:String = "", var cpu:String = "")
+                      var serialNo:String = "", var density:String = "", var systemVersion:String = "",
+                      var androidVersion:String = "", var memory:String = "", var storage:String = "", var cpu:String = "",var core:String = "")
