@@ -457,7 +457,7 @@ fun syncAppList(keyWord: String = ""): List<String> {
     val appList = ArrayList<String>()
     var cmd = "pm list packages -f"
     if (keyWord.isNotBlank()) {
-        cmd += " | grep $keyWord"
+        cmd += " | grep -E '$keyWord'"
     }
     val packages = shell(cmd)
     val split = packages.trim().split("\n").filter { it.isNotBlank() }.map { it.substring(8) }
