@@ -8,14 +8,21 @@ import com.mifmif.common.regex.Generex
 class GenerexUtils {
     companion object {
         fun generateAll(text: String): String {
-            val text1 = text.replace("\\[(\\d*|\\d+-\\d+)]".toRegex(), "【$1】")
+            val text1 = text.trim().replace("\\[(\\d*|\\d+-\\d+)]".toRegex(), "【$1】")
                 .replace("[", "(")
                 .replace("]", ")?")
                 .replace("（", "(")
                 .replace("）", ")")
                 .replace("【", "[")
                 .replace("】", "]")
+                .replace("；","")
+                .replace(";","")
+                .replace(",","")
+                .replace("，","")
+                .replace("。","")
                 .replace("\n", "|")
+                .replace("\\d*\\.".toRegex(),"")
+            println(text1)
             val generex = Generex(text1)
             val str = StringBuilder()
             val allMatchedStrings = generex.allMatchedStrings
