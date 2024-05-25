@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - "dev"
+      - "txz"
+
 jobs:
   build:
 
@@ -11,10 +13,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: set up JDK 16
+      - name: set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: '16'
+          java-version: '17'
           distribution: 'temurin'
           cache: gradle
 
