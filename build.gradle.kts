@@ -35,6 +35,10 @@ compose.desktop {
     application {
         mainClass = "MainKt"
         nativeDistributions {
+            modules("java.instrument", "java.sql", "jdk.unsupported")
+            buildTypes.release.proguard {
+                isEnabled.set(false)
+            }
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
             packageName = "ADBTool"
             packageVersion = currentVersion

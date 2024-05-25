@@ -514,7 +514,7 @@ fun initAppList() {
         cmd += if (appKeyword.value.isEmpty()) "" else "\""
     cmd += "pm list packages -f"
     cmd += if (systemApp.value) "" else " -3"
-    cmd += if (appKeyword.value.isEmpty()) "" else " | grep ${appKeyword.value}"
+    cmd += if (appKeyword.value.isEmpty()) "" else " | grep -E '${appKeyword.value}'"
     if (isWindows)
         cmd += if (appKeyword.value.isEmpty()) "" else "\""
 //    val cmd = "\"pm dump * | grep -E 'Package |version|codePath'\""
