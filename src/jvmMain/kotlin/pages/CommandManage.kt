@@ -53,7 +53,9 @@ fun CommandGeneral() {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         if (!checked.value) {
             Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                CommandText(str = text1, hint = "TXZ语料规则\n1.去除多余序号和符号\n2.多种语料请换行\n")
+                CommandText(str = text1, hint = "TXZ语料规则\n" +
+                        "1.多种语料请换行\n2.已将1./2./数字././;/；等替换成空白\n" +
+                        "3.【】/（）已替换成英文符号\n4.支持数字范围，例1-36：调高([1-9]|[1-2][1-9]|3[0-6])度")
             }
         } else {
             Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
