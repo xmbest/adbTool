@@ -45,6 +45,7 @@ val text3 = mutableStateOf("")
 val text4 = mutableStateOf("")
 val text5 = mutableStateOf("")
 val checked = mutableStateOf(false)
+val cn = mutableStateOf(false)
 
 @OptIn(DelicateCoroutinesApi::class)
 @Preview
@@ -100,7 +101,7 @@ fun CommandGeneral() {
                             }
                             return@CommandButton
                         }
-                        text2.value = GenerexUtils.generateAll(text1.value)
+                        text2.value = GenerexUtils.generateAll(text1.value,cn.value)
                     } else {
                         if (text3.value.isBlank() || text4.value.isBlank() || text5.value.isBlank()) {
                             if (!showToast.value) {
@@ -202,6 +203,22 @@ fun CommandGeneral() {
                     }
                 }
             }
+            if (!checked.value) {
+                Checkbox(
+                    cn.value,
+                    onCheckedChange = {
+                        cn.value = it
+                    },
+                    colors = CheckboxDefaults.colors(checkedColor = GOOGLE_BLUE),
+                )
+                Text(text = "数转中",
+                    color = route_left_item_color,
+                    modifier = Modifier.align(Alignment.CenterVertically).clickable {
+                        cn.value = !cn.value
+                    }
+                )
+            }
+
             Checkbox(
                 checked.value,
                 onCheckedChange = {

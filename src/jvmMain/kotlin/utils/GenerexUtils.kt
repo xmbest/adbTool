@@ -7,7 +7,7 @@ import com.mifmif.common.regex.Generex
  */
 class GenerexUtils {
     companion object {
-        fun generateAll(text: String): String {
+        fun generateAll(text: String,toCn:Boolean): String {
             val text1 = text.trim().replace("\\[(\\d*|\\d+-\\d+)]".toRegex(), "【$1】")
                 .replace("[", "(")
                 .replace("]", ")?")
@@ -27,7 +27,7 @@ class GenerexUtils {
             val str = StringBuilder()
             val allMatchedStrings = generex.allMatchedStrings
             for (i in 0 until allMatchedStrings.size) {
-                str.append("\"" + NumberValueUtil.num2CNStr(allMatchedStrings.get(i)) + "\"")
+                str.append("\"" + if(toCn) NumberValueUtil.num2CNStr(allMatchedStrings[i]) else allMatchedStrings[i] + "\"")
                 if (i < allMatchedStrings.size - 1)
                     str.append(",")
             }
