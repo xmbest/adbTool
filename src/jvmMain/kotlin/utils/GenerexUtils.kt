@@ -7,7 +7,7 @@ import com.mifmif.common.regex.Generex
  */
 class GenerexUtils {
     companion object {
-        fun generateAll(text: String,toCn:Boolean): String {
+        fun generateAll(text: String, toCn: Boolean): String {
             val text1 = text.trim().replace("\\[(\\d*|\\d+-\\d+)]".toRegex(), "【$1】")
                 .replace("[", "(")
                 .replace("]", ")?")
@@ -15,19 +15,20 @@ class GenerexUtils {
                 .replace("）", ")")
                 .replace("【", "[")
                 .replace("】", "]")
-                .replace("；","")
-                .replace(";","")
-                .replace(",","")
-                .replace("，","")
-                .replace("。","")
+                .replace("；", "")
+                .replace(";", "")
+                .replace(",", "")
+                .replace("，", "")
+                .replace("。", "")
                 .replace("\n", "|")
-                .replace("\\d*\\.".toRegex(),"")
+                .replace("\\d*\\.".toRegex(), "")
             println(text1)
             val generex = Generex(text1)
             val str = StringBuilder()
             val allMatchedStrings = generex.allMatchedStrings
             for (i in 0 until allMatchedStrings.size) {
-                str.append("\"" + if(toCn) NumberValueUtil.num2CNStr(allMatchedStrings[i]) else allMatchedStrings[i] + "\"")
+                val s = if (toCn) NumberValueUtil.num2CNStr(allMatchedStrings[i]) else allMatchedStrings[i]
+                str.append("\"" + s + "\"")
                 if (i < allMatchedStrings.size - 1)
                     str.append(",")
             }
@@ -48,7 +49,7 @@ class GenerexUtils {
                     stringBuilder.append("\"" + string.replace(oldStr!!, newStr[i]!!) + "\",")
                 }
                 res += "\"" + newStr[i] + "\""
-                if (i != newStr.size -1){
+                if (i != newStr.size - 1) {
                     res += ","
                 }
             }

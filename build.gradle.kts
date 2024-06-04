@@ -4,7 +4,7 @@ plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
 }
-val currentVersion = "1.0.8"
+val currentVersion = "1.0.10"
 group = "com.xxx"
 version = "1.0-SNAPSHOT"
 repositories {
