@@ -14,7 +14,9 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.dp
 import components.currentToastTask
 import components.showToast
@@ -32,6 +34,7 @@ import java.time.format.DateTimeFormatter
 val boardCustomer = mutableStateOf("")
 val boardCommand = mutableStateOf("")
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun BoardManage() {
     if (currentDevice.value.isEmpty()) {
@@ -61,9 +64,39 @@ fun BoardManage() {
                             tint = route_left_item_color
                         )
                     },
+                    singleLine = true,
                     placeholder = { Text("text") },
                     onValueChange = { boardCommand.value = it },
-                    modifier = Modifier.weight(1f).fillMaxHeight().padding(end = 5.dp)
+                    modifier = Modifier.weight(1f).fillMaxHeight().padding(end = 5.dp).onKeyEvent {
+                        if (it.key.keyCode == Key.Enter.keyCode && it.type ==  KeyEventType.KeyUp){
+                            LogUtil.d("Enter")
+                            if (boardCommand.value.isBlank()) {
+                                if (!showToast.value) {
+                                    currentToastTask.value = "BoardManageCommand"
+                                    toastText.value = "内容不可空"
+                                    showToast.value = true
+                                } else {
+                                    if (currentToastTask.value == "BoardManageCommand")
+                                        return@onKeyEvent false
+                                    GlobalScope.launch {
+                                        delay(1000)
+                                        currentToastTask.value = "BoardManageCommand"
+                                        toastText.value = "内容不可空"
+                                        showToast.value = true
+                                    }
+                                }
+                                return@onKeyEvent false
+                            } else {
+                                PropertiesUtil.setValue("boardCommand",boardCommand.value,"")
+                                board(
+                                    "com.txznet.txz.invoke",
+                                    "-d txznet://com.txznet.txz/comm.asr.startWithRawText?${boardCommand.value}"
+                                )
+                            }
+                            return@onKeyEvent true
+                        }
+                        return@onKeyEvent false
+                    }
                 )
                 Button(
                     onClick = {
@@ -87,7 +120,7 @@ fun BoardManage() {
                             PropertiesUtil.setValue("boardCommand",boardCommand.value,"")
                             board(
                                 "com.txznet.txz.invoke",
-                                "-d \"txznet://com.txznet.txz/comm.asr.startWithRawText?\$text\"${boardCommand.value}"
+                                "-d txznet://com.txznet.txz/comm.asr.startWithRawText?${boardCommand.value}"
                             )
                         }
                     },

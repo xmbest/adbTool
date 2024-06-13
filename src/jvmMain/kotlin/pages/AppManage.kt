@@ -12,11 +12,14 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -47,7 +50,7 @@ val first = mutableStateOf(true)
 //进程管理/应用管理
 val appManage = mutableStateOf(true)
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun AppManage() {
     if (currentDevice.value.isEmpty()) {
@@ -59,15 +62,22 @@ fun AppManage() {
             Text("请先连接设备")
         }
     } else {
-        if (appManage.value) {
-            if (appList.isEmpty() && first.value) {
+        LaunchedEffect(""){
+            if (appManage.value) {
                 initAppList()
-            }
-        } else {
-            if (taskList.isEmpty() && first.value) {
+            }else{
                 initTask()
             }
         }
+//        if (appManage.value) {
+//            if (appList.isEmpty() && first.value) {
+//                initAppList()
+//            }
+//        } else {
+//            if (taskList.isEmpty() && first.value) {
+//                initTask()
+//            }
+//        }
 
         Column(
             modifier = Modifier.fillMaxSize().fillMaxHeight().background(route_right_background).padding(10.dp)
@@ -114,9 +124,17 @@ fun AppManage() {
                                     tint = route_left_item_color
                                 )
                             },
+                            singleLine = true,
                             placeholder = { Text("keyword") },
                             onValueChange = { appKeyword.value = it },
-                            modifier = Modifier.weight(1f).height(48.dp).padding(end = 10.dp)
+                            modifier = Modifier.weight(1f).height(48.dp).padding(end = 10.dp).onKeyEvent {
+                                if (it.key.keyCode == Key.Enter.keyCode && it.type ==  KeyEventType.KeyUp){
+                                    if (appManage.value) initAppList() else initTask()
+                                    PropertiesUtil.setValue("appKeyword", appKeyword.value, "")
+                                    return@onKeyEvent true
+                                }
+                                return@onKeyEvent false
+                            }
                         )
                         Text(text = if (appManage.value) "进程管理" else "应用管理",
                             color = route_left_item_color,
