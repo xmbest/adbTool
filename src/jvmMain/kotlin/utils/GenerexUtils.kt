@@ -22,6 +22,7 @@ class GenerexUtils {
                 .replace("。", "")
                 .replace("\n", "|")
                 .replace("\\d*\\.".toRegex(), "")
+                .trim()
             println(text1)
             val generex = Generex(text1)
             val str = StringBuilder()
