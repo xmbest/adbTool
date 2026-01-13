@@ -1,0 +1,29 @@
+name: Windows CI
+
+on:
+  push:
+    branches:
+      - "dev"
+      - "txz"
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '16'
+          distribution: 'temurin'
+          cache: gradle
+      #    - name: Grant execute permission for gradlew
+      #     run: chmod +x gradlew
+      - name: Build with Windows
+        run: ./gradlew.bat packageReleaseMsi
+      #    - name: Build with MacOs
+      #      run: ./gradlew.bat packageReleaseDmg
+      - name: upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifact
+          path: ${{ github.workspace }}/build/compose/binaries/main-release/msi/**

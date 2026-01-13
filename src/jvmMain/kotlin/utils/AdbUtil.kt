@@ -1,14 +1,15 @@
 package utils
 
 import entity.BroadParam
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import entity.DeviceInfo
+import kotlinx.coroutines.*
+import pages.deviceInfo
 import status.adb
 import status.currentDevice
 import status.devicesList
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.text.DecimalFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -122,8 +123,8 @@ fun start(packageName: String): String {
     return shell("am start -n $launchActivity")
 }
 
-fun getLaunchActivity(packageName: String):String{
-    val launchActivity = dumpsys(packageName,"-A 1 MAIN")
+fun getLaunchActivity(packageName: String): String {
+    val launchActivity = dumpsys(packageName, "-A 1 MAIN")
     if (launchActivity.isBlank()) return ""
     val outLines = launchActivity.lines()
     if (outLines.isEmpty()) {
@@ -132,7 +133,8 @@ fun getLaunchActivity(packageName: String):String{
         for (value in outLines) {
             if (value.contains("$packageName/")) {
                 return value.substring(
-                    value.indexOf("$packageName/"), value.indexOf(" filter"))
+                    value.indexOf("$packageName/"), value.indexOf(" filter")
+                )
             }
         }
         return ""
@@ -145,20 +147,20 @@ fun clear(packageName: String): String {
 
 fun dump(packageName: String, filter: String): String {
     if (isWindows)
-        return shell("\"pm dump $packageName | grep $filter\"")
-    return shell("pm dump $packageName | grep $filter")
+        return shell("\"pm dump $packageName | grep -E '$filter'\"")
+    return shell("pm dump $packageName | grep -E '$filter'")
 }
 
 fun dumpsys(packageName: String, filter: String = ""): String {
     if (isWindows)
-        return shell("\"dumpsys package $packageName${if (filter.isNotBlank()) " | grep $filter\"" else "\""}")
-    return shell("dumpsys package $packageName${if (filter.isNotBlank()) " | grep $filter" else ""}")
+        return shell("\"dumpsys package $packageName${if (filter.isNotBlank()) " | grep -E '$filter'\"" else "\""}")
+    return shell("dumpsys package $packageName${if (filter.isNotBlank()) " | grep -E '$filter'" else ""}")
 }
 
 fun ps(keyWord: String, isA: Boolean): String {
     if (isWindows)
-        return shell("\"ps ${if (isA) "-A" else ""} ${if (keyWord.isNotBlank()) " | grep $keyWord\"" else "\""}")
-    return shell("ps ${if (isA) "-A" else ""} ${if (keyWord.isNotBlank()) " | grep $keyWord" else ""}")
+        return shell("\"ps ${if (isA) "-A" else ""} ${if (keyWord.isNotBlank()) " | grep -E '$keyWord'\"" else "\""}")
+    return shell("ps ${if (isA) "-A" else ""} ${if (keyWord.isNotBlank()) " | grep -E '$keyWord'" else ""}")
 }
 
 
@@ -166,7 +168,7 @@ fun kill(pids: String) {
     shell("kill $pids")
 }
 
-fun killall(packageName: String):String{
+fun killall(packageName: String): String {
     return shell("killall $packageName")
 }
 
@@ -256,12 +258,51 @@ fun getDevices() {
     if (devicesList.size > 0) {
         if (!devicesList.contains(currentDevice.value)) {
             currentDevice.value = devicesList[0]
-            GlobalScope.launch {
+            CoroutineScope(Dispatchers.Default).launch {
+                setDeviceInfo()
                 root()
-                remount()
             }
         }
     }
 
+}
+
+fun getProp(key: String) :String{
+    return shell("getprop $key").trim()
+}
+
+fun setDeviceInfo() {
+    val deviceInfo1 = DeviceInfo()
+    deviceInfo1.brand = getProp("ro.product.brand")
+    deviceInfo1.device = getProp("ro.product.device")
+    deviceInfo1.model = getProp("ro.product.model")
+    deviceInfo1.serialNo = getProp("ro.serialno")
+    deviceInfo1.cpu = getProp("ro.soc.model")
+    val hard = shell("cat /proc/cpuinfo | grep Hardware").trim()
+    if (hard.isNotBlank()){
+        deviceInfo1.cpu += hard.trim().split(":")[1]
+    }
+    deviceInfo1.cpu += "(" + getProp("ro.product.cpu.abi") + "架构 "
+    deviceInfo1.core = shell("cat /proc/cpuinfo | grep processor | wc -l").trim()
+    deviceInfo1.cpu += deviceInfo1.core + "核心)"
+    deviceInfo1.androidVersion = getProp("ro.vendor.build.version.release")
+    if(deviceInfo1.androidVersion.isBlank()){
+        deviceInfo1.androidVersion = getProp("ro.build.version.release")
+    }
+    deviceInfo1.density = shell("wm size").trim().split(":")[1].trim()
+    deviceInfo1.density += "(dpi = " + shell("wm density").trim().split(":")[1].trim() + ")"
+    var memoryCmd = "cat /proc/meminfo | grep MemTotal"
+    if (isWindows)
+        memoryCmd = "\"" + memoryCmd + "\""
+    deviceInfo1.memory = shell(memoryCmd).trim().split(":")[1].replace("kB","").trim()
+    deviceInfo1.memory = "${convertKBToGB(deviceInfo1.memory.toLong())}GB"
+    deviceInfo1.storage = ""
+    deviceInfo1.systemVersion = getProp("ro.bootimage.build.fingerprint")
+    deviceInfo.value = deviceInfo1
+}
+
+fun convertKBToGB(size: Long): String {
+    val df = DecimalFormat("0.00") //格式化小数
+    return df.format(size.toDouble() / 1024 / 1024)
 }
 

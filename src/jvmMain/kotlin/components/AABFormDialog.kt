@@ -24,6 +24,7 @@ fun AABFormDialog(openDialog: MutableState<Boolean>, aabToolsBeanState: MutableS
         val keyAlias = mutableStateOf("")
         val keyPwd = mutableStateOf("")
         val cfgName = mutableStateOf("")
+        val bundletoolSpec = mutableStateOf("")
         AlertDialog(dialogProvider = CustomDialogProvider, modifier = Modifier.clip(RoundedCornerShape(14.dp)), onDismissRequest = {
             openDialog.value = false
         }, title = {
@@ -49,6 +50,21 @@ fun AABFormDialog(openDialog: MutableState<Boolean>, aabToolsBeanState: MutableS
                 TextField(value = keyAlias.value, onValueChange = { keyAlias.value = it })
                 Text("输入KeyStore的口令", modifier = Modifier.padding(top = 10.dp))
                 TextField(value = keyPwd.value, onValueChange = { keyPwd.value = it })
+                Text("Bundletool\u7248\u672c\u6216\u8def\u5f84\uff08\u53ef\u9009\uff09", modifier = Modifier.padding(top = 10.dp))
+                Row(modifier = Modifier.padding(top = 5.dp)) {
+                    TextField(
+                        value = bundletoolSpec.value,
+                        onValueChange = { bundletoolSpec.value = it },
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(onClick = {
+                        val selectFile = PathSelector.selectFile("jar")
+                        if (selectFile.isNotEmpty()) bundletoolSpec.value = selectFile
+                    }) {
+                        Text("\u9009\u62e9jar")
+                    }
+                }
                 Text("为配置取个名吧", modifier = Modifier.padding(top = 10.dp))
                 TextField(value = cfgName.value, onValueChange = { cfgName.value = it })
             }
@@ -64,6 +80,7 @@ fun AABFormDialog(openDialog: MutableState<Boolean>, aabToolsBeanState: MutableS
                         keyAlias.value,
                         keyPwd.value,
                         cfgName.value,
+                        bundletoolSpec.value,
                     )
                     PropertiesUtil.addValueToList(aabToolsPopKey, Gson().toJson(aabToolsBeanState.value), "")
                 }) {

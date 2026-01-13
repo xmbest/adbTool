@@ -45,3 +45,4 @@ bin/
 
 ### 打包文件 ###
 /wix311/
+/local.properties

@@ -136,6 +136,13 @@ fun Route() {
             }
         }
         Toast(showToast, toastText, background = toastBgColor.value, textColor = toastTextColor.value)
+        if (showingLoadingDialog.value) {
+            LoadingDialog(
+                showingLoadingDialog,
+                title = loadingTitle.value,
+                text = loadingText.value
+            )
+        }
         if (showingDialog.value) {
             SimpleDialog(
                 showingDialog,
