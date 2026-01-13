@@ -534,14 +534,26 @@ fun initTask() {
     checkedList1.clear()
     checkAll1.value = false
     val res = ps(appKeyword.value, checkA.value)
-    var split = res.trim().split("\n").filter { it.isNotBlank() }
-    if (appKeyword.value.isBlank())
-        split = split.subList(1, split.size)
-    split.forEach {
-        val contentArr = it.split(" ").filter {
-            it.trim().isNotEmpty()
+    val lines = res.trim().split("\n").filter { it.isNotBlank() }
+    var headerIndex: Map<String, Int>? = null
+    var startIndex = 0
+    if (lines.isNotEmpty()) {
+        val headerParts = lines[0].trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+        if (headerParts.any { it.equals("PID", true) } && headerParts.any { it.equals("NAME", true) }) {
+            // Detect header to resolve column indices across different ps formats.
+            headerIndex = headerParts.mapIndexed { index, value -> value.uppercase() to index }.toMap()
+            startIndex = 1
         }
+    }
+    lines.drop(startIndex).forEach {
+        val contentArr = it.trim().split(Regex("\\s+")).filter { part -> part.isNotBlank() }
+        if (contentArr.size < 2) return@forEach
+        val user = contentArr.getOrNull(headerIndex?.get("USER") ?: 0) ?: return@forEach
+        val pid = contentArr.getOrNull(headerIndex?.get("PID") ?: 1) ?: return@forEach
+        val ppid = contentArr.getOrNull(headerIndex?.get("PPID") ?: 2) ?: ""
+        val name = contentArr.getOrNull(headerIndex?.get("NAME") ?: (contentArr.size - 1)) ?: contentArr.last()
+        val rss = contentArr.getOrNull(headerIndex?.get("RSS") ?: 4) ?: ""
         checkedList1.add(false)
-        taskList.add(listOf(contentArr[0], contentArr[1], contentArr[2], contentArr[8], contentArr[4]))
+        taskList.add(listOf(user, pid, ppid, name, rss))
     }
 }
