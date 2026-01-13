@@ -5,5 +5,6 @@ data class AABToolsCfgBean(
     var keyStoryPwd: String = "",
     var keyAlias: String = "",
     var keyPwd: String = "",
-    var cfgName: String = ""
+    var cfgName: String = "",
+    var bundletoolSpec: String = ""
 )

@@ -25,6 +25,8 @@ import entity.AABToolsCfgBean
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import status.bundletool
+import theme.GOOGLE_BLUE
 import theme.GOOGLE_RED
 import theme.LIGHT_GRAY
 import utils.AABUtils
@@ -57,6 +59,23 @@ fun AABToolsManager() {
     val keyAlias = mutableStateOf("")
     val keyPwd = mutableStateOf("")
     val cfgName = mutableStateOf("")
+    val bundletoolSpec = mutableStateOf("")
+    fun showInfoDialog(message: String, color: Color = GOOGLE_BLUE, titleText: String = "\u63d0\u793a") {
+        title.value = titleText
+        titleColor.value = color
+        dialogText.value = message
+        needRun.value = false
+        run.value = {}
+        showingDialog.value = true
+    }
+    fun startLoading(message: String) {
+        loadingTitle.value = "\u5904\u7406\u4e2d"
+        loadingText.value = message
+        showingLoadingDialog.value = true
+    }
+    fun stopLoading() {
+        showingLoadingDialog.value = false
+    }
     refreshCfg()
     Column(modifier = Modifier.fillMaxSize().fillMaxHeight().verticalScroll(rememberScrollState())) {
         General(title = "配置管理", height = 1, content = {
@@ -82,6 +101,7 @@ fun AABToolsManager() {
                                 keyAlias.value = aabToolsBeanState.value.keyAlias
                                 keyPwd.value = aabToolsBeanState.value.keyPwd
                                 cfgName.value = aabToolsBeanState.value.cfgName
+                                bundletoolSpec.value = aabToolsBeanState.value.bundletoolSpec
                             }
                         },
                         dropdownItemFactory = { item, _ ->
@@ -121,6 +141,28 @@ fun AABToolsManager() {
                             modifier = Modifier.align(Alignment.CenterVertically).fillMaxWidth(),
                             maxLines = 1,
                             onValueChange = { keyStoryPath.value = it })
+                    }
+                }
+                ContentNRow {
+                    Row(modifier = Modifier.align(Alignment.CenterHorizontally).weight(1F)) {
+                        Text("Bundletool\u7248\u672c/\u8def\u5f84:", modifier = Modifier.align(Alignment.CenterVertically))
+                        TextField(
+                            value = bundletoolSpec.value,
+                            modifier = Modifier.align(Alignment.CenterVertically).fillMaxWidth(),
+                            maxLines = 1,
+                            onValueChange = { bundletoolSpec.value = it },
+                            placeholder = { Text(bundletool.value) },
+                            trailingIcon = {
+                                Icon(
+                                    painter = painterResource(getRealLocation("folder")),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp).clickable {
+                                        val path = PathSelector.selectFile("jar")
+                                        if (path.isNotEmpty()) bundletoolSpec.value = path
+                                    }
+                                )
+                            }
+                        )
                     }
                 }
                 ContentNRow {
@@ -167,33 +209,100 @@ fun AABToolsManager() {
                 }
                 ContentNRow {
                     Button(modifier = Modifier.weight(1F).padding(horizontal = 10.dp), onClick = {
+                        if (aabPath.value.isBlank()) {
+                            showInfoDialog("\u8bf7\u9009\u62e9AAB\u6587\u4ef6", GOOGLE_RED, "\u9519\u8bef")
+                            return@Button
+                        }
+                        startLoading("\u6b63\u5728\u751f\u6210APKS\uff0c\u8bf7\u7a0d\u5019...")
                         CoroutineScope(Dispatchers.Default).launch {
-                            val genApksPath = AABUtils.AAB2Apks(aabPath.value, aabToolsBeanState.value)
+                            val currentCfg = AABToolsCfgBean(
+                                keyStoryPath.value,
+                                keyStoryPwd.value,
+                                keyAlias.value,
+                                keyPwd.value,
+                                cfgName.value,
+                                bundletoolSpec.value,
+                            )
+                            val genApksPath = AABUtils.AAB2Apks(aabPath.value, currentCfg)
+                            stopLoading()
                             if (genApksPath.isEmpty()) {
-                                toastText.value = "生成错误"
-                                showToast.value = true
+                                showInfoDialog(
+                                    "\u751f\u6210\u5931\u8d25\uff0c\u8bf7\u68c0\u67e5AAB\u8def\u5f84\u548c\u7b7e\u540d\u914d\u7f6e",
+                                    GOOGLE_RED,
+                                    "\u9519\u8bef"
+                                )
                             } else {
                                 apksPath.value = genApksPath
-                                toastText.value = "生成成功,在AAB同级目录下"
-                                showToast.value = true
+                                showInfoDialog("\u751f\u6210\u6210\u529f")
                             }
                         }
                     }, content = {
-                        Text("生成APKS")
+                        Text("\u751f\u6210APKS")
                     })
                     Button(modifier = Modifier.weight(1F).padding(horizontal = 10.dp), onClick = {
+                        if (apksPath.value.isBlank()) {
+                            showInfoDialog("\u8bf7\u9009\u62e9APKS\u6587\u4ef6", GOOGLE_RED, "\u9519\u8bef")
+                            return@Button
+                        }
+                        startLoading("\u6b63\u5728\u5b89\u88c5APKS\uff0c\u8bf7\u7a0d\u5019...")
                         CoroutineScope(Dispatchers.Default).launch {
-                            val excResult = AABUtils.Install2Phont(apksPath.value)
+                            val excResult = AABUtils.Install2Phont(apksPath.value, bundletoolSpec.value)
+                            stopLoading()
                             if (excResult) {
-                                toastText.value = "安装错误,请检查路径"
-                                showToast.value = true
+                                showInfoDialog("\u5b89\u88c5\u6210\u529f")
                             } else {
-                                toastText.value = "安装成功"
-                                showToast.value = true
+                                showInfoDialog(
+                                    "\u5b89\u88c5\u5931\u8d25\uff0c\u8bf7\u68c0\u67e5\u8def\u5f84\u6216\u8bbe\u5907\u8fde\u63a5",
+                                    GOOGLE_RED,
+                                    "\u9519\u8bef"
+                                )
                             }
                         }
                     }, content = {
-                        Text("安装APKS到手机")
+                        Text("\u5b89\u88c5APKS\u5230\u624b\u673a")
+                    })
+                }
+                ContentNRow {
+                    Button(modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp), onClick = {
+                        if (aabPath.value.isBlank()) {
+                            showInfoDialog("\u8bf7\u9009\u62e9AAB\u6587\u4ef6", GOOGLE_RED, "\u9519\u8bef")
+                            return@Button
+                        }
+                        startLoading("\u6b63\u5728\u751f\u6210\u5e76\u5b89\u88c5\uff0c\u8bf7\u7a0d\u5019...")
+                        CoroutineScope(Dispatchers.Default).launch {
+                            val currentCfg = AABToolsCfgBean(
+                                keyStoryPath.value,
+                                keyStoryPwd.value,
+                                keyAlias.value,
+                                keyPwd.value,
+                                cfgName.value,
+                                bundletoolSpec.value,
+                            )
+                            val genApksPath = AABUtils.AAB2Apks(aabPath.value, currentCfg)
+                            if (genApksPath.isEmpty()) {
+                                stopLoading()
+                                showInfoDialog(
+                                    "\u751f\u6210\u5931\u8d25\uff0c\u8bf7\u68c0\u67e5AAB\u8def\u5f84\u548c\u7b7e\u540d\u914d\u7f6e",
+                                    GOOGLE_RED,
+                                    "\u9519\u8bef"
+                                )
+                                return@launch
+                            }
+                            apksPath.value = genApksPath
+                            val excResult = AABUtils.Install2Phont(genApksPath, bundletoolSpec.value)
+                            stopLoading()
+                            if (excResult) {
+                                showInfoDialog("\u4e00\u952e\u5b89\u88c5\u6210\u529f")
+                            } else {
+                                showInfoDialog(
+                                    "\u5b89\u88c5\u5931\u8d25\uff0c\u8bf7\u68c0\u67e5\u8def\u5f84\u6216\u8bbe\u5907\u8fde\u63a5",
+                                    GOOGLE_RED,
+                                    "\u9519\u8bef"
+                                )
+                            }
+                        }
+                    }, content = {
+                        Text("\u4e00\u952e\u5b89\u88c5")
                     })
                 }
             }

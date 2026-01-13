@@ -24,13 +24,14 @@ object AABUtils {
      * 需要apks的路径
      *
      */
-    suspend fun Install2Phont(apksPath: String): Boolean {
-        return excInstallApks2Phone(apksPath)
+    suspend fun Install2Phont(apksPath: String, bundletoolSpec: String): Boolean {
+        return excInstallApks2Phone(apksPath, bundletoolSpec)
     }
 
-    private suspend fun excInstallApks2Phone(apksPath: String): Boolean = coroutineScope {
+    private suspend fun excInstallApks2Phone(apksPath: String, bundletoolSpec: String): Boolean = coroutineScope {
+        val bundletoolPath = resolveBundletool(bundletoolSpec)
         val sb = StringBuilder()
-        sb.append("java -jar ").append(bundletool.value)
+        sb.append("java -jar ").append(bundletoolPath)
         sb.append(" install-apks --apks=").append(apksPath)
         return@coroutineScope try {
             BashUtil.execCommand(sb.toString())
@@ -48,8 +49,9 @@ object AABUtils {
         File(apksOutput).let {
             if (it.exists()) it.delete()
         }
+        val bundletoolPath = resolveBundletool(aabToolsCfgBean.bundletoolSpec)
         val sb = StringBuilder()
-        sb.append("java -jar ").append(bundletool.value)
+        sb.append("java -jar ").append(bundletoolPath)
         sb.append(" build-apks --bundle=").append(aabPath)
         sb.append(" --output=").append(apksOutput)
         sb.append(" --ks=").append(aabToolsCfgBean.keyStoryPath)
@@ -62,6 +64,22 @@ object AABUtils {
         } catch (e: Exception) {
             ""
         }
+    }
+
+    private fun resolveBundletool(bundletoolSpec: String): String {
+        val spec = bundletoolSpec.trim()
+        if (spec.isBlank()) return bundletool.value
+        val direct = File(spec)
+        if (direct.exists()) {
+            return direct.absolutePath
+        }
+        val cfgDir = File(BashUtil.workDir, "cfg")
+        val cfgFile = if (spec.endsWith(".jar", ignoreCase = true)) {
+            File(cfgDir, spec)
+        } else {
+            File(cfgDir, "bundletool-all-$spec.jar")
+        }
+        return if (cfgFile.exists()) cfgFile.absolutePath else spec
     }
 
     fun removeExtension(fileName: String): String {
