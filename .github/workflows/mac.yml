@@ -6,6 +6,11 @@ on:
       - "dev"
       - "txz"
       - "master"
+    tags:
+      - "**"
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -32,3 +37,10 @@ jobs:
         with:
           name: artifact
           path: ${{ github.workspace }}/build/compose/binaries/main-release/**
+      - name: publish release assets
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/compose/binaries/main-release/**/*.dmg
+            build/compose/binaries/main-release/**/*.deb
